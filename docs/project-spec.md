@@ -1,5 +1,9 @@
 # OpenOctopus 项目定位与大纲
 
+<p align="center">
+  <img src="images/信息图/OpenOctopus：AI人生治理范式.png" alt="OpenOctopus：AI 人生治理范式" width="720">
+</p>
+
 ## 1. 命名
 
 | | 名称 |

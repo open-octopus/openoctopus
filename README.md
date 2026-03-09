@@ -29,6 +29,10 @@ OpenOctopus is not another unified chatbox. It organizes your life into **Realms
 
 What makes it unique: **Summon**. Turn any real-world object — your dog, your mom, your car — into a living AI agent with memory, personality, and proactive behavior.
 
+<p align="center">
+  <img src="docs/assets/openoctopus-banner.png" alt="OpenOctopus — each tentacle connects to a life realm" width="720">
+</p>
+
 ## Highlights
 
 - **[Realm Matrix](#realm-matrix)** — grid dashboard of all life realms, health scores, risks, and to-dos at a glance
@@ -64,6 +68,10 @@ Create, merge, or delete realms freely. The above are starter templates.
 ## Summon
 
 The killer feature. Turn data into a living agent.
+
+<p align="center">
+  <img src="docs/assets/openoctopus-summon-concept.png" alt="Summon: tentacle transforms a grey silhouette into a living agent" width="640">
+</p>
 
 ```
 Raw data → Structured Entity → SUMMON → Agent with memory, personality & initiative
@@ -168,7 +176,7 @@ Every agent action follows the trust chain:
 | **[Project Spec](docs/project-spec.md)** | Naming, RealmHub, information architecture, milestones |
 | **[Design Deep Dive](docs/design-discussion.md)** | Realm naming, Summon mechanism, layered architecture, cross-realm coordination |
 | **[Brand Guide](docs/branding.md)** | Taglines, colors, mascot Octo, logo prompts, ecosystem naming |
-| **[Research Index](docs/research/README.md)** | AI Native signals, scenario mapping, 90-day roadmap, references |
+| **[Research Index](docs/research/README.md)** | AI Native signals, scenario mapping, competitive landscape, agent frameworks |
 
 ## Ecosystem
 
@@ -184,9 +192,13 @@ Every agent action follows the trust chain:
 
 ## Octo
 
+<img src="docs/assets/openoctopus-mascot.png" alt="Octo — the OpenOctopus mascot" width="320" align="right">
+
 The mascot. A deep-sea octopus named **Octo** — calm, multi-threaded, quietly brilliant. Eight arms juggling your entire life while one brain keeps it all in sync. The tentacle tips glow cyan when summoning entities to life.
 
 *"A deep-sea octopus, definitely."*
+
+<br clear="right">
 
 ## License
 

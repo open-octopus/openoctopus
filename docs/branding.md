@@ -1,5 +1,9 @@
 # OpenOctopus 品牌设计
 
+<p align="center">
+  <img src="images/信息图/OpenOctopus 品牌概念视觉规范.png" alt="OpenOctopus 品牌概念视觉规范" width="720">
+</p>
+
 ## 1. 品牌定位
 
 | 维度 | 定义 |
@@ -253,18 +257,44 @@ Vector illustration style with subtle 3D shading. No text.
 </p>
 ```
 
-**资产文件清单（待生成）：**
+**资产文件清单：**
 
-```
-docs/assets/
-├── openoctopus-logo-text.png       # 主 Logo（深色背景版）
-├── openoctopus-logo-text-dark.png  # 主 Logo（浅色背景版）
-├── openoctopus-avatar.png          # 正方形头像 / App Icon
-├── openoctopus-pixel.svg           # 16x16 像素 icon / Favicon
-├── openoctopus-banner.png          # GitHub / 社交横幅
-├── openoctopus-summon-concept.png  # Summon 概念图
-└── sponsors/                       # 赞助商 Logo（预留）
-```
+| 文件 | 说明 | 状态 |
+|---|---|---|
+| `docs/assets/openoctopus-logo-text.png` | 主 Logo — 深色背景版（白色 Open + 紫色 Octopus） | done |
+| `docs/assets/openoctopus-logo-text-dark.png` | 主 Logo — 浅色背景版（黑色 Open + 紫色 Octopus） | done |
+| `docs/assets/openoctopus-mascot.png` | 吉祥物 Octo 独立形象（暗背景，全身） | done |
+| `docs/assets/openoctopus-avatar.png` | 正方形头像 / App Icon（近景，圆角） | done |
+| `docs/assets/openoctopus-pixel.png` | 像素风章鱼（紫色身体、青色触手） | done |
+| `docs/assets/openoctopus-banner.png` | GitHub / 社交横幅（触手连接各域图标） | done |
+| `docs/assets/openoctopus-summon-concept.png` | Summon 概念图（触手 → 灰影 → 金毛犬） | done |
+| `docs/assets/sponsors/` | 赞助商 Logo（预留） | — |
+
+**信息图：**
+
+| 文件 | 说明 |
+|---|---|
+| `docs/images/信息图/OpenOctopus 品牌概念视觉规范.png` | 品牌核心、视觉规范、生态命名体系 |
+| `docs/images/信息图/OpenOctopus：AI人生治理范式.png` | Realm 分治 + Summon 召唤 + 与 OpenClaw 对比 |
+| `docs/images/信息图/八爪鱼人生治理系统.png` | 8 大 Realm + Summon 流程 + 召唤体协作 |
+
+**Logo 预览：**
+
+| 深色背景版 | 浅色背景版 |
+|---|---|
+| ![dark](assets/openoctopus-logo-text.png) | ![light](assets/openoctopus-logo-text-dark.png) |
+
+| 吉祥物 | 头像 | 像素风 |
+|---|---|---|
+| <img src="assets/openoctopus-mascot.png" width="200"> | <img src="assets/openoctopus-avatar.png" width="120"> | <img src="assets/openoctopus-pixel.png" width="80"> |
+
+| 横幅 |
+|---|
+| ![banner](assets/openoctopus-banner.png) |
+
+| Summon 概念图 |
+|---|
+| ![summon](assets/openoctopus-summon-concept.png) |
 
 ## 7. 生态命名体系
 
