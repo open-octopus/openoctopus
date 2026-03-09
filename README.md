@@ -1,73 +1,192 @@
-# OpenOctopus（Open八爪鱼）
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/openoctopus-logo-text-dark.png">
+    <img src="docs/assets/openoctopus-logo-text.png" alt="OpenOctopus" width="480">
+  </picture>
+</p>
 
-> 把人生分域治理，把万物召唤为 Agent，八臂并行，一脑协同。
->
-> *Organize life by realms. Summon anything into a living agent.*
+<h3 align="center">SUMMON!</h3>
 
-OpenOctopus 是一个 **Realm-native** 的人生助理 Agent 系统。
+<p align="center">
+  <a href="https://github.com/open-octopus/openoctopus/actions"><img src="https://img.shields.io/github/actions/workflow/status/open-octopus/openoctopus/ci.yml?style=for-the-badge&label=CI" alt="CI"></a>
+  <a href="https://github.com/open-octopus/openoctopus/releases"><img src="https://img.shields.io/github/v/release/open-octopus/openoctopus?style=for-the-badge&include_prereleases" alt="Release"></a>
+  <a href="https://discord.gg/openoctopus"><img src="https://img.shields.io/badge/Discord-The%20Reef-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+</p>
 
-它不是一个统一聊天框，而是以 **Realm（人生域）** 为核心组织单元——宠物域、父母域、金融域、工作域、兴趣域……每个 Realm 拥有独立的知识库、Agent 团队和技能集，如同章鱼的每条触手都有自己的神经中枢。
+<p align="center">
+  Realm-native life agent system.<br>
+  Organize life by realms. Summon anything into a living agent.
+</p>
 
-更独特的是 **Summon（召唤）**：将你生活中的任何对象——宠物、家人、爱车——召唤为有记忆、有性格、可主动行动的 AI Agent。
+<p align="center">
+  <a href="docs/project-spec.md">Spec</a> · <a href="docs/design-discussion.md">Design</a> · <a href="docs/branding.md">Brand</a> · <a href="docs/research/README.md">Research</a> · <a href="https://discord.gg/openoctopus">Discord</a>
+</p>
 
-## 核心模型
+---
 
-```
-Realm -> Entity -> [Summon] -> Agent Team -> Skill -> Action / Insight
-```
+OpenOctopus is not another unified chatbox. It organizes your life into **Realms** — pet, parents, finance, work, legal, hobbies — each with its own knowledge base, agent team, and skill set. Like an octopus, each tentacle has its own nerve center and acts autonomously, while the central brain coordinates everything.
 
-| 概念 | 说明 |
-|---|---|
-| **Realm** | 人生域（宠物、家庭、金融、工作……），自治运转的知识领地 |
-| **Entity** | 域中的对象（人、宠物、资产、目标、事件） |
-| **Summon** | 将 Entity 召唤为有性格、有记忆、可主动行动的 Agent |
-| **Agent** | 围绕 Entity 或 Realm 运行的智能体（专业型 / 召唤型） |
-| **Skill** | Agent 可调用的能力（全局 Skill + 域 Skill） |
-| **Memory** | 长期记忆与历史轨迹 |
-| **Action** | 待执行动作（可人工确认） |
-| **Insight** | 洞察、风险、建议 |
+What makes it unique: **Summon**. Turn any real-world object — your dog, your mom, your car — into a living AI agent with memory, personality, and proactive behavior.
 
-## 产品模块（MVP）
+## Highlights
 
-| 模块 | 说明 |
-|---|---|
-| **Realm Matrix** | 网格化展示所有人生域，显示健康度、风险数、待办数 |
-| **Realm Workbench** | 资料录入、实体自动抽取、域级分析报告 |
-| **Summon** | 将实体召唤为可交互的 Agent，支持模拟对话与主动行动 |
-| **Agent Team** | 域内专业 Agent + 召唤 Agent，支持多 Agent 协作 |
-| **RealmHub** | 浏览、安装、发布 Realm 包（如"法律顾问团队"） |
-| **Governance** | 关键动作人工确认、全量日志审计、隐私与权限分级 |
+- **[Realm Matrix](#realm-matrix)** — grid dashboard of all life realms, health scores, risks, and to-dos at a glance
+- **[Summon](#summon)** — turn any entity (pet, person, asset) into an AI agent that remembers, speaks, and acts
+- **[Cross-Realm Intelligence](#architecture)** — knowledge graph connects all realms; your pet realm knows your finance budget
+- **[Dual-layer Skills](#architecture)** — global skills (search, calendar, email) + realm skills (vet lookup, tax calc, law search)
+- **[Agent Teams](#agent-teams)** — professional agents + summoned agents collaborate within each realm
+- **[RealmHub](#realmhub)** — install pre-built realm packages ("Legal Advisor Team", "Pet Care") in one click
+- **[Governance](#governance)** — human-in-the-loop approval, full audit log, privacy and permission tiers
+- **[Local-first](#tech-stack)** — SQLite by default, optional cloud sync via PostgreSQL / Supabase
 
-## 技术栈
+## Realm Matrix
 
-| 层 | 选型 |
-|---|---|
-| 运行时 | Node.js >= 22 + TypeScript |
-| 网关 | 统一编排入口（参考 OpenClaw Gateway） |
-| 客户端 | Web Dashboard（Realm Matrix）+ CLI |
-| 数据 | SQLite（本地优先）+ PostgreSQL / Supabase（可选同步） |
-| 向量检索 | pgvector / 本地向量库（按 Realm 分片） |
-| 插件 | Skill 机制 + Realm Package 规范 |
+Your life, organized as a grid. Each Realm is an independent domain:
 
-## 与 OpenClaw 的差异
-
-| 维度 | OpenClaw | OpenOctopus |
+| Realm | What lives inside | Example agents |
 |---|---|---|
-| 核心抽象 | Tool / Skill / Agent Runtime | Realm -> Entity -> Summon -> Agent |
-| 用户入口 | 任务执行与自动化 | 人生资料沉淀与分域治理 |
-| 组织方式 | 按能力和工具连接 | 按人生域矩阵分类（Realm Matrix） |
-| 差异化功能 | 自动化执行 | **Summon（召唤）** — 万物皆可 Agent |
-| 分享机制 | ClawHub 分享技能 | RealmHub 分享完整域包 |
-| 比喻 | 一把瑞士军刀 | 一只章鱼，八臂并行 |
+| `pet` | Pets, vets, food records | Health advisor, **Momo** (summoned) |
+| `parents` | Parents, health files | Care assistant, **Mom** (summoned) |
+| `partner` | Partner, anniversaries | Relationship advisor |
+| `finance` | Accounts, investments, debts | Budget planner, tax assistant |
+| `work` | Projects, colleagues, goals | Task manager, weekly reporter |
+| `legal` | Contracts, cases, statutes | Contract lawyer, labor law advisor |
+| `vehicle` | Car, insurance, maintenance | Maintenance tracker, cost reporter |
+| `home` | House, appliances, repairs | Home manager |
+| `health` | Check-ups, prescriptions | Health monitor |
+| `fitness` | Training plans, body data | Fitness coach |
+| `hobby` | Projects, learning materials | Learning coach |
+| `friends` | Social circle, events | Social radar |
 
-## 文档
+Create, merge, or delete realms freely. The above are starter templates.
 
-| 文档 | 说明 |
+## Summon
+
+The killer feature. Turn data into a living agent.
+
+```
+Raw data → Structured Entity → SUMMON → Agent with memory, personality & initiative
+```
+
+| Entity type | Examples | After summoning |
+|---|---|---|
+| **Living** | Pet, family, friend | Simulated dialogue, personality, emotional expression |
+| **Asset** | Car, house, portfolio | Status monitoring, maintenance alerts, cost reports |
+| **Organization** | Company, hospital | Process guides, contact management |
+| **Abstract** | Goal, project, habit | Progress tracking, deviation alerts, retrospectives |
+
+**What a summoned agent can do:**
+
+```
+You:  "I'm traveling for 5 days next week."
+
+Momo (Pet):     "Who's going to feed me and walk me for 5 days?!"
+Mom (Parents):  "Mom just said she'd like to visit — she could take care of Momo."
+Car (Vehicle):  "Charge to full before departure? Or take a taxi to the airport?"
+Budget (Finance): "Trip budget estimate: ¥X. Remember to save receipts."
+
+→ System compiles a "Trip Prep Checklist" for your approval.
+```
+
+## Agent Teams
+
+Three types of agents, two layers:
+
+```
+Central Agents (global)
+  · Router — intent detection & realm routing
+  · Coordinator — cross-realm analysis
+  · Scheduler — proactive triggers & cron
+
+Realm Agents (per-realm)
+  · Professional — legal advisor, budget planner, health monitor
+  · Summoned ✦ — Momo, Mom, my Tesla (entities brought to life)
+```
+
+## RealmHub
+
+Like an app store, but for life domains. Install a complete realm package:
+
+- **Legal Advisor Team** — entity templates (lawyer, contract, statute) + 3 agents + skills
+- **Pet Care** — pet profile + health advisor + vet lookup + vaccination tracker
+- **Family Finance** — accounts + budget planner + investment analyzer
+
+Each package includes: realm template, entity templates, agent configs, skill configs, sample data.
+
+## Architecture
+
+```
+  CLI / Web Dashboard / Mobile
+               │
+               ▼
+┌──────────────────────────────────────────────┐
+│            OpenOctopus Core (Brain)           │
+│                                              │
+│  Router Agent · Coordinator · Scheduler      │
+│  Knowledge Graph (cross-realm entity links)  │
+│  Global Skills (search·calendar·email·i18n)  │
+└──────┬──────────┬──────────┬──────────┬──────┘
+       │          │          │          │
+  ┌────▼───┐ ┌───▼────┐ ┌───▼────┐ ┌───▼────┐
+  │  Pet   │ │Finance │ │ Legal  │ │Parents │  ...
+  │ Realm  │ │ Realm  │ │ Realm  │ │ Realm  │
+  │        │ │        │ │        │ │        │
+  │ Agents │ │ Agents │ │ Agents │ │ Agents │
+  │ Skills │ │ Skills │ │ Skills │ │ Skills │
+  │ Memory │ │ Memory │ │ Memory │ │ Memory │
+  └────────┘ └────────┘ └────────┘ └────────┘
+
+  ✦ Summoned agents live inside their realm.
+  ↔ Knowledge graph links entities across realms.
+```
+
+## Governance
+
+Every agent action follows the trust chain:
+
+- **Human-in-the-loop** — critical actions require explicit approval
+- **Audit log** — full trace of every agent decision, evidence, and outcome
+- **Privacy tiers** — per-realm permission control, data isolation between realms
+- **Budget limits** — token and cost caps per agent, per realm, per action
+
+## Tech Stack
+
+| Layer | Choice |
 |---|---|
-| [项目定位与大纲](docs/project-spec.md) | 命名、RealmHub 机制、信息架构、里程碑 |
-| [设计讨论与深化](docs/design-discussion.md) | Realm 命名、Summon 机制、分层架构、跨域协调 |
-| [品牌设计](docs/branding.md) | 标语、色彩、吉祥物、Logo 生图提示词、生态命名 |
-| [调研资料索引](docs/research/README.md) | AI Native 外部信号、场景图谱、路线图、参考来源 |
+| Runtime | Node.js >= 22 + TypeScript |
+| Gateway | Unified orchestration (ref: OpenClaw Gateway) |
+| Client | Web Dashboard (Realm Matrix) + CLI (`tentacle`) |
+| Data | SQLite (local-first) + PostgreSQL / Supabase (optional sync) |
+| Vector | pgvector / local vector store (per-realm sharding) |
+| Plugin | Global Skill + Realm Skill + Realm Package spec |
+
+## Docs
+
+| Doc | What's inside |
+|---|---|
+| **[Project Spec](docs/project-spec.md)** | Naming, RealmHub, information architecture, milestones |
+| **[Design Deep Dive](docs/design-discussion.md)** | Realm naming, Summon mechanism, layered architecture, cross-realm coordination |
+| **[Brand Guide](docs/branding.md)** | Taglines, colors, mascot Octo, logo prompts, ecosystem naming |
+| **[Research Index](docs/research/README.md)** | AI Native signals, scenario mapping, 90-day roadmap, references |
+
+## Ecosystem
+
+| Component | Name | Metaphor |
+|---|---|---|
+| Realm marketplace | **RealmHub** | Realm package hub |
+| CLI | **tentacle** | Tentacle = reach & touch |
+| Agent gateway | **ink** | Ink = information flow |
+| Summon engine | **summon** | Core feature |
+| Community | **The Reef** | Coral reef = habitat |
+| Realm config | **REALM.md** | Realm definition |
+| Entity persona | **SOUL.md** | Summoned agent personality |
+
+## Octo
+
+The mascot. A deep-sea octopus named **Octo** — calm, multi-threaded, quietly brilliant. Eight arms juggling your entire life while one brain keeps it all in sync. The tentacle tips glow cyan when summoning entities to life.
+
+*"A deep-sea octopus, definitely."*
 
 ## License
 

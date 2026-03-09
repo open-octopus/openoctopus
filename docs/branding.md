@@ -17,7 +17,7 @@
 - **中文**：把人生分域治理，把万物召唤为 Agent。
 - **英文**：Organize life by realms. Summon anything into a living agent.
 
-### 2.2 短标语（社交 / Badge / 品牌露出）
+### 2.2 短标语
 
 | 场景 | 标语 |
 |---|---|
@@ -28,7 +28,7 @@
 | 哲学向 | `One brain. Many realms. Everything summoned.` |
 | 社区向 | `Your life, orchestrated.` |
 
-### 2.3 口号 / 战斗口号（类似 OpenClaw 的 "EXFOLIATE!"）
+### 2.3 战斗口号
 
 **SUMMON!**
 
@@ -36,43 +36,72 @@
 > 用户对着任何生活对象说 "Summon"，它就被赋予记忆、性格、行动力，成为活的 Agent。
 
 备选：
-- `INK IT!`（墨汁 = 把想法沉淀、把计划执行、把知识落地）
+- `INK IT!`（墨汁 = 沉淀知识、执行计划）
 - `REACH OUT!`（触手延伸 = 多域触达）
 
-## 3. 吉祥物
+## 3. 吉祥物 Octo
 
 ### 3.1 角色设定
 
 | 属性 | 内容 |
 |---|---|
-| 名称 | **Octo**（简洁好记，呼应 Octopus） |
-| 形象 | 一只拟人化的卡通章鱼，深海蓝紫色调，触手末端青色发光 |
+| 名称 | **Octo** |
+| 形象 | 拟人化卡通章鱼，有表情和性格，**不是扁平图标**而是有立体感的插画角色 |
 | 性格 | 冷静、多线程、细心、偶尔幽默，像一个靠谱的私人管家 |
-| 标志动作 | 八条触手各自握住不同域的图标，触手末端发出青色光芒——这就是"召唤" |
-| 颜色 | 深海蓝紫色系（主色），触手末端渐变为亮青色（Summon 光芒） |
+| 标志动作 | 八条触手各自握住不同域的图标，触手末端青色发光（召唤状态） |
+| 颜色 | 深海蓝紫色身体，触手末端渐变为亮青色 |
+| 名言 | *"A deep-sea octopus, definitely."* |
 
 ### 3.2 性格支柱
 
-1. **多面手** — 同时关注生活的多个 Realm，不遗漏任何一个
-2. **召唤师** — 能将任何事物赋予生命，是深海的魔法师
+1. **多面手** — 同时关注多个 Realm，不遗漏任何一个
+2. **召唤师** — 触手发光时，就是在召唤实体获得数字生命
 3. **沉稳可靠** — 不急不躁，持续运转，像深海中的智慧生物
 4. **好奇进化** — 章鱼是无脊椎动物中最聪明的，象征持续学习与适应
+
+### 3.3 视觉参考（对标 OpenClaw 的 Molty）
+
+OpenClaw 的龙虾 Molty 特征：
+- 卡通插画风格，有高光和阴影，**不是纯平面**
+- 拟人化表情（自信的微笑、有神的眼睛）
+- 鲜明的红色主色调，辨识度极高
+- 两版 logo：深色背景用浅色文字，浅色背景用深色文字
+
+OpenOctopus 的 Octo 应对标：
+- 同样的卡通插画质感，有立体感但不写实
+- 蓝紫色身体 + 青色触手发光 = 辨识度
+- 表情自信、睿智、略带温柔
+- 触手末端的青色光芒是核心视觉记忆点
 
 ## 4. 视觉体系
 
 ### 4.1 色彩方案
 
-| 用途 | 色值 | 说明 |
-|---|---|---|
-| 主色 | `#1E3A5F` | 深海蓝（Deep Ocean Blue）— Realm 的底色 |
-| 副色 | `#6C3FA0` | 章鱼紫（Octopus Purple）— 章鱼本体 |
-| 强调色 | `#00D4AA` | 召唤青（Summon Cyan）— 触手发光、召唤特效 |
-| 渐变 | `#6C3FA0 -> #00D4AA` | 紫到青渐变，用于 Summon 动效、进度条、高亮 |
-| 背景暗 | `#0D1117` | 深海夜色（Dark Mode 主背景） |
-| 背景亮 | `#F6F8FA` | 浅色模式背景 |
-| 文字 | `#E6EDF3` / `#1F2328` | 暗 / 亮模式文字 |
+| 用途 | 色值 | 命名 | 说明 |
+|---|---|---|---|
+| 主色 | `#1E3A5F` | Deep Ocean Blue | Realm 底色、背景元素 |
+| 副色 | `#6C3FA0` | Octopus Purple | 章鱼本体、品牌主调 |
+| 强调色 | `#00D4AA` | Summon Cyan | 触手发光、召唤特效、交互高亮 |
+| 渐变 | `#6C3FA0 → #00D4AA` | Summon Gradient | 触手、进度条、动效 |
+| 暗背景 | `#0D1117` | Abyss | Dark Mode 主背景 |
+| 亮背景 | `#F6F8FA` | Surface | Light Mode 主背景 |
+| 暗文字 | `#E6EDF3` | — | Dark Mode 正文 |
+| 亮文字 | `#1F2328` | — | Light Mode 正文 |
+| 社区蓝 | `#5865F2` | Discord Blue | Discord / 社区 badge |
 
-### 4.2 设计风格
+### 4.2 品牌文字
+
+参考 OpenClaw 的 "**OPEN**CLAW" 做法（Open 细体 + CLAW 粗体红色）：
+
+- `Open` — 细体/Regular，使用暗文字色（深色背景时白色，浅色背景时黑色）
+- `Octopus` — **粗体/Bold**，使用 Octopus Purple `#6C3FA0`
+- 组合效果：**Open**<span style="color:#6C3FA0">**Octopus**</span>
+
+**两版 logo 文字：**
+- 深色背景版：`Open`（白色） + `Octopus`（紫色）
+- 浅色背景版：`Open`（黑色） + `Octopus`（紫色）
+
+### 4.3 设计风格
 
 - **Dark-mode 优先** — 深海主题，暗色背景为默认
 - **召唤光效** — Summon 操作时，触手末端青色光芒扩散到实体上
@@ -80,84 +109,164 @@
 - **圆润几何** — 章鱼的柔软身体 = 圆角、流动线条
 - **矩阵布局** — Realm Matrix 用网格卡片，每张卡片微微发光
 
-### 4.3 排版
+### 4.4 字体
 
-- **品牌字**：`Open` 用细体 + `Octopus` 用粗体
-- **代码 / 技术**：等宽字体（JetBrains Mono / Fira Code）
+- **品牌 / 标题**：Inter Bold / Noto Sans SC Bold
+- **代码 / 技术**：JetBrains Mono / Fira Code
 - **正文**：Inter / Noto Sans SC
 
 ## 5. Logo 生图提示词
 
-### 5.1 主 Logo（吉祥物 + 文字）
+> **风格定位**：参考 OpenClaw 的 Molty 龙虾——卡通插画风，有立体感和高光，
+> 拟人化表情，不是纯平面 icon 也不是写实 3D。适合用于 GitHub README、
+> App icon、社交媒体头像。
 
-**English prompt (for Midjourney / DALL-E / Stable Diffusion):**
-
-```
-A friendly cartoon octopus mascot for a tech brand called "OpenOctopus".
-The octopus is deep ocean blue-purple (#1E3A5F to #6C3FA0) with eight
-tentacles, each tip glowing bright cyan (#00D4AA) like magical energy.
-Each tentacle holds or connects to a different glowing life-domain icon
-(a heart, a briefcase, a coin, a book, a paw print, a dumbbell, a
-house, a star) — as if "summoning" them to life. The octopus has large,
-intelligent, calm eyes with a confident gentle smile. Clean vector
-illustration style, suitable for tech branding. Simple bold outlines.
-Dark background (#0D1117). The glowing tentacle tips should feel like
-the octopus is channeling energy into each domain. Smart, approachable,
-magical but grounded. No text in image. Flat design, minimal shadows.
-```
-
-### 5.2 简版 Logo（仅吉祥物头像，用于 Avatar / Favicon）
+### 5.1 主 Logo — 吉祥物（无文字版，文字后期叠加）
 
 ```
-A minimal cartoon octopus head icon, front-facing. Deep blue-purple
-gradient body (#1E3A5F to #6C3FA0), with two large friendly intelligent
-eyes and a slight smile. Two small tentacles visible at the bottom,
-tips glowing cyan (#00D4AA). Clean vector style, flat design, no
-background, suitable for app icon and favicon at small sizes (64x64,
-128x128). Bold clean outlines, minimal detail.
+A polished cartoon octopus mascot character for a tech brand. The
+octopus has a rounded head/body in deep blue-purple (#6C3FA0 base
+with #1E3A5F shadows), with subtle highlights and soft shading (NOT
+flat design — similar style to the OpenClaw lobster mascot "Molty").
+It has two large, expressive, intelligent eyes with a calm confident
+smile — slightly mischievous but trustworthy. Eight tentacles extend
+outward, each tentacle tip glowing bright cyan (#00D4AA) with soft
+luminous energy, as if channeling power. The right tentacles are
+slightly raised in a welcoming gesture. The overall pose is
+confident and approachable — like a wise deep-sea creature who
+manages everything with ease. No text. Transparent or dark (#0D1117)
+background. The character should feel like a premium tech mascot:
+polished, recognizable at small sizes, with the glowing cyan
+tentacle tips as the signature visual element. Style reference:
+cartoon mascot illustration with subtle 3D shading, similar quality
+to GitHub's Octocat or OpenClaw's Molty lobster.
 ```
 
-### 5.3 像素风 Logo（用于 Favicon / 小尺寸场景）
+### 5.2 Logo 变体 — 深色背景（用于 GitHub Dark Mode README）
 
 ```
-A 16x16 pixel art octopus icon. Deep blue-purple body, cyan glowing
-tentacle tips, two white eyes with dark pupils. Minimal pixel art
-style, clean and recognizable at very small sizes. Transparent
-background. Colors: body #1E3A5F, accent #6C3FA0, tips #00D4AA,
-eyes white with #0D1117 pupils, outline #0D1117.
+Same octopus mascot as above, placed on the LEFT side. To the RIGHT,
+the text "OpenOctopus" in a modern bold sans-serif font. "Open" in
+white (#E6EDF3), "Octopus" in purple (#6C3FA0). Horizontal layout,
+generous spacing between mascot and text. Dark background (#0D1117).
+Total width approximately 3:1 ratio (wide). The mascot should be
+the same size as the text height. Clean, professional tech branding.
 ```
 
-### 5.4 品牌横幅（GitHub / 社交媒体 Header）
+### 5.3 Logo 变体 — 浅色背景（用于 GitHub Light Mode README）
 
 ```
-A wide banner illustration for a tech project called "OpenOctopus".
-Deep ocean dark background (#0D1117). A stylized octopus silhouette
-in the center-left, deep blue-purple with eight tentacles reaching
-across the banner. Each tentacle tip glows cyan (#00D4AA) and connects
-to a floating glowing card representing a life realm (work, family,
-finance, health, pets, hobbies, law, fitness). The connection points
-pulse with energy — the octopus is "summoning" each realm to life.
-Subtle grid pattern in the background suggesting a realm matrix.
-Futuristic but warm. Clean tech aesthetic. No text. Aspect ratio 3:1.
+Same octopus mascot, placed LEFT. Text "OpenOctopus" to the RIGHT.
+"Open" in dark charcoal (#1F2328), "Octopus" in purple (#6C3FA0).
+Horizontal layout. Light/white (#F6F8FA) or transparent background.
+Same proportions and spacing as the dark variant.
 ```
 
-### 5.5 Summon 动效概念图
+### 5.4 Avatar / App Icon（正方形，高辨识度）
 
 ```
-A concept illustration showing the "Summon" feature of OpenOctopus.
-Dark ocean background. An octopus tentacle reaches toward a simple
-silhouette of a golden retriever dog. Cyan energy (#00D4AA) flows
-from the glowing tentacle tip into the dog silhouette, and the dog
-transforms from a flat grey outline into a vibrant, alive, slightly
-glowing character with expressive eyes — symbolizing the entity being
-"summoned" into a living AI agent. Magical but clean tech aesthetic.
-Purple-to-cyan gradient energy particles. Vector illustration style.
-No text.
+A square app icon featuring the OpenOctopus mascot — just the head
+and upper body of the cartoon octopus, filling most of the frame.
+Deep blue-purple body (#6C3FA0), large expressive eyes, gentle
+smile. Two or three tentacle tips visible at the bottom, glowing
+cyan (#00D4AA). Rounded corners (iOS app icon style). Dark
+background (#0D1117). Should be instantly recognizable at 64x64,
+128x128, and 512x512 sizes. Clean, bold, minimal detail. The
+glowing tentacle tips must remain visible even at small sizes —
+they are the signature element.
 ```
 
-## 6. 生态命名体系
+### 5.5 Pixel Art Icon（16x16 Favicon）
 
-参考 OpenClaw 的生态命名（ClawHub、Lobster、molty.me），OpenOctopus 的生态命名：
+> 参考 OpenClaw 的 `pixel-lobster.svg`：精确定义每个像素的颜色。
+
+```
+A 16x16 pixel art octopus icon. Octopus-shaped silhouette facing
+forward: rounded head on top, two eyes, three short tentacles
+visible at bottom. Color mapping:
+  - Body: #6C3FA0 (Octopus Purple)
+  - Body shadow: #1E3A5F (Deep Ocean Blue)
+  - Tentacle tips (bottom 1-2 pixels): #00D4AA (Summon Cyan)
+  - Eyes: #F6F8FA (white) with #0D1117 (black) pupils
+  - Outline: #0D1117 (Abyss black)
+  - Background: transparent
+Must be clearly recognizable as an octopus at 16x16. Minimal
+detail — prioritize silhouette readability. The cyan tentacle
+tips should be visible even at this tiny size.
+```
+
+**SVG 色值速查（用于手动制作像素 icon）：**
+
+| 部位 | 色值 |
+|---|---|
+| 身体 | `#6C3FA0` |
+| 阴影 | `#1E3A5F` |
+| 触手发光 | `#00D4AA` |
+| 眼白 | `#F6F8FA` |
+| 瞳孔 / 轮廓 | `#0D1117` |
+
+### 5.6 GitHub / 社交横幅（Banner）
+
+```
+Wide banner (3:1 aspect ratio) for the OpenOctopus project. Deep
+ocean dark background (#0D1117) with subtle dark blue (#1E3A5F)
+underwater caustic light patterns. The cartoon octopus mascot is
+positioned center-left, slightly smaller, in a dynamic pose with
+tentacles reaching across the banner. Eight tentacle tips glow
+cyan (#00D4AA), each connecting to a floating translucent card
+icon representing a life realm (paw print, heart, dollar sign,
+briefcase, gavel, dumbbell, house, star). The cards are arranged
+in a loose grid pattern on the right side — suggesting the Realm
+Matrix. Soft purple-to-cyan gradient energy flows between the
+octopus and the cards. Clean, modern tech aesthetic. No text.
+Premium quality, suitable for GitHub repo header and Twitter/X
+banner.
+```
+
+### 5.7 Summon 概念图（展示核心功能）
+
+```
+Dark ocean background (#0D1117). On the left, a single octopus
+tentacle extends from the edge, tip glowing intense cyan (#00D4AA).
+In the center, a grey flat silhouette of a golden retriever dog.
+Cyan energy particles and light streams flow from the tentacle
+into the dog silhouette. On the right side, the dog has
+transformed — now a vibrant, colorful cartoon character with
+expressive eyes, slight glow, and personality (wagging tail,
+happy expression). The transformation from grey → alive should
+be clearly visible as a before/after in the same image. Purple-
+to-cyan gradient particles bridge the two states. This illustrates
+the "Summon" feature: turning a data entity into a living AI agent.
+Vector illustration style with subtle 3D shading. No text.
+```
+
+## 6. Logo 实现规范（GitHub README）
+
+参考 OpenClaw 的做法，使用 `<picture>` 元素实现 Dark/Light 自动切换：
+
+```html
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/openoctopus-logo-text-dark.png">
+    <img src="docs/assets/openoctopus-logo-text.png" alt="OpenOctopus" width="480">
+  </picture>
+</p>
+```
+
+**资产文件清单（待生成）：**
+
+```
+docs/assets/
+├── openoctopus-logo-text.png       # 主 Logo（深色背景版）
+├── openoctopus-logo-text-dark.png  # 主 Logo（浅色背景版）
+├── openoctopus-avatar.png          # 正方形头像 / App Icon
+├── openoctopus-pixel.svg           # 16x16 像素 icon / Favicon
+├── openoctopus-banner.png          # GitHub / 社交横幅
+├── openoctopus-summon-concept.png  # Summon 概念图
+└── sponsors/                       # 赞助商 Logo（预留）
+```
+
+## 7. 生态命名体系
 
 | 组件 | 命名 | 来源隐喻 |
 |---|---|---|
@@ -166,21 +275,25 @@ No text.
 | Agent 网关 | **ink** | 墨汁 = 信息流通的介质 |
 | 召唤引擎 | **summon** | 核心功能 = 实体召唤 |
 | 吉祥物主页 | **octo.me** | 吉祥物个人页 |
-| 社区 / Discord | **The Reef**（珊瑚礁） | 章鱼栖息地 = 社区聚集地 |
+| 社区 / Discord | **The Reef** | 珊瑚礁 = 章鱼栖息地 |
 | 域配置文件 | **REALM.md** | 域的定义与配置 |
-| 实体人格文件 | **SOUL.md** | 延续 OpenClaw 模式，用于召唤体性格定义 |
+| 实体人格文件 | **SOUL.md** | 召唤体性格定义 |
+| 贡献者 | **tentaclers** | 触手们 = 社区贡献者 |
 
-## 7. README Badge 风格
+## 8. Badge 规范
 
-```markdown
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Discord](https://img.shields.io/badge/Discord-The%20Reef-5865F2?logo=discord&logoColor=white)](https://discord.gg/openoctopus)
-[![RealmHub](https://img.shields.io/badge/RealmHub-Browse%20Realms-00D4AA)](https://realmhub.ai)
+使用 `style=for-the-badge`（大号矩形），居中排列，与 OpenClaw 风格一致：
+
+```html
+<p align="center">
+  <a href="..."><img src="https://img.shields.io/github/actions/workflow/status/open-octopus/openoctopus/ci.yml?style=for-the-badge&label=CI" alt="CI"></a>
+  <a href="..."><img src="https://img.shields.io/github/v/release/open-octopus/openoctopus?style=for-the-badge&include_prereleases" alt="Release"></a>
+  <a href="..."><img src="https://img.shields.io/badge/Discord-The%20Reef-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="..."><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
+</p>
 ```
 
-## 8. 品牌叙事
-
-### 章鱼的三个隐喻
+## 9. 品牌叙事：章鱼的三个隐喻
 
 1. **八臂并行 = Realm 分域治理**
    章鱼有 8 条触手，每条拥有独立神经中枢，能自主行动。OpenOctopus 的每个 Realm 同理——独立运转，自主管理。
