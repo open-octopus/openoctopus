@@ -60,6 +60,7 @@ Area -> Entity -> Agent Team -> Skill -> Action / Insight
 | 文档 | 说明 |
 |---|---|
 | [项目定位与大纲](docs/project-spec.md) | 命名、AreaHub 机制、信息架构、里程碑 |
+| [品牌设计](docs/branding.md) | 标语、色彩、吉祥物、Logo 生图提示词、生态命名 |
 | [调研资料索引](docs/research/README.md) | AI Native 外部信号、场景图谱、路线图、参考来源 |
 
 ## License
