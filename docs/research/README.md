@@ -24,4 +24,4 @@ OpenOctopus 项目立项前的外部环境调研与场景分析资料。
 
 - AI Native 窗口已从"概念期"进入"协议化 + 规模化落地前夜"
 - 2026 年最值得下注的是"可连接任何 agent、工具、支付、权限系统的产品层"
-- OpenOctopus 选择的 Area Native 路径命中了"编排化 + 场景化 + 可信化"三条主线
+- OpenOctopus 选择的 Realm-native 路径命中了"编排化 + 场景化 + 可信化"三条主线
