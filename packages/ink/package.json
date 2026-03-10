@@ -1,0 +1,29 @@
+{
+  "name": "@openoctopus/ink",
+  "version": "2026.3.10",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx --watch src/index.ts serve",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openoctopus/shared": "workspace:*",
+    "@openoctopus/core": "workspace:*",
+    "@openoctopus/storage": "workspace:*",
+    "@openoctopus/summon": "workspace:*",
+    "@openoctopus/channels": "workspace:*",
+    "express": "^5.1.0",
+    "ws": "^8.18.0"
+  }
+}

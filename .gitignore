@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Test & coverage
+coverage/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Runtime data
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.openoctopus/
+sessions/
+memory/
+local/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files (managed by pnpm)
+bun.lock
+yarn.lock
+package-lock.json
+
+# Docker
+docker-compose.override.yml
+docker-compose.extra.yml
+
+# OS
+Thumbs.db
+
+# Misc
+.build/
+__pycache__/

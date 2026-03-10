@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/storage" },
+    { "path": "packages/core" },
+    { "path": "packages/summon" },
+    { "path": "packages/channels" },
+    { "path": "packages/ink" },
+    { "path": "packages/tentacle" },
+    { "path": "packages/realmhub" }
+  ]
+}

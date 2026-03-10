@@ -6,18 +6,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenOctopus is a **Realm-native** personal life assistant Agent system. It organizes life into autonomous domains (Realms) — each with its own knowledge base, Agent team, and skill set — and provides a **Summon** mechanism to transform real-world entities into living AI Agents with memory, personality, and proactive behavior.
 
-**Status:** Pre-development / design phase. No source code or build system exists yet. The repository currently contains design documentation and research only.
+**Status:** Phase 1 — Vertical Slice (monorepo scaffold, core types, storage, gateway with dual-port, LLM providers, channel system, CLI with WS RPC).
 
-## Planned Tech Stack
+## Tech Stack
 
 | Layer | Choice |
 |-------|--------|
-| Runtime | Node.js >= 22 + TypeScript |
-| Gateway | Unified orchestration entry (ref: OpenClaw Gateway) |
-| Client | Web Dashboard (Realm Matrix) + CLI (`tentacle`) |
-| Data | SQLite (local-first) + PostgreSQL/Supabase (optional sync) |
-| Vector Search | pgvector / local vector library (per-Realm sharding) |
-| Plugins | Skill mechanism + Realm Package spec |
+| Runtime | Node.js >= 22 + TypeScript 5.7+ (strict) |
+| Package Manager | pnpm (workspaces) |
+| Bundler | tsdown (Rollup-based) |
+| Linter | oxlint |
+| Formatter | oxfmt |
+| Test | Vitest 4 (V8 coverage, pool: forks) |
+| Dead Code | knip |
+| DB (local) | SQLite via better-sqlite3 |
+| Sessions | JSONL append-only files |
+| Schema Validation | Zod |
+| Config | JSON5 (~/.openoctopus/config.json5) + Zod validation |
+| Gateway | Express 5 (HTTP bridge) + WebSocket RPC (ws) |
+| LLM Providers | Anthropic, OpenAI, Google, Ollama (multi-provider + failover) |
+| Channels | grammY (Telegram), Discord.js, Slack Bolt (plugin architecture) |
+| CLI | citty + consola + WS RPC client |
+| Deploy | Docker multi-stage + docker-compose (gateway + cli) |
+| Versioning | CalVer (YYYY.M.D) |
+
+## Monorepo Structure
+
+```
+packages/
+├── shared/    @openoctopus/shared    — types, errors, IDs, logger, constants, config, RPC protocol
+├── storage/   @openoctopus/storage   — SQLite, migrations, JSONL sessions, repos
+├── core/      @openoctopus/core      — realm manager, entity manager, agent runner, LLM providers, router
+├── summon/    @openoctopus/summon    — SOUL.md parser, prompt compiler, summon engine
+├── channels/  @openoctopus/channels  — channel adapters (Telegram, Discord, Slack, WeChat)
+├── ink/       @openoctopus/ink       — Express+WS gateway, RPC handlers, API endpoints
+├── tentacle/  @openoctopus/tentacle  — CLI tool with WS RPC streaming
+├── realmhub/  @openoctopus/realmhub  — package registry client (Phase 3)
+└── dashboard/ @openoctopus/dashboard — Next.js web UI (Phase 2)
+```
+
+**Dependency graph:** `shared → storage, core → summon, channels → ink → tentacle`
+
+## Commands
+
+```bash
+pnpm build           # Build all packages (8 packages)
+pnpm dev             # Dev mode (ink gateway with hot-reload)
+pnpm test:unit       # Run unit tests (51 tests)
+pnpm test:integration # Run integration tests
+pnpm typecheck       # TypeScript project-reference build
+pnpm lint            # oxlint
+pnpm format          # oxfmt
+pnpm knip            # Dead code detection
+pnpm check           # typecheck + lint + format check
+```
 
 ## Core Domain Model
 
@@ -33,36 +75,14 @@ Realm -> Entity -> [Summon] -> Agent Team -> Skill -> Action / Insight
 - **Agent** — Three tiers: Central (Router, Cross-Realm Coordinator, Scheduler), Realm (professional domain agents), Summoned (entity-derived agents).
 - **Skill** — Two scopes: Global Skills (search, calendar, email) available to all Realms, and Realm Skills (domain-specific like vet queries, tax calculation).
 
-## Architecture
-
-```
-OpenOctopus Core (Central Brain)
-├── Router Agent — intent recognition and Realm routing
-├── Cross-Realm Coordinator — knowledge sync across domains
-├── Knowledge Graph — cross-domain entity relationships
-└── Global Skills
-
-Per-Realm (×12 defaults: home, vehicle, pet, parents, partner, friends, finance, work, legal, hobby, fitness, health):
-├── Entities + Summon configs
-├── Realm Agents (professional) + Summoned Agents
-├── Realm Skills
-├── Memory / Knowledge base
-└── Actions / Insights
-
-RealmHub — marketplace for sharing complete Realm packages (templates + agents + skills)
-```
-
-**Interaction models:** automatic intent routing, explicit Realm entry, cross-Realm coordination, summoned entity dialogue, multi-agent collaboration.
-
-**Knowledge flow:** Dialogue → extract key info → update entity properties → enrich Realm KB → update cross-realm graph.
-
 ## Naming Conventions & Ecosystem
 
 | Component | Name | Purpose |
 |-----------|------|---------|
 | CLI tool | `tentacle` | Command-line interface |
-| Agent gateway | `ink` | Information flow medium |
+| Agent gateway | `ink` | Information flow medium (dual-port: WS 19789 + HTTP 19790) |
 | Summon engine | `summon` | Entity summoning core |
+| Channel system | `channels` | Messaging platform adapters (Telegram, Discord, etc.) |
 | Realm marketplace | `RealmHub` | Domain package distribution |
 | Community | `The Reef` | User community |
 | Realm config file | `REALM.md` | Domain definition |
@@ -70,18 +90,61 @@ RealmHub — marketplace for sharing complete Realm packages (templates + agents
 
 ## Key Design Decisions
 
-- **Realm over Area/Domain/Arm:** "Realm" chosen for its autonomous-territory semantics matching the octopus tentacle metaphor (each tentacle has independent nerve center).
-- **Summon over Reify/Animate/Awaken:** "Summon from the deep" is the octopus's iconic imagery; zero explanation cost in both English and Chinese.
+- **Realm over Area/Domain/Arm:** "Realm" chosen for its autonomous-territory semantics matching the octopus tentacle metaphor.
+- **Summon over Reify/Animate/Awaken:** "Summon from the deep" is the octopus's iconic imagery.
 - **Local-first architecture:** SQLite local storage with optional cloud sync via PostgreSQL/Supabase.
-- **Realm packages over individual skills:** RealmHub shares complete domain solutions (entity templates + agent configs + skills + sample data), not just individual skills.
+- **Realm packages over individual skills:** RealmHub shares complete domain solutions.
+- **Custom agent runtime:** Borrows patterns from Mastra, Google ADK, CrewAI, Eliza, Letta, OpenClaw, and LangGraph.
+- **Dual-port gateway (OpenClaw pattern):** Port 19789 for WebSocket RPC, port 19790 for HTTP REST bridge.
+- **Multi-provider LLM with failover:** Supports Anthropic, OpenAI, Google, Ollama with priority-based failover.
+- **JSON5 config system (OpenClaw pattern):** `~/.openoctopus/config.json5` with env var interpolation and Zod validation.
+- **Channel plugin architecture (OpenClaw pattern):** Extensible adapters for Telegram, Discord, Slack, WeChat, etc.
 
-## Documentation Structure
+## Gateway Architecture
 
-- `docs/project-spec.md` — Product positioning, RealmHub mechanism, information architecture, milestones
-- `docs/design-discussion.md` — Deep design decisions: Realm naming, Summon mechanism, layered architecture, cross-domain coordination, Entity schema
-- `docs/branding.md` — Brand identity, color palette (Deep Ocean Blue #1E3A5F, Octopus Purple #6C3FA0, Summon Cyan #00D4AA), ecosystem naming
-- `docs/research/` — Market research, scenario mapping, 90-day roadmap, reference sources
+**Port 19789 — WebSocket RPC (primary gateway):**
+- JSON-RPC protocol for CLI-to-gateway streaming
+- Methods: `chat.send`, `realm.list/get/create`, `entity.list/get`, `summon.invoke/release`, `status.health`
+- Events: `chat.token` (streaming), `chat.done`, `channel.message`
 
-## Language Note
+**Port 19790 — HTTP REST Bridge:**
+- `GET /healthz`, `/readyz` — health checks
+- `CRUD /api/realms`, `/api/entities` — resource management
+- `POST /api/chat` — auto-routed chat
+- `POST /api/chat/realm/:id` — realm-scoped chat
+- `POST /api/chat/entity/:id` — summoned entity chat
+- `ws://localhost:19790/ws` — WebSocket (backward compat)
 
-Documentation is primarily in Chinese with English terminology for core concepts. Code and technical interfaces should use English. The five core terms (Realm, Entity, Summon, Agent, Skill) are always written in English, even in Chinese text.
+## Configuration
+
+Config file: `~/.openoctopus/config.json5` (JSON5 with comments)
+
+```
+tentacle config init      # Create default config
+tentacle config show      # Show current config
+tentacle config validate  # Validate config file
+```
+
+Env vars auto-configure LLM providers: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`.
+
+## Docker Deployment
+
+```bash
+docker compose up gateway              # Start gateway
+docker compose run --rm cli chat       # Interactive CLI
+docker compose up                      # Full stack
+```
+
+## Rules
+
+- `/tmp/openclaw-reference/` is a read-only reference repo. NEVER modify, commit, or push changes to it.
+- All IDs use the format `{prefix}_{uuid}` (e.g., `realm_abc123-...`).
+- Tests are colocated next to source files (`*.test.ts`).
+- The five core terms (Realm, Entity, Summon, Agent, Skill) are always written in English.
+
+## Documentation
+
+- `docs/project-spec.md` — Product positioning, RealmHub mechanism, milestones
+- `docs/design-discussion.md` — Deep design decisions
+- `docs/branding.md` — Brand identity, color palette
+- `docs/research/` — Market research, scenario mapping, roadmap

@@ -1,0 +1,8 @@
+export { createDatabase, closeDatabase, getDataDir, type DatabaseOptions } from "./database.js";
+export { runMigrations } from "./migrations.js";
+export { appendMessage, readTranscript, deleteTranscript, listSessions, type SessionTranscript } from "./session-store.js";
+export { RealmRepo } from "./repos/realm-repo.js";
+export { EntityRepo } from "./repos/entity-repo.js";
+export { AgentRepo } from "./repos/agent-repo.js";
+export { AuditRepo } from "./repos/audit-repo.js";
+export { MemoryRepo } from "./repos/memory-repo.js";

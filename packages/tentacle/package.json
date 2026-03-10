@@ -1,0 +1,34 @@
+{
+  "name": "@openoctopus/tentacle",
+  "version": "2026.3.10",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "dist/index.d.mts",
+  "bin": {
+    "tentacle": "dist/cli.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openoctopus/shared": "workspace:*",
+    "@openoctopus/core": "workspace:*",
+    "@openoctopus/storage": "workspace:*",
+    "@openoctopus/ink": "workspace:*",
+    "@clack/prompts": "^0.11.0",
+    "citty": "^0.1.6",
+    "consola": "^3.4.0",
+    "picocolors": "^1.1.1",
+    "ws": "^8.18.0"
+  }
+}

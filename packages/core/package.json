@@ -1,0 +1,24 @@
+{
+  "name": "@openoctopus/core",
+  "version": "2026.3.10",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openoctopus/shared": "workspace:*",
+    "@openoctopus/storage": "workspace:*"
+  }
+}

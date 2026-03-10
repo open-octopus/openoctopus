@@ -1,0 +1,94 @@
+{
+  "name": "openoctopus",
+  "version": "2026.3.10",
+  "description": "Realm-native personal life assistant Agent system",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/openoctopus/openoctopus",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openoctopus/openoctopus.git"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "assistant",
+    "realm",
+    "summon",
+    "octopus",
+    "llm",
+    "cli"
+  ],
+  "packageManager": "pnpm@10.30.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "bin": {
+    "tentacle": "openoctopus.mjs",
+    "openoctopus": "openoctopus.mjs"
+  },
+  "main": "dist/gateway.mjs",
+  "files": [
+    "openoctopus.mjs",
+    "dist/",
+    "realms/",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:dist": "tsdown",
+    "dev": "pnpm --filter @openoctopus/ink dev",
+    "prepack": "pnpm build && pnpm build:dist",
+    "test": "vitest",
+    "test:unit": "vitest --project unit",
+    "test:integration": "vitest --project integration",
+    "lint": "oxlint .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "typecheck": "tsc --build",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check",
+    "knip": "knip",
+    "tentacle": "tsx packages/tentacle/src/cli.ts",
+    "clean": "pnpm -r exec rm -rf dist",
+    "doctor": "pnpm check && pnpm test:unit"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "better-sqlite3": "^11.8.0",
+    "citty": "^0.1.6",
+    "consola": "^3.4.0",
+    "express": "^5.1.0",
+    "grammy": "^1.35.0",
+    "picocolors": "^1.1.1",
+    "ws": "^8.18.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ],
+    "overrides": {
+      "tough-cookie": ">=5.0.0",
+      "tar": ">=7.0.0"
+    }
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.0",
+    "@types/ws": "^8.5.14",
+    "knip": "^5.44.0",
+    "oxfmt": "^0.36.0",
+    "oxlint": "^1.51.0",
+    "tsdown": "^0.21.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.0"
+  }
+}

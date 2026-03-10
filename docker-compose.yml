@@ -1,0 +1,51 @@
+services:
+  # ── Gateway: HTTP bridge (19790) + WebSocket RPC (19789) ──
+  gateway:
+    build:
+      context: .
+      target: runtime
+    init: true
+    restart: unless-stopped
+    ports:
+      - "${OPENOCTOPUS_HTTP_PORT:-19790}:19790"
+      - "${OPENOCTOPUS_WS_PORT:-19789}:19789"
+    environment:
+      HOME: /home/node
+      NODE_ENV: production
+      OPENOCTOPUS_CONFIG: /home/node/.openoctopus/config.json5
+      OPENOCTOPUS_DATA_DIR: /home/node/.openoctopus
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    volumes:
+      - ${OPENOCTOPUS_CONFIG_DIR:-./config}:/home/node/.openoctopus
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://127.0.0.1:19790/healthz"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    command: ["node", "packages/ink/dist/index.js", "serve"]
+
+  # ── CLI: Interactive shell connected to gateway ──
+  cli:
+    build:
+      context: .
+      target: runtime
+    stdin_open: true
+    tty: true
+    network_mode: "service:gateway"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    environment:
+      HOME: /home/node
+      OPENOCTOPUS_PORT: "19790"
+      OPENOCTOPUS_WS_PORT: "19789"
+    cap_drop:
+      - NET_RAW
+      - NET_ADMIN
+    entrypoint: ["node", "packages/tentacle/dist/cli.js"]
+    profiles:
+      - tools
