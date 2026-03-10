@@ -17,7 +17,7 @@ Your life, organized by realms. Summon anything into a living agent. The octopus
 **Website：**
 
 ```
-https://openoctopus.ai
+https://openoctopus.club
 ```
 
 **Topics（标签）：**
@@ -43,13 +43,13 @@ Realm-native life agent system. Organize by realms, summon into agents. 🐙
 **Email：**
 
 ```
-hello@openoctopus.ai
+hello@openoctopus.club
 ```
 
 **Website：**
 
 ```
-https://openoctopus.ai
+https://openoctopus.club
 ```
 
 **X/Twitter：**
@@ -103,7 +103,7 @@ Eight Arms, Every Realm
 **Website：**
 
 ```
-openoctopus.ai
+openoctopus.club
 ```
 
 ---
