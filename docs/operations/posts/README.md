@@ -29,15 +29,32 @@
 | [02](zhihu/02-summon-deep-dive.md) | 「召唤」让宠物/家人/爱车变成 AI Agent | 专栏长文 | 功能深度 |
 | [03](zhihu/03-ai-agent-comparison.md) | AI Agent 赛道分析 | 问答 | 借势引流 |
 
+## TikTok
+
+| # | 标题 | 时长 | 定位 |
+|---|---|---|---|
+| [01](tiktok/01-summon-pet-reveal.md) | Summon Pet Reveal | 30-45s | 首发爆款，宠物流量 |
+| [02](tiktok/02-realm-explainer.md) | Realm Explainer | 30-40s | 概念科普 |
+| [03](tiktok/03-vacation-chaos.md) | Vacation Chaos | 20-30s | 趣味 Skit，高互动 |
+| [04](tiktok/04-summon-challenge.md) | #SummonChallenge | 15-20s | 互动挑战，UGC |
+| [05](tiktok/05-octopus-brain.md) | Octopus Brain | 40-60s | 生物学科普 + 品牌故事 |
+
 ## 发布建议
 
 **首发顺序：**
 1. X: #01 Launch Thread（建立英文世界认知）
-2. 小红书: #01 Summon 宠物篇（中文出圈）
-3. 知乎: #01 Realm 方法论（深度沉淀）
-4. 然后按各平台节奏轮换发布
+2. TikTok: #01 Summon Pet Reveal（全球短视频首发）
+3. 小红书: #01 Summon 宠物篇（中文出圈）
+4. 知乎: #01 Realm 方法论（深度沉淀）
+5. 然后按各平台节奏轮换发布
 
 **配图优先级：**
 - 可直接复用的现有素材：`docs/assets/openoctopus-banner.png`、`openoctopus-summon-concept.png`
 - 需要新生成的：各篇的封面图、UI 截图模拟图
 - 每篇帖子内附有具体的生图提示词（适用于 Midjourney / DALL-E / Stable Diffusion）
+- TikTok 视频帖附有 AI 生成视频片段的提示词（适用于 Runway / Pika / Sora）及 CapCut 制作方案
+
+**运维指南：**
+- [TikTok 运维指南](../tiktok-operations.md)
+- [X 运维指南](../x-operations.md)
+- [小红书运维指南](../xiaohongshu-operations.md)
