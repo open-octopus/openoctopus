@@ -176,6 +176,7 @@ Every agent action follows the trust chain:
 | **[Project Spec](docs/project-spec.md)** | Naming, RealmHub, information architecture, milestones |
 | **[Design Deep Dive](docs/design-discussion.md)** | Realm naming, Summon mechanism, layered architecture, cross-realm coordination |
 | **[Brand Guide](docs/branding.md)** | Taglines, colors, mascot Octo, logo prompts, ecosystem naming |
+| **[Social Profiles](docs/social-profiles.md)** | GitHub / X / Discord / Product Hunt / 中文平台文案与配置 |
 | **[Research Index](docs/research/README.md)** | AI Native signals, scenario mapping, competitive landscape, agent frameworks |
 
 ## Ecosystem
