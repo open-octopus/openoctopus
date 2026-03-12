@@ -371,6 +371,16 @@ export const CrossRealmReactionSchema = z.object({
 });
 export type CrossRealmReaction = z.infer<typeof CrossRealmReactionSchema>;
 
+// -- Embedding --
+
+export const EmbeddingEntrySchema = z.object({
+  text: z.string(),
+  vector: z.array(z.number()),
+  model: z.string(),
+  dimensions: z.number(),
+});
+export type EmbeddingEntry = z.infer<typeof EmbeddingEntrySchema>;
+
 // ── Directory Scan Result ──
 
 export const ScanResultSchema = z.object({

@@ -55,6 +55,17 @@ export const LlmProviderConfigSchema = z.object({
 });
 export type LlmProviderConfig = z.infer<typeof LlmProviderConfigSchema>;
 
+// ── Embedding Provider Config ──
+
+export const EmbeddingProviderConfigSchema = z.object({
+  api: z.enum(["openai", "ollama"]).default("openai"),
+  apiKey: z.string().optional(),
+  baseUrl: z.string().optional(),
+  model: z.string().optional(),
+  priority: z.number().default(0),
+});
+export type EmbeddingProviderConfig = z.infer<typeof EmbeddingProviderConfigSchema>;
+
 // ── Channel Config ──
 
 export const ChannelConfigSchema = z.object({
@@ -113,6 +124,11 @@ export const OpenOctopusConfigSchema = z.object({
       providers: z.record(z.string(), LlmProviderConfigSchema).default({}),
     })
     .default({}),
+  embeddings: z.object({
+    defaultProvider: z.string().default("openai"),
+    defaultModel: z.string().default("text-embedding-3-small"),
+    providers: z.record(z.string(), EmbeddingProviderConfigSchema).default({}),
+  }).default({}),
   channels: z.record(z.string(), ChannelConfigSchema).default({}),
   storage: StorageConfigSchema.default({}),
   logging: LoggingConfigSchema.default({}),
@@ -207,6 +223,19 @@ function applyEnvOverrides(config: Record<string, unknown>): void {
       apiKey: process.env.OPENAI_API_KEY,
     };
   }
+
+  // Auto-configure embedding provider from OPENAI_API_KEY
+  const embeddings = (config.embeddings ?? {}) as Record<string, unknown>;
+  const embeddingProviders = (embeddings.providers ?? {}) as Record<string, unknown>;
+  if (process.env.OPENAI_API_KEY && !embeddingProviders.openai) {
+    embeddingProviders.openai = {
+      api: "openai",
+      apiKey: process.env.OPENAI_API_KEY,
+    };
+  }
+  embeddings.providers = embeddingProviders;
+  config.embeddings = embeddings;
+
   if (process.env.GOOGLE_API_KEY && !providers.google) {
     providers.google = {
       api: "google-genai",
