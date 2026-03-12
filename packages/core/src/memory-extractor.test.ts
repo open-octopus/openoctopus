@@ -76,7 +76,7 @@ describe("MemoryExtractor", () => {
       assistantMessage: "Nice!",
     });
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ memories: [], attributeUpdates: [] });
     expect(mockMemoryRepo.create).not.toHaveBeenCalled();
   });
 
@@ -95,7 +95,7 @@ describe("MemoryExtractor", () => {
       assistantMessage: "Great!",
     });
 
-    expect(result).toHaveLength(2);
+    expect(result.memories).toHaveLength(2);
     expect(mockMemoryRepo.create).toHaveBeenCalledTimes(2);
     expect(mockMemoryRepo.create).toHaveBeenCalledWith(expect.objectContaining({
       realmId: "r1",
@@ -117,7 +117,7 @@ describe("MemoryExtractor", () => {
       assistantMessage: "hi",
     });
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ memories: [], attributeUpdates: [] });
     expect(mockMemoryRepo.create).not.toHaveBeenCalled();
   });
 
@@ -133,7 +133,7 @@ describe("MemoryExtractor", () => {
       assistantMessage: "test",
     });
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ memories: [], attributeUpdates: [] });
   });
 
   it("should truncate to 5 facts maximum", async () => {
@@ -150,7 +150,7 @@ describe("MemoryExtractor", () => {
       assistantMessage: "noted",
     });
 
-    expect(result).toHaveLength(5);
+    expect(result.memories).toHaveLength(5);
     expect(mockMemoryRepo.create).toHaveBeenCalledTimes(5);
   });
 
@@ -192,7 +192,7 @@ describe("MemoryExtractor", () => {
       assistantMessage: "ok",
     });
 
-    expect(result).toHaveLength(1);
+    expect(result.memories).toHaveLength(1);
     expect(mockKnowledgeDistributor.classifyAndDistribute).not.toHaveBeenCalled();
   });
 
@@ -208,7 +208,7 @@ describe("MemoryExtractor", () => {
       assistantMessage: "test",
     });
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ memories: [], attributeUpdates: [] });
   });
 
   describe("extraction dedup", () => {
@@ -265,7 +265,7 @@ describe("MemoryExtractor", () => {
 
       // Should skip — no create called
       expect(mockMemoryRepo.create).not.toHaveBeenCalled();
-      expect(result).toHaveLength(0);
+      expect(result.memories).toHaveLength(0);
     });
 
     it("merges when similarity is 0.6-0.85", async () => {
@@ -327,8 +327,8 @@ describe("MemoryExtractor", () => {
         mergedVec,
       );
       // The merged entry should be in the result
-      expect(result).toHaveLength(1);
-      expect(result[0].content).toBe("Cat is 3 years old, healthy, and loves fish");
+      expect(result.memories).toHaveLength(1);
+      expect(result.memories[0].content).toBe("Cat is 3 years old, healthy, and loves fish");
     });
 
     it("inserts new when similarity < 0.6", async () => {
@@ -370,7 +370,7 @@ describe("MemoryExtractor", () => {
       // Should insert as new
       expect(mockMemoryRepo.create).toHaveBeenCalledTimes(1);
       expect(mockMemoryRepo.updateEmbedding).toHaveBeenCalled();
-      expect(result).toHaveLength(1);
+      expect(result.memories).toHaveLength(1);
     });
 
     it("inserts new when no similar memories found", async () => {
@@ -397,7 +397,7 @@ describe("MemoryExtractor", () => {
 
       expect(mockMemoryRepo.create).toHaveBeenCalledTimes(1);
       expect(mockMemoryRepo.updateEmbedding).toHaveBeenCalled();
-      expect(result).toHaveLength(1);
+      expect(result.memories).toHaveLength(1);
     });
 
     it("uses fallback merge (append with semicolon) when LLM merge fails", async () => {
@@ -445,7 +445,7 @@ describe("MemoryExtractor", () => {
         "memory_existing4",
         "Cat likes fish; Cat is 3 years old",
       );
-      expect(result).toHaveLength(1);
+      expect(result.memories).toHaveLength(1);
     });
 
     it("skips dedup when existing memory has no embedding", async () => {
@@ -483,7 +483,7 @@ describe("MemoryExtractor", () => {
 
       // Should insert as new since we can't compare embeddings
       expect(mockMemoryRepo.create).toHaveBeenCalledTimes(1);
-      expect(result).toHaveLength(1);
+      expect(result.memories).toHaveLength(1);
     });
   });
 
@@ -508,7 +508,7 @@ describe("MemoryExtractor", () => {
         assistantMessage: "Got it!",
       });
 
-      expect(result).toHaveLength(1);
+      expect(result.memories).toHaveLength(1);
       expect(mockMemoryRepo.create).toHaveBeenCalledTimes(1);
       expect(mockMemoryRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -539,7 +539,7 @@ describe("MemoryExtractor", () => {
         assistantMessage: "hi there",
       });
 
-      expect(result).toEqual([]);
+      expect(result.memories).toEqual([]);
       expect(mockMemoryRepo.create).not.toHaveBeenCalled();
     });
 
@@ -562,7 +562,7 @@ describe("MemoryExtractor", () => {
         assistantMessage: "Noted!",
       });
 
-      expect(result).toHaveLength(1);
+      expect(result.memories).toHaveLength(1);
       expect(mockMemoryRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
           tier: "archival",
@@ -591,7 +591,7 @@ describe("MemoryExtractor", () => {
       });
 
       // importance=1 is discarded, importance=5 is core, importance=4 is archival
-      expect(result).toHaveLength(2);
+      expect(result.memories).toHaveLength(2);
       expect(mockMemoryRepo.create).toHaveBeenCalledTimes(2);
       expect(mockMemoryRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ tier: "core", content: "Luna is a golden retriever" }),
@@ -712,7 +712,7 @@ describe("MemoryExtractor", () => {
       });
 
       // Should not error, should still store the fact
-      expect(result).toHaveLength(1);
+      expect(result.memories).toHaveLength(1);
     });
   });
 
@@ -732,7 +732,7 @@ describe("MemoryExtractor", () => {
         assistantMessage: "Great!",
       });
 
-      expect(result).toHaveLength(2);
+      expect(result.memories).toHaveLength(2);
       expect(mockMemoryRepo.create).toHaveBeenCalledTimes(2);
       // Old format gets default archival tier
       expect(mockMemoryRepo.create).toHaveBeenCalledWith(

@@ -78,15 +78,15 @@ export class MemoryExtractor {
     entityId?: string;
     userMessage: string;
     assistantMessage: string;
-  }): Promise<MemoryEntry[]> {
+  }): Promise<{ memories: MemoryEntry[]; attributeUpdates: ExtractionResult["attributeUpdates"] }> {
     if (!this.llmRegistry.hasRealProvider()) {
-      return [];
+      return { memories: [], attributeUpdates: [] };
     }
 
     try {
       const extraction = await this.extractFacts(params.userMessage, params.assistantMessage);
       const { facts, importance, relations } = extraction;
-      if (facts.length === 0) return [];
+      if (facts.length === 0) return { memories: [], attributeUpdates: [] };
 
       const entries: MemoryEntry[] = [];
       for (let i = 0; i < facts.length; i++) {
@@ -177,10 +177,10 @@ export class MemoryExtractor {
           .catch(() => {});
       }
 
-      return entries;
+      return { memories: entries, attributeUpdates: extraction.attributeUpdates };
     } catch (err) {
       log.warn(`Memory extraction failed: ${err instanceof Error ? err.message : String(err)}`);
-      return [];
+      return { memories: [], attributeUpdates: [] };
     }
   }
 

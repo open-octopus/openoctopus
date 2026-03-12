@@ -146,7 +146,7 @@ describe("processChatMessage", () => {
 
   describe("memory extraction integration", () => {
     it("should call memoryExtractor.extractAndPersist when realm exists", async () => {
-      const extractAndPersist = vi.fn().mockResolvedValue([]);
+      const extractAndPersist = vi.fn().mockResolvedValue({ memories: [], attributeUpdates: [] });
       const services = createMockServices({
         memoryExtractor: { extractAndPersist } as any,
       });
@@ -247,6 +247,80 @@ describe("processChatMessage", () => {
         sourceRealmId: "realm_pet",
         userMessage: "discuss finance",
       }));
+    });
+  });
+
+  describe("entity attribute auto-update", () => {
+    it("applies attribute updates from extraction to entity", async () => {
+      const extractAndPersist = vi.fn().mockResolvedValue({
+        memories: [],
+        attributeUpdates: [{ entityName: "Luna", key: "age", value: "4" }],
+      });
+      const findByNameInRealm = vi.fn().mockReturnValue({
+        id: "entity_luna",
+        realmId: "realm_pet",
+        name: "Luna",
+        type: "living",
+        attributes: { breed: "Shiba" },
+      });
+      const update = vi.fn();
+
+      const services = createMockServices({
+        memoryExtractor: { extractAndPersist } as any,
+        entityManager: {
+          get: vi.fn(),
+          listByRealm: vi.fn(() => []),
+          create: vi.fn(),
+          update,
+          delete: vi.fn(),
+          countByRealm: vi.fn(() => 0),
+          findByNameInRealm,
+        } as any,
+      });
+
+      await processChatMessage({
+        message: "Luna is now 4 years old",
+        realmId: "realm_pet",
+        services,
+      });
+
+      // Allow fire-and-forget to execute
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      expect(extractAndPersist).toHaveBeenCalled();
+      expect(findByNameInRealm).toHaveBeenCalledWith("realm_pet", "Luna");
+      expect(update).toHaveBeenCalledWith("entity_luna", {
+        attributes: { breed: "Shiba", age: "4" },
+      });
+    });
+
+    it("does not crash when entity is not found for attribute update", async () => {
+      const extractAndPersist = vi.fn().mockResolvedValue({
+        memories: [],
+        attributeUpdates: [{ entityName: "Unknown", key: "age", value: "4" }],
+      });
+
+      const services = createMockServices({
+        memoryExtractor: { extractAndPersist } as any,
+        entityManager: {
+          get: vi.fn(),
+          listByRealm: vi.fn(() => []),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          countByRealm: vi.fn(() => 0),
+          findByNameInRealm: vi.fn().mockReturnValue(null),
+        } as any,
+      });
+
+      const result = await processChatMessage({
+        message: "Unknown is 4 years old",
+        realmId: "realm_pet",
+        services,
+      });
+
+      // Should not throw
+      expect(result.response.content).toBe("Hello!");
     });
   });
 

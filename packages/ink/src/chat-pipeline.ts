@@ -179,6 +179,22 @@ export async function processChatMessage(params: ChatPipelineParams): Promise<Ch
         entityId: entity?.id,
         userMessage: message,
         assistantMessage: result.response.content,
+      }).then((extractionResult) => {
+        // Apply attribute updates to entities
+        if (extractionResult.attributeUpdates.length > 0) {
+          for (const update of extractionResult.attributeUpdates) {
+            try {
+              const foundEntity = services.entityManager.findByNameInRealm(realm.id, update.entityName);
+              if (foundEntity) {
+                services.entityManager.update(foundEntity.id, {
+                  attributes: { ...foundEntity.attributes, [update.key]: update.value },
+                });
+              }
+            } catch {
+              // Best-effort — don't crash on attribute update failure
+            }
+          }
+        }
       }).catch(() => {});  // fire-and-forget
     } else if (!params.entityId && !params.realmId) {
       // Central Router: try to infer a realm from the message and extract memories
