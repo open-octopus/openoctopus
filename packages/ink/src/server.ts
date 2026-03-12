@@ -177,12 +177,25 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
         log.info("Scheduled health computation for all realms");
         const reports = await memoryHealthManager.computeAllHealth();
 
-        // Persist each report and check for significant score changes
+        // Persist each report
         for (const report of reports) {
-          await healthReportRepo.create(report);
+          // Get previous score before saving new report
+          const previous = healthReportRepo.getLatest(report.realmId);
+          const previousScore = previous?.healthScore;
+
+          // Convert RealmHealthReport to HealthReportRepo format
+          await healthReportRepo.create({
+            realmId: report.realmId,
+            healthScore: report.healthScore,
+            memoryCount: report.memoryCount,
+            duplicateCount: report.duplicateCount,
+            staleCount: report.staleCount,
+            contradictionCount: report.contradictionCount,
+            issues: report.issues,
+          });
 
           // Broadcast alert if score changed significantly (> 10 points)
-          if (report.previousScore !== undefined && Math.abs(report.healthScore - report.previousScore) > 10) {
+          if (previousScore !== undefined && Math.abs(report.healthScore - previousScore) > 10) {
             const realm = realmManager.get(report.realmId);
             rpcServices.wsBroadcaster?.broadcast({
               jsonrpc: "2.0",
@@ -190,9 +203,9 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
               params: {
                 realmId: report.realmId,
                 realmName: realm?.name ?? "Unknown",
-                previousScore: report.previousScore,
+                previousScore,
                 currentScore: report.healthScore,
-                delta: report.healthScore - report.previousScore,
+                delta: report.healthScore - previousScore,
                 issues: report.issues.slice(0, 3),
               },
             });
@@ -205,7 +218,7 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
 
       if (rule.action === "system:maturity.scanAll") {
         log.info("Scheduled maturity scan for all realms");
-        const suggestions = await maturityScanner.scanAll();
+        const suggestions = maturityScanner.scanAll();
 
         // Broadcast summon suggestions for ready entities
         for (const s of suggestions) {
@@ -222,24 +235,33 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     }
 
     // User rules — proactive agent responses
-    log.info(`Executing proactive rule: ${rule.id}`);
-    const result = await agentRunner.run({
-      realmId: rule.realmId,
-      messages: [{ role: "user", content: rule.prompt ?? `Scheduled trigger: ${rule.trigger}` }],
-      systemPrompt: "You are a proactive assistant. Generate a brief, helpful notification based on the scheduled trigger.",
-    });
+    if (rule.realmId) {
+      log.info(`Executing proactive rule: ${rule.id}`);
+      const result = await agentRunner.run({
+        agent: {
+          id: `proactive-${rule.id}`,
+          name: `Proactive Agent`,
+          tier: "central",
+          model: "default",
+          skills: [],
+          proactive: true,
+        },
+        messages: [{ role: "user", content: rule.prompt ?? `Scheduled trigger: ${rule.trigger}`, timestamp: new Date().toISOString() }],
+        systemPrompt: "You are a proactive assistant. Generate a brief, helpful notification based on the scheduled trigger.",
+      });
 
-    // Broadcast proactive message to connected clients
-    rpcServices.wsBroadcaster?.broadcast({
-      jsonrpc: "2.0",
-      method: "proactive",
-      params: {
-        ruleId: rule.id,
-        realmId: rule.realmId,
-        content: result.response.content,
-        tokensUsed: result.tokensUsed,
-      },
-    });
+      // Broadcast proactive message to connected clients
+      rpcServices.wsBroadcaster?.broadcast({
+        jsonrpc: "2.0",
+        method: "proactive",
+        params: {
+          ruleId: rule.id,
+          realmId: rule.realmId,
+          content: result.response.content,
+          tokensUsed: result.tokensUsed,
+        },
+      });
+    }
   });
 
   // ── Wire channels into chat pipeline (with streaming support) ──

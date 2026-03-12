@@ -3,11 +3,14 @@ import { createLogger } from "@openoctopus/shared";
 const log = createLogger("scheduler");
 
 export interface SchedulerRule {
-  realmId: string;
+  id?: string;
+  realmId?: string;
   entityId?: string;
   trigger: string;
   action: string;
+  prompt?: string;
   cronExpression: string;
+  enabled?: boolean;
 }
 
 type ActionHandler = (rule: SchedulerRule) => void | Promise<void>;
@@ -78,10 +81,13 @@ export class Scheduler {
   }
 
   addRule(input: {
-    realmId: string;
+    id?: string;
+    realmId?: string;
     entityId?: string;
     trigger: string;
     action: string;
+    prompt?: string;
+    enabled?: boolean;
   }): void {
     const cronExpression = Scheduler.parseTrigger(input.trigger);
     if (!cronExpression) {
@@ -90,11 +96,14 @@ export class Scheduler {
     }
 
     this.rules.push({
+      id: input.id,
       realmId: input.realmId,
       entityId: input.entityId,
       trigger: input.trigger,
       action: input.action,
+      prompt: input.prompt,
       cronExpression,
+      enabled: input.enabled ?? true,
     });
     log.info(
       `Added rule: "${input.action}" (${input.trigger} → ${cronExpression})`,
