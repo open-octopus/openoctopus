@@ -35,6 +35,16 @@ export function createMockMemoryRepo(): MockOf<MemoryRepo> {
     updateTier: vi.fn(),
     updateContent: vi.fn(),
     deleteMany: vi.fn().mockReturnValue(0),
+    updateEmbedding: vi.fn(),
+    getById: vi.fn().mockReturnValue({
+      id: "memory_test1",
+      content: "test",
+      realmId: "realm_test1",
+      tier: "archival",
+      metadata: {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } satisfies MemoryEntry),
   } as unknown as MockOf<MemoryRepo>;
 }
 

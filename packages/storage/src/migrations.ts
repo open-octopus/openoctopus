@@ -236,6 +236,21 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 3,
+    name: "add_embedding_column",
+    up(db) {
+      db.exec("ALTER TABLE memories ADD COLUMN embedding BLOB");
+    },
+    down(db) {
+      // SQLite doesn't support DROP COLUMN in older versions, recreate table
+      db.exec(`
+        CREATE TABLE memories_backup AS SELECT id, realm_id, entity_id, tier, content, metadata, created_at, updated_at FROM memories;
+        DROP TABLE memories;
+        ALTER TABLE memories_backup RENAME TO memories;
+      `);
+    },
+  },
 ];
 
 export function runMigrations(db: Database.Database): void {

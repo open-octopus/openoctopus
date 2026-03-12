@@ -9,17 +9,24 @@ interface MemoryRow {
   tier: string;
   content: string;
   metadata: string;
+  embedding: Buffer | null;
   created_at: string;
   updated_at: string;
 }
 
 function rowToMemory(row: MemoryRow): MemoryEntry {
+  let embedding: number[] | undefined;
+  if (row.embedding) {
+    const buf = row.embedding;
+    embedding = Array.from(new Float64Array(buf.buffer, buf.byteOffset, buf.byteLength / 8));
+  }
   return {
     id: row.id,
     realmId: row.realm_id,
     entityId: row.entity_id ?? undefined,
     tier: row.tier as MemoryTier,
     content: row.content,
+    embedding,
     metadata: JSON.parse(row.metadata) as Record<string, unknown>,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -144,5 +151,21 @@ export class MemoryRepo {
     const placeholders = ids.map(() => "?").join(",");
     const result = this.db.prepare(`DELETE FROM memories WHERE id IN (${placeholders})`).run(...ids);
     return result.changes;
+  }
+
+  updateEmbedding(id: string, embedding: number[]): void {
+    const blob = Buffer.from(new Float64Array(embedding).buffer);
+    // Store embedding BLOB + dimension count in metadata
+    const row = this.db.prepare("SELECT metadata FROM memories WHERE id = ?").get(id) as { metadata: string } | undefined;
+    const metadata = row?.metadata ? JSON.parse(row.metadata) : {};
+    metadata.embeddingDim = embedding.length;
+    this.db.prepare("UPDATE memories SET embedding = ?, metadata = ? WHERE id = ?")
+      .run(blob, JSON.stringify(metadata), id);
+  }
+
+  getById(id: string): MemoryEntry {
+    const row = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as MemoryRow | undefined;
+    if (!row) throw new Error(`Memory ${id} not found`);
+    return rowToMemory(row);
   }
 }

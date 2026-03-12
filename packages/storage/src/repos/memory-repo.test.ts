@@ -185,4 +185,32 @@ describe("MemoryRepo", () => {
       expect(repo.deleteMany([])).toBe(0);
     });
   });
+
+  describe("embedding storage", () => {
+    it("should store and retrieve embedding data", () => {
+      // Create parent realm first (FK constraint)
+      db.prepare("INSERT INTO realms (id, name, description) VALUES (?, ?, ?)").run("realm_emb", "emb", "test");
+
+      const entry = repo.create({
+        realmId: "realm_emb",
+        tier: "archival",
+        content: "test fact",
+      });
+      repo.updateEmbedding(entry.id, [0.1, 0.2, 0.3]);
+      const retrieved = repo.getById(entry.id);
+      expect(retrieved.embedding).toEqual([0.1, 0.2, 0.3]);
+    });
+
+    it("should store embeddingDim in metadata", () => {
+      db.prepare("INSERT OR IGNORE INTO realms (id, name, description) VALUES (?, ?, ?)").run("realm_emb2", "emb2", "test");
+      const entry = repo.create({ realmId: "realm_emb2", tier: "archival", content: "x" });
+      repo.updateEmbedding(entry.id, [1, 2, 3, 4]);
+      const retrieved = repo.getById(entry.id);
+      expect(retrieved.metadata.embeddingDim).toBe(4);
+    });
+
+    it("getById throws for nonexistent id", () => {
+      expect(() => repo.getById("nonexistent")).toThrow();
+    });
+  });
 });
