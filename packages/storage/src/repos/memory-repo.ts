@@ -33,6 +33,20 @@ function rowToMemory(row: MemoryRow): MemoryEntry {
   };
 }
 
+/** Compute cosine similarity between two vectors */
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0;
+  let magA = 0;
+  let magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(magA) * Math.sqrt(magB);
+  return denom === 0 ? 0 : dot / denom;
+}
+
 export class MemoryRepo {
   constructor(private db: Database.Database) {}
 
@@ -167,5 +181,66 @@ export class MemoryRepo {
     const row = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as MemoryRow | undefined;
     if (!row) throw new Error(`Memory ${id} not found`);
     return rowToMemory(row);
+  }
+
+  searchSemantic(queryVector: number[], realmId: string, topK: number): MemoryEntry[] {
+    const rows = this.db
+      .prepare("SELECT * FROM memories WHERE realm_id = ? AND embedding IS NOT NULL")
+      .all(realmId) as MemoryRow[];
+
+    const queryDim = queryVector.length;
+    const scored: Array<{ entry: MemoryEntry; score: number }> = [];
+
+    for (const row of rows) {
+      const entry = rowToMemory(row);
+      if (!entry.embedding) continue;
+      // Filter by matching dimension count
+      const embeddingDim = (entry.metadata as Record<string, unknown>).embeddingDim as number | undefined;
+      if (embeddingDim !== undefined && embeddingDim !== queryDim) continue;
+      if (entry.embedding.length !== queryDim) continue;
+
+      const score = cosineSimilarity(queryVector, entry.embedding);
+      scored.push({ entry, score });
+    }
+
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK)
+      .map(s => s.entry);
+  }
+
+  async backfillEmbeddings(
+    embedFn: (texts: string[]) => Promise<number[][]>,
+    realmId?: string,
+  ): Promise<{ processed: number; skipped: number }> {
+    const query = realmId
+      ? "SELECT * FROM memories WHERE embedding IS NULL AND realm_id = ?"
+      : "SELECT * FROM memories WHERE embedding IS NULL";
+    const rows = (realmId
+      ? this.db.prepare(query).all(realmId)
+      : this.db.prepare(query).all()) as MemoryRow[];
+
+    const withEmbedding = realmId
+      ? (this.db.prepare("SELECT COUNT(*) as cnt FROM memories WHERE embedding IS NOT NULL AND realm_id = ?").get(realmId) as { cnt: number }).cnt
+      : (this.db.prepare("SELECT COUNT(*) as cnt FROM memories WHERE embedding IS NOT NULL").get() as { cnt: number }).cnt;
+
+    if (rows.length === 0) {
+      return { processed: 0, skipped: withEmbedding };
+    }
+
+    // Batch in groups of 50
+    const batchSize = 50;
+    let processed = 0;
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
+      const texts = batch.map(r => r.content);
+      const vectors = await embedFn(texts);
+      for (let j = 0; j < batch.length; j++) {
+        this.updateEmbedding(batch[j].id, vectors[j]);
+        processed++;
+      }
+    }
+
+    return { processed, skipped: withEmbedding };
   }
 }

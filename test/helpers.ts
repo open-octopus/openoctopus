@@ -36,6 +36,8 @@ export function createMockMemoryRepo(): MockOf<MemoryRepo> {
     updateContent: vi.fn(),
     deleteMany: vi.fn().mockReturnValue(0),
     updateEmbedding: vi.fn(),
+    searchSemantic: vi.fn().mockReturnValue([]),
+    backfillEmbeddings: vi.fn().mockResolvedValue({ processed: 0, skipped: 0 }),
     getById: vi.fn().mockReturnValue({
       id: "memory_test1",
       content: "test",

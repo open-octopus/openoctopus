@@ -213,4 +213,60 @@ describe("MemoryRepo", () => {
       expect(() => repo.getById("nonexistent")).toThrow();
     });
   });
+
+  describe("semantic search", () => {
+    beforeEach(() => {
+      db.prepare("INSERT OR IGNORE INTO realms (id, name, description) VALUES (?, ?, ?)").run("realm_sem", "sem", "test");
+    });
+
+    it("searchSemantic returns entries sorted by cosine similarity", () => {
+      const e1 = repo.create({ realmId: "realm_sem", tier: "archival", content: "cats" });
+      const e2 = repo.create({ realmId: "realm_sem", tier: "archival", content: "dogs" });
+      const e3 = repo.create({ realmId: "realm_sem", tier: "archival", content: "fish" });
+
+      repo.updateEmbedding(e1.id, [1, 0, 0]);
+      repo.updateEmbedding(e2.id, [0.9, 0.1, 0]);
+      repo.updateEmbedding(e3.id, [0, 0, 1]);
+
+      const results = repo.searchSemantic([1, 0, 0], "realm_sem", 2);
+      expect(results.length).toBe(2);
+      expect(results[0].id).toBe(e1.id);
+      expect(results[1].id).toBe(e2.id);
+    });
+
+    it("returns empty for realm with no embeddings", () => {
+      const results = repo.searchSemantic([1, 0, 0], "realm_none", 5);
+      expect(results.length).toBe(0);
+    });
+
+    it("only returns entries with matching dimensions", () => {
+      const e1 = repo.create({ realmId: "realm_sem", tier: "archival", content: "a" });
+      const e2 = repo.create({ realmId: "realm_sem", tier: "archival", content: "b" });
+      repo.updateEmbedding(e1.id, [1, 0, 0]);       // 3-dim
+      repo.updateEmbedding(e2.id, [1, 0, 0, 0, 0]); // 5-dim
+
+      const results = repo.searchSemantic([1, 0, 0], "realm_sem", 10);
+      expect(results.length).toBe(1);
+      expect(results[0].id).toBe(e1.id);
+    });
+
+    it("backfillEmbeddings processes memories without embeddings", async () => {
+      repo.create({ realmId: "realm_sem", tier: "archival", content: "fact1" });
+      repo.create({ realmId: "realm_sem", tier: "archival", content: "fact2" });
+      const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
+      const result = await repo.backfillEmbeddings(mockEmbed);
+      expect(result.processed).toBe(2);
+      expect(result.skipped).toBe(0);
+    });
+
+    it("backfillEmbeddings skips memories that already have embeddings", async () => {
+      const e = repo.create({ realmId: "realm_sem", tier: "archival", content: "has_emb" });
+      repo.updateEmbedding(e.id, [0.5, 0.5, 0.5]);
+      repo.create({ realmId: "realm_sem", tier: "archival", content: "no_emb" });
+      const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
+      const result = await repo.backfillEmbeddings(mockEmbed);
+      expect(result.processed).toBe(1);
+      expect(result.skipped).toBe(1);
+    });
+  });
 });
