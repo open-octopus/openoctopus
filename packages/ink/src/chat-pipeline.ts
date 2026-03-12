@@ -211,11 +211,19 @@ export async function processChatMessage(params: ChatPipelineParams): Promise<Ch
 
   // Check maturity for summon suggestions (fire-and-forget)
   if (realm && services.maturityScanner) {
-    services.maturityScanner.checkAndNotify(realm.id, (suggestion) => {
-      services.wsBroadcaster?.broadcast(
-        createRpcEvent(RPC_EVENTS.MATURITY_SUGGESTION, suggestion),
-      );
-    }).catch(() => {});
+    services.maturityScanner.checkAndNotify(
+      realm.id,
+      (suggestion) => {
+        services.wsBroadcaster?.broadcast(
+          createRpcEvent(RPC_EVENTS.MATURITY_SUGGESTION, suggestion),
+        );
+      },
+      (progress) => {
+        services.wsBroadcaster?.broadcast(
+          createRpcEvent(RPC_EVENTS.MATURITY_PROGRESS, progress),
+        );
+      },
+    ).catch(() => {});
   }
 
   // Cross-realm reactions (fire-and-forget)

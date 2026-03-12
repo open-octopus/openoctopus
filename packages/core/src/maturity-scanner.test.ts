@@ -298,4 +298,74 @@ describe("MaturityScanner", () => {
       expect(score.attributeCompleteness).toBe(0);
     });
   });
+
+  describe("progressive guidance", () => {
+    it("should call onProgress for entities with score 40-59", async () => {
+      const onSuggestion = vi.fn();
+      const onProgress = vi.fn();
+
+      mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
+      mockEntityManager.listByRealm.mockReturnValue([
+        { id: "e1", name: "Luna", realmId: "r1", attributes: { breed: "tabby", age: null, color: "" }, summonStatus: "dormant" },
+      ]);
+      mockEntityManager.get.mockReturnValue({
+        id: "e1", name: "Luna", realmId: "r1", attributes: { breed: "tabby", age: null, color: "" }, summonStatus: "dormant",
+      });
+      // Need overall score in 40-59 range
+      // attrs: 3 keys, 1 non-empty (breed) -> attrComp = round(1/3*100) = 33
+      // archivalCount = 6 -> memDepth = round(0.6*100) = 60
+      // allCount = 5 -> interFreq = round(5/15*100) = round(33.33) = 33
+      // overall = round(33*0.3 + 60*0.4 + 33*0.3) = round(9.9+24+9.9) = round(43.8) = 44
+      mockMemoryRepo.countByEntity
+        .mockReturnValueOnce(6)   // archival
+        .mockReturnValueOnce(5);  // all
+
+      await scanner.checkAndNotify("r1", onSuggestion, onProgress);
+
+      expect(onSuggestion).not.toHaveBeenCalled();
+      expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({
+        entityName: "Luna",
+        realmName: "pet",
+        score: 44,
+        missing: expect.arrayContaining(["age", "color"]),
+      }));
+    });
+
+    it("should not call onProgress for score below 40", async () => {
+      const onSuggestion = vi.fn();
+      const onProgress = vi.fn();
+
+      mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
+      mockEntityManager.listByRealm.mockReturnValue([
+        { id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant" },
+      ]);
+      mockEntityManager.get.mockReturnValue({
+        id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant",
+      });
+      mockMemoryRepo.countByEntity.mockReturnValue(0);
+
+      await scanner.checkAndNotify("r1", onSuggestion, onProgress);
+
+      expect(onProgress).not.toHaveBeenCalled();
+    });
+
+    it("should not call onProgress for score >= 60 (those get onSuggestion instead)", async () => {
+      const onSuggestion = vi.fn();
+      const onProgress = vi.fn();
+
+      mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
+      mockEntityManager.listByRealm.mockReturnValue([
+        { id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" },
+      ]);
+      mockEntityManager.get.mockReturnValue({
+        id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant",
+      });
+      mockMemoryRepo.countByEntity.mockReturnValue(20);
+
+      await scanner.checkAndNotify("r1", onSuggestion, onProgress);
+
+      expect(onSuggestion).toHaveBeenCalled();
+      expect(onProgress).not.toHaveBeenCalled();
+    });
+  });
 });

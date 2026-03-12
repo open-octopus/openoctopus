@@ -75,6 +75,15 @@ async function runWsChat(
       const s = data as { entityName: string; realmName: string; maturityScore: number; entityId: string };
       process.stdout.write(`\n${renderSummonSuggestion(s)}\n`);
     }
+    if (event === "maturity.progress" && data) {
+      const p = data as { entityName: string; realmName: string; score: number; missing: string[]; message: string };
+      const bar = "\u2588".repeat(Math.floor(p.score / 5)) + "\u2591".repeat(20 - Math.floor(p.score / 5));
+      process.stdout.write(`\n  ${p.entityName} (${p.realmName}): [${bar}] ${p.score}/100\n`);
+      if (p.missing.length > 0) {
+        process.stdout.write(`     Missing: ${p.missing.join(", ")}\n`);
+      }
+      process.stdout.write(`     ${p.message}\n`);
+    }
     if (event === "crossrealm.reaction" && data) {
       const r = data as { targetRealmName: string; agentName: string; content: string };
       process.stdout.write(`\n  ${renderMessage("system", `${r.agentName} (${r.targetRealmName}): ${r.content}`)}\n`);

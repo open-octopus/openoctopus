@@ -78,6 +78,7 @@ export const RPC_EVENTS = {
   ERROR: "error",
   MATURITY_SUGGESTION: "maturity.suggestion",
   CROSS_REALM_REACTION: "crossrealm.reaction",
+  MATURITY_PROGRESS: "maturity.progress",
 } as const;
 
 // ── Helper to create messages ──

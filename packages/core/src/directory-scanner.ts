@@ -20,6 +20,15 @@ export interface ScanOptions {
   dryRun?: boolean;
 }
 
+export interface WatchHandle {
+  stop(): void;
+}
+
+export interface WatchOptions {
+  extensions?: string[];
+  debounceMs?: number;
+}
+
 interface FileScanResult {
   path: string;
   factsExtracted: number;
@@ -148,6 +157,78 @@ export class DirectoryScanner {
       log.warn(msg);
       return { path: filePath, factsExtracted: 0, skipped: true, error: msg };
     }
+  }
+
+  /**
+   * Watch a directory for file changes and automatically scan modified files.
+   * Uses 5-second debounce to batch rapid changes.
+   */
+  watchDirectory(dirPath: string, options?: WatchOptions): WatchHandle {
+    const extensions = options?.extensions ?? DEFAULT_EXTENSIONS;
+    const debounceMs = options?.debounceMs ?? 5000;
+
+    const resolvedPath = path.resolve(dirPath);
+    const pendingScans = new Map<string, ReturnType<typeof setTimeout>>();
+
+    let closed = false;
+    let watcher: ReturnType<typeof fs.watch> | null = null;
+
+    try {
+      watcher = fs.watch(
+        resolvedPath,
+        { recursive: true, persistent: false },
+        (eventType, filename) => {
+          if (!filename || closed) return;
+
+          // Check extension
+          const ext = path.extname(filename).toLowerCase();
+          if (!extensions.includes(ext)) return;
+
+          const filePath = path.join(resolvedPath, filename);
+
+          // Debounce: clear any pending scan for this file
+          const existing = pendingScans.get(filePath);
+          if (existing) clearTimeout(existing);
+
+          // Schedule new scan
+          const timer = setTimeout(() => {
+            pendingScans.delete(filePath);
+            if (closed) return;
+
+            // Scan the file (fire-and-forget)
+            this.scanFile(filePath).catch((err) => {
+              log.warn(`Watch scan failed for ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+            });
+          }, debounceMs);
+
+          pendingScans.set(filePath, timer);
+        },
+      );
+
+      watcher.on("error", (err) => {
+        log.warn(`Directory watcher error: ${err.message}`);
+      });
+
+      log.info(`Watching directory: ${resolvedPath}`);
+    } catch (err) {
+      log.warn(`Failed to watch directory ${resolvedPath}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    return {
+      stop: () => {
+        closed = true;
+        // Clear all pending scans
+        for (const timer of pendingScans.values()) {
+          clearTimeout(timer);
+        }
+        pendingScans.clear();
+        if (watcher) {
+          watcher.close();
+          watcher = null;
+        }
+        log.info(`Stopped watching directory: ${resolvedPath}`);
+      },
+    };
   }
 
   private collectFiles(dirPath: string, opts: { extensions: string[]; recursive: boolean; maxFileSize: number }): string[] {

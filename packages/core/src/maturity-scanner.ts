@@ -17,6 +17,16 @@ export interface SummonSuggestion {
   reason: string;
 }
 
+export interface MaturityProgress {
+  entityId: string;
+  entityName: string;
+  realmId: string;
+  realmName: string;
+  score: number;
+  missing: string[];
+  message: string;
+}
+
 export class MaturityScanner {
   constructor(
     private memoryRepo: MemoryRepo,
@@ -98,6 +108,7 @@ export class MaturityScanner {
   async checkAndNotify(
     realmId: string,
     onSuggestion: (s: SummonSuggestion) => void,
+    onProgress?: (p: MaturityProgress) => void,
   ): Promise<void> {
     const realm = this.realmManager.get(realmId);
     const scores = this.scanRealm(realmId);
@@ -114,6 +125,29 @@ export class MaturityScanner {
           reason: `Knowledge about ${score.entityName} is comprehensive enough to summon as a living agent`,
         });
       }
+
+      // Progressive guidance for entities approaching summon readiness
+      if (onProgress && score.overall >= 40 && score.overall < SUMMON_THRESHOLD) {
+        const entity = this.entityManager.get(score.entityId);
+        if (entity.summonStatus === "dormant") {
+          const missing = this.identifyMissingAttributes(entity);
+          onProgress({
+            entityId: score.entityId,
+            entityName: score.entityName,
+            realmId: score.realmId,
+            realmName: realm.name,
+            score: score.overall,
+            missing,
+            message: `${score.entityName}'s knowledge is at ${score.overall}/100. A few more conversations and they can be summoned!`,
+          });
+        }
+      }
     }
+  }
+
+  private identifyMissingAttributes(entity: { attributes: Record<string, unknown> }): string[] {
+    return Object.entries(entity.attributes)
+      .filter(([, v]) => v === undefined || v === null || v === "")
+      .map(([k]) => k);
   }
 }

@@ -197,7 +197,7 @@ describe("processChatMessage", () => {
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      expect(checkAndNotify).toHaveBeenCalledWith("realm_pet", expect.any(Function));
+      expect(checkAndNotify).toHaveBeenCalledWith("realm_pet", expect.any(Function), expect.any(Function));
     });
   });
 

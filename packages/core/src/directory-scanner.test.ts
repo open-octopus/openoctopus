@@ -209,4 +209,37 @@ describe("DirectoryScanner", () => {
       }
     });
   });
+
+  describe("watchDirectory", () => {
+    it("returns a watcher that can be stopped", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oo-watch-"));
+      try {
+        const watcher = scanner.watchDirectory(tmpDir, { extensions: [".md"] });
+        expect(watcher).toBeDefined();
+        expect(typeof watcher.stop).toBe("function");
+        watcher.stop();
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("stop is idempotent", () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oo-watch-"));
+      try {
+        const watcher = scanner.watchDirectory(tmpDir);
+        watcher.stop();
+        watcher.stop(); // Should not throw
+      } finally {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    it("handles non-existent directory gracefully", () => {
+      // Should return a handle even if directory doesn't exist
+      // The watcher will simply not fire events
+      const watcher = scanner.watchDirectory("/nonexistent/path/xyz");
+      expect(watcher).toBeDefined();
+      watcher.stop();
+    });
+  });
 });
