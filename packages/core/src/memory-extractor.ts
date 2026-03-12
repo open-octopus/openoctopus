@@ -3,6 +3,7 @@ import { createLogger } from "@openoctopus/shared";
 import type { MemoryRepo } from "@openoctopus/storage";
 import type { LlmProviderRegistry } from "./llm/provider-registry.js";
 import type { KnowledgeDistributor } from "./knowledge-distributor.js";
+import type { EmbeddingProviderRegistry } from "./embedding/embedding-registry.js";
 
 const log = createLogger("memory-extractor");
 
@@ -26,13 +27,16 @@ Example output:
 
 export class MemoryExtractor {
   private knowledgeDistributor?: KnowledgeDistributor;
+  private embeddingRegistry?: EmbeddingProviderRegistry;
 
   constructor(
     private memoryRepo: MemoryRepo,
     private llmRegistry: LlmProviderRegistry,
     knowledgeDistributor?: KnowledgeDistributor,
+    embeddingRegistry?: EmbeddingProviderRegistry,
   ) {
     this.knowledgeDistributor = knowledgeDistributor;
+    this.embeddingRegistry = embeddingRegistry;
   }
 
   /**
@@ -66,6 +70,16 @@ export class MemoryExtractor {
           },
         });
         entries.push(entry);
+
+        // Generate and store embedding for the extracted fact
+        if (this.embeddingRegistry?.hasProvider()) {
+          try {
+            const vec = await this.embeddingRegistry.getProvider().embed(fact);
+            this.memoryRepo.updateEmbedding(entry.id, vec);
+          } catch {
+            // Non-critical — fact is stored without embedding
+          }
+        }
       }
 
       log.info(`Extracted ${entries.length} memories for realm ${params.realmId}`);

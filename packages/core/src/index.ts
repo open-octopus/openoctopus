@@ -12,3 +12,4 @@ export { MaturityScanner, type SummonSuggestion } from "./maturity-scanner.js";
 export { CrossRealmReactor, type SummonEnginePort } from "./cross-realm-reactor.js";
 export { DirectoryScanner, type ScanOptions } from "./directory-scanner.js";
 export * from "./llm/index.js";
+export * from "./embedding/index.js";

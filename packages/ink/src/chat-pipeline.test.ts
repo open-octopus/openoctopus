@@ -273,5 +273,93 @@ describe("processChatMessage", () => {
         }),
       );
     });
+
+    it("uses semantic search for memory injection when embedding provider is available", async () => {
+      const mockEmbeddingRegistry = {
+        hasProvider: vi.fn().mockReturnValue(true),
+        getProvider: vi.fn().mockReturnValue({
+          embed: vi.fn().mockResolvedValue([1, 0, 0]),
+          dimensions: 3,
+          name: "stub",
+          embedBatch: vi.fn(),
+        }),
+      };
+
+      const mockMemoryRepo = {
+        listByRealm: vi.fn(() => []),
+        searchSemantic: vi.fn().mockReturnValue([
+          { id: "m1", realmId: "realm_pet", content: "Luna likes fish", tier: "archival", metadata: {}, createdAt: "", updatedAt: "" },
+        ]),
+      };
+
+      const services = createMockServices({
+        memoryRepo: mockMemoryRepo as any,
+        embeddingRegistry: mockEmbeddingRegistry as any,
+      });
+
+      const result = await processChatMessage({
+        message: "What does my cat eat?",
+        realmId: "realm_pet",
+        services,
+      });
+
+      expect(mockMemoryRepo.searchSemantic).toHaveBeenCalled();
+      expect(result.response).toBeDefined();
+    });
+
+    it("falls back to listByRealm when embedding provider is not available", async () => {
+      const mockMemoryRepo = {
+        listByRealm: vi.fn(() => [
+          { id: "m1", content: "Cat is 3 years old" },
+        ]),
+        searchSemantic: vi.fn(),
+      };
+
+      const services = createMockServices({
+        memoryRepo: mockMemoryRepo as any,
+      });
+
+      await processChatMessage({
+        message: "tell me about my cat",
+        realmId: "realm_pet",
+        services,
+      });
+
+      expect(mockMemoryRepo.listByRealm).toHaveBeenCalled();
+      expect(mockMemoryRepo.searchSemantic).not.toHaveBeenCalled();
+    });
+
+    it("falls back to listByRealm when semantic search throws", async () => {
+      const mockEmbeddingRegistry = {
+        hasProvider: vi.fn().mockReturnValue(true),
+        getProvider: vi.fn().mockReturnValue({
+          embed: vi.fn().mockRejectedValue(new Error("embedding API error")),
+          dimensions: 3,
+          name: "stub",
+          embedBatch: vi.fn(),
+        }),
+      };
+
+      const mockMemoryRepo = {
+        listByRealm: vi.fn(() => [
+          { id: "m1", content: "Fallback memory" },
+        ]),
+        searchSemantic: vi.fn(),
+      };
+
+      const services = createMockServices({
+        memoryRepo: mockMemoryRepo as any,
+        embeddingRegistry: mockEmbeddingRegistry as any,
+      });
+
+      await processChatMessage({
+        message: "tell me about my cat",
+        realmId: "realm_pet",
+        services,
+      });
+
+      // Should have fallen back to listByRealm after embed() threw
+      expect(mockMemoryRepo.listByRealm).toHaveBeenCalled();
+    });
   });
 });

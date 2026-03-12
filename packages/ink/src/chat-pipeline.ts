@@ -2,6 +2,7 @@ import {
   type ChatMessage,
   type AgentConfig,
   type RealmState,
+  type MemoryEntry,
   generateId,
   createRpcEvent,
   RPC_EVENTS,
@@ -138,9 +139,24 @@ export async function processChatMessage(params: ChatPipelineParams): Promise<Ch
 
   // Load realm memories into system prompt
   if (realm && services.memoryRepo) {
-    const recentMemories = services.memoryRepo.listByRealm(realm.id, "archival");
+    let recentMemories: MemoryEntry[] = [];
+
+    // Prefer semantic search when embedding provider is available
+    if (services.embeddingRegistry?.hasProvider()) {
+      try {
+        const provider = services.embeddingRegistry.getProvider();
+        const queryVec = await provider.embed(message);
+        recentMemories = services.memoryRepo.searchSemantic(queryVec, realm.id, 10);
+      } catch {
+        // Fallback to keyword-based retrieval
+        recentMemories = services.memoryRepo.listByRealm(realm.id, "archival").slice(0, 20);
+      }
+    } else {
+      recentMemories = services.memoryRepo.listByRealm(realm.id, "archival").slice(0, 20);
+    }
+
     if (recentMemories.length > 0) {
-      const memoryContext = recentMemories.slice(0, 20).map(m => `- ${m.content}`).join("\n");
+      const memoryContext = recentMemories.map(m => `- ${m.content}`).join("\n");
       systemPrompt = (systemPrompt ?? "") + `\n\n## Realm Knowledge (from past conversations)\n${memoryContext}`;
     }
   }

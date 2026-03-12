@@ -5,7 +5,7 @@ import type Database from "better-sqlite3";
 import { createLogger, loadConfig, type OpenOctopusConfig, toErrorResponse } from "@openoctopus/shared";
 import { createDatabase, MemoryRepo, HealthReportRepo, ScannedFileRepo, type DatabaseOptions } from "@openoctopus/storage";
 import path from "node:path";
-import { RealmManager, EntityManager, AgentRunner, Router, SkillRegistry, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner } from "@openoctopus/core";
+import { RealmManager, EntityManager, AgentRunner, Router, SkillRegistry, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner, EmbeddingProviderRegistry } from "@openoctopus/core";
 import { SummonEngine } from "@openoctopus/summon";
 import { ChannelManager } from "@openoctopus/channels";
 import { createRealmRoutes } from "./routes/realms.js";
@@ -46,6 +46,9 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   // Initialize LLM provider registry from config
   const llmRegistry = new LlmProviderRegistry(config.llm);
 
+  // Initialize embedding provider registry from config
+  const embeddingRegistry = new EmbeddingProviderRegistry(config.embeddings);
+
   // Initialize core services
   const realmManager = new RealmManager(db);
   const entityManager = new EntityManager(db);
@@ -61,7 +64,7 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
 
   // Knowledge lifecycle services
   const knowledgeDistributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, llmRegistry);
-  const memoryExtractor = new MemoryExtractor(memoryRepo, llmRegistry, knowledgeDistributor);
+  const memoryExtractor = new MemoryExtractor(memoryRepo, llmRegistry, knowledgeDistributor, embeddingRegistry);
   const memoryHealthManager = new MemoryHealthManager(memoryRepo, realmManager, entityManager, healthReportRepo, llmRegistry);
   const maturityScanner = new MaturityScanner(memoryRepo, entityManager, realmManager);
   const crossRealmReactor = new CrossRealmReactor(realmManager, summonEngine, agentRunner, llmRegistry);
@@ -95,6 +98,7 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     maturityScanner,
     crossRealmReactor,
     directoryScanner,
+    embeddingRegistry,
     startTime,
   };
 
@@ -183,6 +187,9 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   const realmCount = realmManager.list().length;
   log.info(`Realms: ${realmCount} loaded`);
   log.info(`LLM providers: ${llmRegistry.listProviders().join(", ")}`);
+  if (embeddingRegistry.hasProvider()) {
+    log.info(`Embedding providers: ${embeddingRegistry.listProviders().join(", ")}`);
+  }
 
   const activeChannels = channelManager.list().filter(c => c.running);
   if (activeChannels.length > 0) {

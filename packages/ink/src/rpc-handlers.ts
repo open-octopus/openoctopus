@@ -7,7 +7,7 @@ import {
   RPC_EVENTS,
   toErrorResponse,
 } from "@openoctopus/shared";
-import type { RealmManager, EntityManager, AgentRunner, Router as IntentRouter, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner } from "@openoctopus/core";
+import type { RealmManager, EntityManager, AgentRunner, Router as IntentRouter, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner, EmbeddingProviderRegistry } from "@openoctopus/core";
 import type { SummonEngine } from "@openoctopus/summon";
 import type { ChannelManager } from "@openoctopus/channels";
 import type { MemoryRepo } from "@openoctopus/storage";
@@ -30,6 +30,7 @@ export interface RpcServices {
   maturityScanner?: MaturityScanner;
   crossRealmReactor?: CrossRealmReactor;
   directoryScanner?: DirectoryScanner;
+  embeddingRegistry?: EmbeddingProviderRegistry;
   wsBroadcaster?: WsBroadcaster;
   startTime?: number;
 }
