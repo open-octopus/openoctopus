@@ -486,4 +486,261 @@ describe("MemoryExtractor", () => {
       expect(result).toHaveLength(1);
     });
   });
+
+  describe("importance scoring", () => {
+    it("stores importance=5 facts as core tier", async () => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify({
+            facts: ["Luna was born on March 3rd 2023"],
+            importance: [5],
+            relations: [],
+            attribute_updates: [],
+          }),
+        }),
+      });
+
+      const result = await extractor.extractAndPersist({
+        realmId: "r1",
+        entityId: "e1",
+        userMessage: "Luna was born on March 3rd 2023",
+        assistantMessage: "Got it!",
+      });
+
+      expect(result).toHaveLength(1);
+      expect(mockMemoryRepo.create).toHaveBeenCalledTimes(1);
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          realmId: "r1",
+          entityId: "e1",
+          tier: "core",
+          content: "Luna was born on March 3rd 2023",
+        }),
+      );
+    });
+
+    it("discards importance=1 facts", async () => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify({
+            facts: ["User said hello"],
+            importance: [1],
+            relations: [],
+            attribute_updates: [],
+          }),
+        }),
+      });
+
+      const result = await extractor.extractAndPersist({
+        realmId: "r1",
+        userMessage: "hello",
+        assistantMessage: "hi there",
+      });
+
+      expect(result).toEqual([]);
+      expect(mockMemoryRepo.create).not.toHaveBeenCalled();
+    });
+
+    it("stores importance=3 facts as archival (default)", async () => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify({
+            facts: ["Luna prefers wet food"],
+            importance: [3],
+            relations: [],
+            attribute_updates: [],
+          }),
+        }),
+      });
+
+      const result = await extractor.extractAndPersist({
+        realmId: "r1",
+        userMessage: "Luna prefers wet food",
+        assistantMessage: "Noted!",
+      });
+
+      expect(result).toHaveLength(1);
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tier: "archival",
+          content: "Luna prefers wet food",
+        }),
+      );
+    });
+
+    it("handles mixed importance levels in one extraction", async () => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify({
+            facts: ["Luna is a golden retriever", "Owner said good morning", "Luna weighs 25kg"],
+            importance: [5, 1, 4],
+            relations: [],
+            attribute_updates: [],
+          }),
+        }),
+      });
+
+      const result = await extractor.extractAndPersist({
+        realmId: "r1",
+        userMessage: "Good morning! Luna the golden retriever weighs 25kg now",
+        assistantMessage: "Noted!",
+      });
+
+      // importance=1 is discarded, importance=5 is core, importance=4 is archival
+      expect(result).toHaveLength(2);
+      expect(mockMemoryRepo.create).toHaveBeenCalledTimes(2);
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ tier: "core", content: "Luna is a golden retriever" }),
+      );
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ tier: "archival", content: "Luna weighs 25kg" }),
+      );
+    });
+  });
+
+  describe("relation extraction", () => {
+    const mockKnowledgeGraphRepo = {
+      findOrCreateNode: vi.fn().mockImplementation((_realmId: string, label: string) => ({
+        id: `knode_${label}`,
+        realmId: "r1",
+        label,
+        type: "entity",
+        properties: {},
+        createdAt: new Date().toISOString(),
+      })),
+      addEdge: vi.fn().mockReturnValue({
+        id: "kedge_test",
+        sourceId: "knode_Luna",
+        targetId: "knode_mom",
+        type: "gifted_by",
+        properties: {},
+        createdAt: new Date().toISOString(),
+      }),
+    };
+
+    it("creates knowledge graph nodes and edges from relations", async () => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify({
+            facts: ["Luna was gifted by mom"],
+            importance: [3],
+            relations: [{ subject: "Luna", relation: "gifted_by", object: "mom" }],
+            attribute_updates: [],
+          }),
+        }),
+      });
+
+      const extractorWithGraph = new MemoryExtractor(
+        mockMemoryRepo as any,
+        mockLlmRegistry as any,
+        undefined,
+        undefined,
+        mockKnowledgeGraphRepo as any,
+      );
+
+      await extractorWithGraph.extractAndPersist({
+        realmId: "r1",
+        userMessage: "Luna was gifted by my mom",
+        assistantMessage: "How sweet!",
+      });
+
+      expect(mockKnowledgeGraphRepo.findOrCreateNode).toHaveBeenCalledWith("r1", "Luna", "entity");
+      expect(mockKnowledgeGraphRepo.findOrCreateNode).toHaveBeenCalledWith("r1", "mom", "entity");
+      expect(mockKnowledgeGraphRepo.addEdge).toHaveBeenCalledWith("knode_Luna", "knode_mom", "gifted_by");
+    });
+
+    it("handles multiple relations", async () => {
+      mockKnowledgeGraphRepo.findOrCreateNode.mockClear();
+      mockKnowledgeGraphRepo.addEdge.mockClear();
+
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify({
+            facts: ["Luna is friends with Max"],
+            importance: [3],
+            relations: [
+              { subject: "Luna", relation: "friend_of", object: "Max" },
+              { subject: "Luna", relation: "lives_with", object: "Kevin" },
+            ],
+            attribute_updates: [],
+          }),
+        }),
+      });
+
+      const extractorWithGraph = new MemoryExtractor(
+        mockMemoryRepo as any,
+        mockLlmRegistry as any,
+        undefined,
+        undefined,
+        mockKnowledgeGraphRepo as any,
+      );
+
+      await extractorWithGraph.extractAndPersist({
+        realmId: "r1",
+        userMessage: "Luna is friends with Max and lives with Kevin",
+        assistantMessage: "Nice!",
+      });
+
+      expect(mockKnowledgeGraphRepo.findOrCreateNode).toHaveBeenCalledTimes(4);
+      expect(mockKnowledgeGraphRepo.addEdge).toHaveBeenCalledTimes(2);
+    });
+
+    it("skips relation processing when no knowledgeGraphRepo", async () => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify({
+            facts: ["Luna was gifted by mom"],
+            importance: [3],
+            relations: [{ subject: "Luna", relation: "gifted_by", object: "mom" }],
+            attribute_updates: [],
+          }),
+        }),
+      });
+
+      // extractor has no knowledgeGraphRepo
+      const result = await extractor.extractAndPersist({
+        realmId: "r1",
+        userMessage: "Luna was gifted by mom",
+        assistantMessage: "Sweet!",
+      });
+
+      // Should not error, should still store the fact
+      expect(result).toHaveLength(1);
+    });
+  });
+
+  describe("backward compatibility", () => {
+    it("handles old-format LLM response (plain array) gracefully", async () => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: JSON.stringify(["Cat is 3 years old", "Cat likes fish"]),
+        }),
+      });
+
+      const result = await extractor.extractAndPersist({
+        realmId: "r1",
+        entityId: "e1",
+        userMessage: "My cat is 3 and likes fish",
+        assistantMessage: "Great!",
+      });
+
+      expect(result).toHaveLength(2);
+      expect(mockMemoryRepo.create).toHaveBeenCalledTimes(2);
+      // Old format gets default archival tier
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tier: "archival",
+          content: "Cat is 3 years old",
+        }),
+      );
+    });
+  });
 });

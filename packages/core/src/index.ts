@@ -5,7 +5,7 @@ export { AgentRunner, type AgentRunOptions, type AgentRunResult } from "./agent-
 export { Router, type RouteContext } from "./router.js";
 export { RealmLoader, type RealmAgentMeta } from "./realm-loader.js";
 export { parseRealmFile, parseRealmFileWithBody, type RealmFileWithBody } from "./realm-parser.js";
-export { MemoryExtractor } from "./memory-extractor.js";
+export { MemoryExtractor, type ExtractionResult } from "./memory-extractor.js";
 export { MemoryHealthManager, type CleanupOptions, type CleanupResult } from "./memory-health-manager.js";
 export { KnowledgeDistributor, type ExtractedFact, type DistributionResult, type OnboardingContext, type OnboardingStepResult } from "./knowledge-distributor.js";
 export { MaturityScanner, type SummonSuggestion } from "./maturity-scanner.js";
