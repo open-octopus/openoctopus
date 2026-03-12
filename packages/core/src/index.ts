@@ -8,8 +8,9 @@ export { parseRealmFile, parseRealmFileWithBody, type RealmFileWithBody } from "
 export { MemoryExtractor, type ExtractionResult } from "./memory-extractor.js";
 export { MemoryHealthManager, type CleanupOptions, type CleanupResult } from "./memory-health-manager.js";
 export { KnowledgeDistributor, type ExtractedFact, type DistributionResult, type OnboardingContext, type OnboardingStepResult } from "./knowledge-distributor.js";
-export { MaturityScanner, type SummonSuggestion } from "./maturity-scanner.js";
+export { MaturityScanner, type SummonSuggestion, type MaturityProgress } from "./maturity-scanner.js";
 export { CrossRealmReactor, type SummonEnginePort } from "./cross-realm-reactor.js";
 export { DirectoryScanner, type ScanOptions } from "./directory-scanner.js";
+export { Scheduler, type SchedulerRule } from "./scheduler.js";
 export * from "./llm/index.js";
 export * from "./embedding/index.js";
