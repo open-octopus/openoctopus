@@ -87,4 +87,62 @@ export class MemoryRepo {
   delete(id: string): void {
     this.db.prepare("DELETE FROM memories WHERE id = ?").run(id);
   }
+
+  countByRealm(realmId: string, tier?: MemoryTier): number {
+    if (tier) {
+      const row = this.db
+        .prepare("SELECT COUNT(*) as cnt FROM memories WHERE realm_id = ? AND tier = ?")
+        .get(realmId, tier) as { cnt: number };
+      return row.cnt;
+    }
+    const row = this.db
+      .prepare("SELECT COUNT(*) as cnt FROM memories WHERE realm_id = ?")
+      .get(realmId) as { cnt: number };
+    return row.cnt;
+  }
+
+  countByEntity(entityId: string, tier?: MemoryTier): number {
+    if (tier) {
+      const row = this.db
+        .prepare("SELECT COUNT(*) as cnt FROM memories WHERE entity_id = ? AND tier = ?")
+        .get(entityId, tier) as { cnt: number };
+      return row.cnt;
+    }
+    const row = this.db
+      .prepare("SELECT COUNT(*) as cnt FROM memories WHERE entity_id = ?")
+      .get(entityId) as { cnt: number };
+    return row.cnt;
+  }
+
+  searchByContent(realmId: string, query: string, limit = 20): MemoryEntry[] {
+    const rows = this.db
+      .prepare("SELECT * FROM memories WHERE realm_id = ? AND content LIKE ? ORDER BY updated_at DESC LIMIT ?")
+      .all(realmId, `%${query}%`, limit) as MemoryRow[];
+    return rows.map(rowToMemory);
+  }
+
+  listStale(realmId: string, olderThanDays: number): MemoryEntry[] {
+    const cutoff = new Date(Date.now() - olderThanDays * 86400000).toISOString();
+    const rows = this.db
+      .prepare("SELECT * FROM memories WHERE realm_id = ? AND updated_at < ? ORDER BY updated_at ASC")
+      .all(realmId, cutoff) as MemoryRow[];
+    return rows.map(rowToMemory);
+  }
+
+  updateTier(id: string, tier: MemoryTier): void {
+    const now = new Date().toISOString();
+    this.db.prepare("UPDATE memories SET tier = ?, updated_at = ? WHERE id = ?").run(tier, now, id);
+  }
+
+  updateContent(id: string, content: string): void {
+    const now = new Date().toISOString();
+    this.db.prepare("UPDATE memories SET content = ?, updated_at = ? WHERE id = ?").run(content, now, id);
+  }
+
+  deleteMany(ids: string[]): number {
+    if (ids.length === 0) return 0;
+    const placeholders = ids.map(() => "?").join(",");
+    const result = this.db.prepare(`DELETE FROM memories WHERE id IN (${placeholders})`).run(...ids);
+    return result.changes;
+  }
 }

@@ -220,7 +220,7 @@ export type AuditEvent = z.infer<typeof AuditEventSchema>;
 
 export const SoulFileSchema = z.object({
   name: z.string(),
-  entityId: z.string(),
+  entityId: z.string().optional(),
   realm: z.string(),
   identity: z.object({
     role: z.string().optional(),
@@ -251,6 +251,41 @@ export const SoulFileSchema = z.object({
 });
 export type SoulFile = z.infer<typeof SoulFileSchema>;
 
+// ── REALM.md Parsed File ──
+
+export const RealmFileAgentSchema = z.object({
+  name: z.string(),
+  personality: z.string().optional(),
+  proactive: z.boolean().default(false),
+});
+export type RealmFileAgent = z.infer<typeof RealmFileAgentSchema>;
+
+export const RealmFileEntitySchema = z.object({
+  name: z.string(),
+  type: EntityType,
+  attributes: z.record(z.unknown()).default({}),
+  soulFile: z.string().optional(),
+});
+export type RealmFileEntity = z.infer<typeof RealmFileEntitySchema>;
+
+export const RealmFileProactiveRuleSchema = z.object({
+  trigger: z.string(),
+  action: z.string(),
+  interval: z.string().optional(),
+});
+export type RealmFileProactiveRule = z.infer<typeof RealmFileProactiveRuleSchema>;
+
+export const RealmFileSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().default(""),
+  icon: z.string().optional(),
+  defaultEntities: z.array(RealmFileEntitySchema).default([]),
+  skills: z.array(z.string()).default([]),
+  agents: z.array(RealmFileAgentSchema).default([]),
+  proactiveRules: z.array(RealmFileProactiveRuleSchema).default([]),
+});
+export type RealmFile = z.infer<typeof RealmFileSchema>;
+
 // ── Realm Package (RealmHub) ──
 
 export const RealmPackageSchema = z.object({
@@ -265,6 +300,11 @@ export const RealmPackageSchema = z.object({
 });
 export type RealmPackage = z.infer<typeof RealmPackageSchema>;
 
+// ── System Action (meta-commands detected from natural language) ──
+
+export const SystemActionSchema = z.enum(["summon", "unsummon", "list_realms", "list_entities", "switch_realm"]);
+export type SystemAction = z.infer<typeof SystemActionSchema>;
+
 // ── Router Intent ──
 
 export const RouterIntentSchema = z.object({
@@ -273,5 +313,71 @@ export const RouterIntentSchema = z.object({
   confidence: z.number().min(0).max(1),
   isMultiRealm: z.boolean().default(false),
   reasoning: z.string().optional(),
+  action: SystemActionSchema.optional(),
+  actionArgs: z.record(z.string()).optional(),
 });
 export type RouterIntent = z.infer<typeof RouterIntentSchema>;
+
+// ── Health Report ──
+
+export const HealthIssueKindSchema = z.enum(["duplicate", "contradiction", "stale", "incomplete_entity"]);
+export type HealthIssueKind = z.infer<typeof HealthIssueKindSchema>;
+
+export const HealthIssueSchema = z.object({
+  kind: HealthIssueKindSchema,
+  memoryIds: z.array(z.string()),
+  description: z.string(),
+  suggestion: z.string(),
+});
+export type HealthIssue = z.infer<typeof HealthIssueSchema>;
+
+export const RealmHealthReportSchema = z.object({
+  realmId: z.string(),
+  realmName: z.string(),
+  healthScore: z.number().min(0).max(100),
+  memoryCount: z.number(),
+  entityCount: z.number(),
+  duplicateCount: z.number(),
+  staleCount: z.number(),
+  contradictionCount: z.number(),
+  issues: z.array(HealthIssueSchema),
+  computedAt: z.string(),
+});
+export type RealmHealthReport = z.infer<typeof RealmHealthReportSchema>;
+
+// ── Maturity Score ──
+
+export const MaturityScoreSchema = z.object({
+  entityId: z.string(),
+  entityName: z.string(),
+  realmId: z.string(),
+  overall: z.number().min(0).max(100),
+  attributeCompleteness: z.number().min(0).max(100),
+  memoryDepth: z.number().min(0).max(100),
+  interactionFrequency: z.number().min(0).max(100),
+  readyToSummon: z.boolean(),
+});
+export type MaturityScore = z.infer<typeof MaturityScoreSchema>;
+
+// ── Cross-Realm Reaction ──
+
+export const CrossRealmReactionSchema = z.object({
+  sourceRealmId: z.string(),
+  targetRealmId: z.string(),
+  targetRealmName: z.string(),
+  agentName: z.string(),
+  content: z.string(),
+  triggeredAt: z.string(),
+});
+export type CrossRealmReaction = z.infer<typeof CrossRealmReactionSchema>;
+
+// ── Directory Scan Result ──
+
+export const ScanResultSchema = z.object({
+  filesScanned: z.number(),
+  filesSkipped: z.number(),
+  factsExtracted: z.number(),
+  realmsAffected: z.array(z.string()),
+  errors: z.array(z.string()),
+});
+export type ScanResult = z.infer<typeof ScanResultSchema>;

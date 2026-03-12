@@ -21,14 +21,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@openoctopus/shared": "workspace:*",
-    "@openoctopus/core": "workspace:*",
-    "@openoctopus/storage": "workspace:*",
-    "@openoctopus/ink": "workspace:*",
     "@clack/prompts": "^0.11.0",
+    "@openoctopus/core": "workspace:*",
+    "@openoctopus/ink": "workspace:*",
+    "@openoctopus/shared": "workspace:*",
+    "@openoctopus/storage": "workspace:*",
     "citty": "^0.1.6",
     "consola": "^3.4.0",
     "picocolors": "^1.1.1",
+    "string-width": "^8.2.0",
     "ws": "^8.18.0"
   }
 }

@@ -53,6 +53,9 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check",
     "knip": "knip",
     "tentacle": "tsx packages/tentacle/src/cli.ts",
+    "start": "tsx packages/tentacle/src/cli.ts start",
+    "chat": "tsx packages/tentacle/src/cli.ts chat",
+    "restart": "pnpm build && tsx packages/tentacle/src/cli.ts start",
     "clean": "pnpm -r exec rm -rf dist",
     "doctor": "pnpm check && pnpm test:unit"
   },

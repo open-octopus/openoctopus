@@ -36,6 +36,7 @@ export class AgentRunner {
     const provider = this.registry.getProvider();
     const model = this.registry.resolveModel(undefined, agent.model);
 
+
     const llmMessages = toLlmMessages(messages);
 
     let responseText: string;
@@ -52,6 +53,9 @@ export class AgentRunner {
         if (chunk.type === "token" && chunk.content) {
           responseText += chunk.content;
           onToken(chunk.content);
+        } else if (chunk.type === "error") {
+          log.error(`LLM stream error: ${chunk.error}`);
+          throw new Error(chunk.error ?? "LLM stream failed");
         } else if (chunk.type === "done" && chunk.usage) {
           tokensUsed = { input: chunk.usage.inputTokens, output: chunk.usage.outputTokens };
         }

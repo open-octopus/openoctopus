@@ -10,7 +10,10 @@ export type IdPrefix =
   | "knode"
   | "kedge"
   | "pkg"
-  | "audit";
+  | "audit"
+  | "health"
+  | "scan"
+  | "onboard";
 
 export function generateId(prefix: IdPrefix): string {
   const uuid = crypto.randomUUID();

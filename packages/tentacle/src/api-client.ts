@@ -75,6 +75,8 @@ export class ApiClient {
 // ── WebSocket RPC Client (gateway on port 18789) ──
 // Aligned with OpenClaw's WS RPC protocol for CLI-to-gateway communication
 
+export type WsEventHandler = (event: string, data: unknown) => void;
+
 export class WsRpcClient {
   private ws: WebSocket | undefined;
   private port: number;
@@ -85,6 +87,7 @@ export class WsRpcClient {
     onToken?: (token: string) => void;
   }>();
   private connected = false;
+  private eventHandlers: WsEventHandler[] = [];
 
   constructor(port?: number, host?: string) {
     this.port = port ?? (Number(process.env.OPENOCTOPUS_WS_PORT) || DEFAULT_WS_PORT);
@@ -116,7 +119,7 @@ export class WsRpcClient {
             return;
           }
 
-          // RPC Event (streaming tokens)
+          // RPC Event (streaming tokens + broadcast events)
           if (msg.event) {
             const event = msg as unknown as RpcEvent;
             if (event.event === RPC_EVENTS.TOKEN && event.requestId) {
@@ -125,6 +128,11 @@ export class WsRpcClient {
                 const tokenData = event.data as { token: string };
                 pending.onToken(tokenData.token);
               }
+            }
+
+            // Notify registered event handlers for broadcast events
+            for (const handler of this.eventHandlers) {
+              handler(event.event, event.data);
             }
           }
         } catch {
@@ -205,6 +213,11 @@ export class WsRpcClient {
     } catch {
       return false;
     }
+  }
+
+  /** Register a handler for broadcast events */
+  onEvent(handler: WsEventHandler): void {
+    this.eventHandlers.push(handler);
   }
 
   // ── Convenience methods for RPC calls ──

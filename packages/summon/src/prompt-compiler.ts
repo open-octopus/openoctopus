@@ -56,7 +56,7 @@ export function compileSystemPrompt(ctx: PromptContext): string {
   // Relationships
   if (soul.relationships.length > 0) {
     sections.push(
-      `\n## Relationships\n${soul.relationships.map((r: { type: string; description?: string; entityId: string }) => `- ${r.type}: ${r.description ?? r.entityId}`).join("\n")}`,
+      `\n## Relationships\n${soul.relationships.map((r: { type: string; description?: string; entityId?: string }) => `- ${r.type}: ${r.description ?? r.entityId ?? "unknown"}`).join("\n")}`,
     );
   }
 

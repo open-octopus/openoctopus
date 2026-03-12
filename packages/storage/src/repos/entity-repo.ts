@@ -38,6 +38,16 @@ export class EntityRepo {
     return rows.map(rowToEntity);
   }
 
+  findByNameInRealm(realmId: string, name: string): Entity | null {
+    const row = this.db.prepare("SELECT * FROM entities WHERE realm_id = ? AND name = ?").get(realmId, name) as EntityRow | undefined;
+    return row ? rowToEntity(row) : null;
+  }
+
+  countByRealm(realmId: string): number {
+    const row = this.db.prepare("SELECT COUNT(*) as cnt FROM entities WHERE realm_id = ?").get(realmId) as { cnt: number };
+    return row.cnt;
+  }
+
   getById(id: string): Entity {
     const row = this.db.prepare("SELECT * FROM entities WHERE id = ?").get(id) as EntityRow | undefined;
     if (!row) { throw new EntityNotFoundError(id); }

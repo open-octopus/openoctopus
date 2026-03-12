@@ -3,7 +3,7 @@ import consola from "consola";
 import readline from "node:readline";
 import { WsRpcClient, ApiClient } from "../api-client.js";
 import { createInitialState } from "../tui/state.js";
-import { renderStatusBar, renderMessage, showThinking, clearThinking } from "../tui/renderer.js";
+import { renderStatusBar, renderMessage, renderWelcomeDashboard, showThinking, clearThinking, renderSummonSuggestion } from "../tui/renderer.js";
 import { handleSlashCommand } from "../tui/commands.js";
 
 export const chatCommand = defineCommand({
@@ -69,8 +69,28 @@ async function runWsChat(
     state.currentRealm = { id: args.realm, name: args.realm };
   }
 
-  console.log(renderStatusBar(state));
-  console.log(renderMessage("system", 'Chat session started. Type /help for commands, /exit to quit.\n'));
+  // Listen for broadcast events (maturity suggestions, cross-realm reactions)
+  client.onEvent((event, data) => {
+    if (event === "maturity.suggestion" && data) {
+      const s = data as { entityName: string; realmName: string; maturityScore: number; entityId: string };
+      process.stdout.write(`\n${renderSummonSuggestion(s)}\n`);
+    }
+    if (event === "crossrealm.reaction" && data) {
+      const r = data as { targetRealmName: string; agentName: string; content: string };
+      process.stdout.write(`\n  ${renderMessage("system", `${r.agentName} (${r.targetRealmName}): ${r.content}`)}\n`);
+    }
+  });
+
+  // Fetch realms for welcome dashboard
+  try {
+    const realmResponse = await client.call("realm.list");
+    const { realms } = realmResponse.result as { realms: Array<{ id: string; name: string; icon?: string; entityCount: number; status: string; description?: string; agentName?: string }> };
+    state.realms = realms.map((r) => ({ id: r.id, name: r.name, icon: r.icon, description: r.description, entityCount: r.entityCount, status: r.status, agentName: r.agentName }));
+    console.log(renderWelcomeDashboard(state.realms));
+  } catch {
+    console.log(renderStatusBar(state));
+    console.log(renderMessage("system", 'Chat session started. Type /help for commands, /exit to quit.\n'));
+  }
 
   const rl = readline.createInterface({
     input: process.stdin,

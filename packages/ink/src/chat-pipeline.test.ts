@@ -143,4 +143,135 @@ describe("processChatMessage", () => {
       );
     });
   });
+
+  describe("memory extraction integration", () => {
+    it("should call memoryExtractor.extractAndPersist when realm exists", async () => {
+      const extractAndPersist = vi.fn().mockResolvedValue([]);
+      const services = createMockServices({
+        memoryExtractor: { extractAndPersist } as any,
+      });
+
+      await processChatMessage({
+        message: "my cat is sick",
+        realmId: "realm_pet",
+        services,
+      });
+
+      // Allow fire-and-forget to execute
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(extractAndPersist).toHaveBeenCalledWith(expect.objectContaining({
+        realmId: "realm_pet",
+        userMessage: "my cat is sick",
+      }));
+    });
+
+    it("should not block response if extractAndPersist rejects", async () => {
+      const extractAndPersist = vi.fn().mockRejectedValue(new Error("extraction failed"));
+      const services = createMockServices({
+        memoryExtractor: { extractAndPersist } as any,
+      });
+
+      const result = await processChatMessage({
+        message: "test",
+        realmId: "realm_pet",
+        services,
+      });
+
+      expect(result.response.content).toBe("Hello!");
+    });
+  });
+
+  describe("maturity scanner integration", () => {
+    it("should call maturityScanner.checkAndNotify when realm exists", async () => {
+      const checkAndNotify = vi.fn().mockResolvedValue(undefined);
+      const services = createMockServices({
+        maturityScanner: { checkAndNotify } as any,
+      });
+
+      await processChatMessage({
+        message: "check pet",
+        realmId: "realm_pet",
+        services,
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(checkAndNotify).toHaveBeenCalledWith("realm_pet", expect.any(Function));
+    });
+  });
+
+  describe("cross-realm reactor integration", () => {
+    it("should call checkReactions when realm exists and active agents > 0", async () => {
+      const checkReactions = vi.fn().mockResolvedValue(undefined);
+      const services = createMockServices({
+        crossRealmReactor: { checkReactions } as any,
+        summonEngine: {
+          getSummoned: vi.fn(() => undefined),
+          summon: vi.fn(),
+          unsummon: vi.fn(),
+          listActive: vi.fn(() => [{ entity: { id: "e1" }, agent: { name: "A" } }]),
+        } as any,
+      });
+
+      await processChatMessage({
+        message: "discuss finance",
+        realmId: "realm_pet",
+        services,
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(checkReactions).toHaveBeenCalledWith(expect.objectContaining({
+        sourceRealmId: "realm_pet",
+        userMessage: "discuss finance",
+      }));
+    });
+
+    it("should call checkReactions even when no active agents (reactor handles it internally)", async () => {
+      const checkReactions = vi.fn().mockResolvedValue(undefined);
+      const services = createMockServices({
+        crossRealmReactor: { checkReactions } as any,
+        // Default summonEngine.listActive returns []
+      });
+
+      await processChatMessage({
+        message: "discuss finance",
+        realmId: "realm_pet",
+        services,
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      expect(checkReactions).toHaveBeenCalledWith(expect.objectContaining({
+        sourceRealmId: "realm_pet",
+        userMessage: "discuss finance",
+      }));
+    });
+  });
+
+  describe("memory injection into system prompt", () => {
+    it("should inject realm memories into system prompt", async () => {
+      const services = createMockServices({
+        memoryRepo: {
+          listByRealm: vi.fn(() => [
+            { id: "m1", content: "Cat is 3 years old" },
+            { id: "m2", content: "Cat likes fish" },
+          ]),
+        } as any,
+      });
+
+      await processChatMessage({
+        message: "tell me about my cat",
+        realmId: "realm_pet",
+        services,
+      });
+
+      expect(services.agentRunner.run).toHaveBeenCalledWith(
+        expect.objectContaining({
+          systemPrompt: expect.stringContaining("Cat is 3 years old"),
+        }),
+      );
+    });
+  });
 });

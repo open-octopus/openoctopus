@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@openoctopus/shared": "workspace:*",
-    "@openoctopus/storage": "workspace:*"
+    "@openoctopus/storage": "workspace:*",
+    "yaml": "^2.7.0"
   }
 }

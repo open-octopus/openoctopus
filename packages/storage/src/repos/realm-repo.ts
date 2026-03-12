@@ -80,7 +80,7 @@ export class RealmRepo {
     return this.getById(id);
   }
 
-  update(id: string, data: Partial<{ name: string; description: string; status: string; proactiveEnabled: boolean }>): RealmState {
+  update(id: string, data: Partial<{ name: string; description: string; status: string; icon: string; proactiveEnabled: boolean }>): RealmState {
     this.getById(id); // throws if not found
     const now = new Date().toISOString();
 
@@ -92,6 +92,9 @@ export class RealmRepo {
     }
     if (data.status !== undefined) {
       this.db.prepare("UPDATE realms SET status = ?, updated_at = ? WHERE id = ?").run(data.status, now, id);
+    }
+    if (data.icon !== undefined) {
+      this.db.prepare("UPDATE realms SET icon = ?, updated_at = ? WHERE id = ?").run(data.icon, now, id);
     }
     if (data.proactiveEnabled !== undefined) {
       this.db.prepare("UPDATE realms SET proactive_enabled = ?, updated_at = ? WHERE id = ?").run(
@@ -112,5 +115,14 @@ export class RealmRepo {
   updateActivity(id: string): void {
     const now = new Date().toISOString();
     this.db.prepare("UPDATE realms SET last_activity = ?, updated_at = ? WHERE id = ?").run(now, now, id);
+  }
+
+  updateHealthScore(id: string, healthScore: number, riskCount?: number): void {
+    const now = new Date().toISOString();
+    if (riskCount !== undefined) {
+      this.db.prepare("UPDATE realms SET health_score = ?, risk_count = ?, updated_at = ? WHERE id = ?").run(healthScore, riskCount, now, id);
+    } else {
+      this.db.prepare("UPDATE realms SET health_score = ?, updated_at = ? WHERE id = ?").run(healthScore, now, id);
+    }
   }
 }

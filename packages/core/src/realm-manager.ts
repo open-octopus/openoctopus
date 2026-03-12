@@ -46,7 +46,7 @@ export class RealmManager {
     return realm;
   }
 
-  update(id: string, data: Partial<{ name: string; description: string; status: string }>): RealmState {
+  update(id: string, data: Partial<{ name: string; description: string; status: string; icon: string }>): RealmState {
     const realm = this.realmRepo.update(id, data);
     log.info(`Updated realm: ${realm.name} (${realm.id})`);
 
@@ -76,5 +76,9 @@ export class RealmManager {
       resourceId: id,
       details: { name: realm.name },
     });
+  }
+
+  updateHealthScore(id: string, healthScore: number, riskCount?: number): void {
+    this.realmRepo.updateHealthScore(id, healthScore, riskCount);
   }
 }

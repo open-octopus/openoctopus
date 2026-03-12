@@ -70,4 +70,22 @@ describe("RealmRepo", () => {
     const updated = repo.getById(realm.id);
     expect(updated.lastActivity).toBeDefined();
   });
+
+  describe("updateHealthScore", () => {
+    it("updates health score with riskCount", () => {
+      const realm = repo.create({ name: "Health" });
+      repo.updateHealthScore(realm.id, 75, 3);
+      const updated = repo.getById(realm.id);
+      expect(updated.healthScore).toBe(75);
+      expect(updated.riskCount).toBe(3);
+    });
+
+    it("updates health score without riskCount", () => {
+      const realm = repo.create({ name: "NoRisk" });
+      repo.updateHealthScore(realm.id, 90);
+      const updated = repo.getById(realm.id);
+      expect(updated.healthScore).toBe(90);
+      expect(updated.riskCount).toBe(0); // default unchanged
+    });
+  });
 });

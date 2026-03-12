@@ -3,8 +3,9 @@ import express from "express";
 import { WebSocketServer } from "ws";
 import type Database from "better-sqlite3";
 import { createLogger, loadConfig, type OpenOctopusConfig, toErrorResponse } from "@openoctopus/shared";
-import { createDatabase, type DatabaseOptions } from "@openoctopus/storage";
-import { RealmManager, EntityManager, AgentRunner, Router, SkillRegistry, LlmProviderRegistry } from "@openoctopus/core";
+import { createDatabase, MemoryRepo, HealthReportRepo, ScannedFileRepo, type DatabaseOptions } from "@openoctopus/storage";
+import path from "node:path";
+import { RealmManager, EntityManager, AgentRunner, Router, SkillRegistry, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner } from "@openoctopus/core";
 import { SummonEngine } from "@openoctopus/summon";
 import { ChannelManager } from "@openoctopus/channels";
 import { createRealmRoutes } from "./routes/realms.js";
@@ -49,9 +50,26 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   const realmManager = new RealmManager(db);
   const entityManager = new EntityManager(db);
   const agentRunner = new AgentRunner(llmRegistry);
-  const router = new Router();
+  const router = new Router(llmRegistry);
   const _skillRegistry = new SkillRegistry();
   const summonEngine = new SummonEngine(db);
+
+  // Initialize memory
+  const memoryRepo = new MemoryRepo(db);
+  const healthReportRepo = new HealthReportRepo(db);
+  const scannedFileRepo = new ScannedFileRepo(db);
+
+  // Knowledge lifecycle services
+  const knowledgeDistributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, llmRegistry);
+  const memoryExtractor = new MemoryExtractor(memoryRepo, llmRegistry, knowledgeDistributor);
+  const memoryHealthManager = new MemoryHealthManager(memoryRepo, realmManager, entityManager, healthReportRepo, llmRegistry);
+  const maturityScanner = new MaturityScanner(memoryRepo, entityManager, realmManager);
+  const crossRealmReactor = new CrossRealmReactor(realmManager, summonEngine, agentRunner, llmRegistry);
+  const directoryScanner = new DirectoryScanner(knowledgeDistributor, scannedFileRepo, llmRegistry);
+
+  // Load realms from REALM.md files (also seeds default entities)
+  const realmLoader = new RealmLoader(realmManager, entityManager);
+  await realmLoader.loadFromDirectory(path.resolve(process.cwd(), "realms"));
 
   // Initialize channel manager
   const channelManager = new ChannelManager();
@@ -69,6 +87,14 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     summonEngine,
     channelManager,
     llmRegistry,
+    realmLoader,
+    memoryRepo,
+    memoryExtractor,
+    memoryHealthManager,
+    knowledgeDistributor,
+    maturityScanner,
+    crossRealmReactor,
+    directoryScanner,
     startTime,
   };
 
@@ -106,11 +132,19 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   });
 
   const wss = new WebSocketServer({ server: wsServer });
-  setupWebSocket(wss, rpcServices);
+  const wsBroadcasterPrimary = setupWebSocket(wss, rpcServices);
 
   // Also mount WebSocket on HTTP server at /ws for backward compat
   const wssLegacy = new WebSocketServer({ server: httpServer, path: "/ws" });
-  setupWebSocket(wssLegacy, rpcServices);
+  const wsBroadcasterLegacy = setupWebSocket(wssLegacy, rpcServices);
+
+  // Compose broadcasters to send to all connected clients
+  rpcServices.wsBroadcaster = {
+    broadcast: (data) => {
+      wsBroadcasterPrimary.broadcast(data);
+      wsBroadcasterLegacy.broadcast(data);
+    },
+  };
 
   // ── Wire channels into chat pipeline (with streaming support) ──
   channelManager.setStreamingHandler(async (msg, onToken) => {
@@ -146,6 +180,8 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
 
   log.info(`Ink HTTP bridge listening on http://${host}:${httpPort}`);
   log.info(`Ink WebSocket RPC listening on ws://${host}:${wsPort}`);
+  const realmCount = realmManager.list().length;
+  log.info(`Realms: ${realmCount} loaded`);
   log.info(`LLM providers: ${llmRegistry.listProviders().join(", ")}`);
 
   const activeChannels = channelManager.list().filter(c => c.running);

@@ -58,6 +58,13 @@ export const RPC_METHODS = {
   // Status
   STATUS_HEALTH: "status.health",
   STATUS_INFO: "status.info",
+
+  // Knowledge Lifecycle
+  KNOWLEDGE_INJECT: "knowledge.inject",
+  MATURITY_SCAN: "maturity.scan",
+  DIRECTORY_SCAN: "directory.scan",
+  HEALTH_REPORT: "health.report",
+  HEALTH_CLEAN: "health.clean",
 } as const;
 
 // ── RPC Event Names ──
@@ -69,6 +76,8 @@ export const RPC_EVENTS = {
   CHANNEL_MESSAGE: "channel.message",
   REALM_UPDATE: "realm.update",
   ERROR: "error",
+  MATURITY_SUGGESTION: "maturity.suggestion",
+  CROSS_REALM_REACTION: "crossrealm.reaction",
 } as const;
 
 // ── Helper to create messages ──

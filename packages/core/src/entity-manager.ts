@@ -21,6 +21,14 @@ export class EntityManager {
     return this.entityRepo.listByRealm(realmId);
   }
 
+  findByNameInRealm(realmId: string, name: string): Entity | null {
+    return this.entityRepo.findByNameInRealm(realmId, name);
+  }
+
+  countByRealm(realmId: string): number {
+    return this.entityRepo.countByRealm(realmId);
+  }
+
   get(id: string): Entity {
     return this.entityRepo.getById(id);
   }

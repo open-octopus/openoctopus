@@ -191,6 +191,51 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 2,
+    name: "knowledge_lifecycle",
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS scanned_files (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          path TEXT NOT NULL UNIQUE,
+          file_hash TEXT NOT NULL,
+          realm_id TEXT,
+          facts_extracted INTEGER NOT NULL DEFAULT 0,
+          scanned_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_scanned_path ON scanned_files(path);
+
+        CREATE TABLE IF NOT EXISTS health_reports (
+          id TEXT PRIMARY KEY,
+          realm_id TEXT NOT NULL REFERENCES realms(id) ON DELETE CASCADE,
+          health_score REAL NOT NULL,
+          memory_count INTEGER NOT NULL DEFAULT 0,
+          duplicate_count INTEGER NOT NULL DEFAULT 0,
+          stale_count INTEGER NOT NULL DEFAULT 0,
+          contradiction_count INTEGER NOT NULL DEFAULT 0,
+          issues TEXT NOT NULL DEFAULT '[]',
+          computed_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_health_realm ON health_reports(realm_id);
+
+        CREATE TABLE IF NOT EXISTS onboarding_state (
+          user_key TEXT PRIMARY KEY DEFAULT 'default',
+          completed INTEGER NOT NULL DEFAULT 0,
+          completed_at TEXT,
+          realms_seeded TEXT NOT NULL DEFAULT '[]'
+        );
+      `);
+    },
+    down(db) {
+      db.exec(`
+        DROP TABLE IF EXISTS onboarding_state;
+        DROP TABLE IF EXISTS health_reports;
+        DROP TABLE IF EXISTS scanned_files;
+      `);
+    },
+  },
 ];
 
 export function runMigrations(db: Database.Database): void {

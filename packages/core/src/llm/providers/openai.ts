@@ -12,13 +12,13 @@ export class OpenAIProvider implements LlmProvider {
 
   constructor(apiKey: string, baseUrl?: string) {
     this.apiKey = apiKey;
-    this.baseUrl = baseUrl ?? "https://api.openai.com";
+    this.baseUrl = baseUrl ?? "https://api.openai.com/v1";
   }
 
   async chat(request: LlmChatRequest): Promise<LlmChatResponse> {
     const body = this.buildRequestBody(request);
 
-    const res = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+    const res = await fetch(`${this.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,8 +50,11 @@ export class OpenAIProvider implements LlmProvider {
 
   async *chatStream(request: LlmChatRequest): AsyncIterable<LlmStreamChunk> {
     const body = { ...this.buildRequestBody(request), stream: true, stream_options: { include_usage: true } };
+    const url = `${this.baseUrl}/chat/completions`;
 
-    const res = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+    log.debug(`Stream request: ${url} model=${request.model}`);
+
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -60,8 +63,11 @@ export class OpenAIProvider implements LlmProvider {
       body: JSON.stringify(body),
     });
 
+    log.debug(`Stream response: ${res.status} ${res.statusText}`);
+
     if (!res.ok) {
       const text = await res.text();
+      log.error(`Stream API error ${res.status}: ${text}`);
       yield { type: "error", error: `OpenAI API error: ${res.status} ${text}` };
       return;
     }

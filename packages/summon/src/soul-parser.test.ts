@@ -44,14 +44,28 @@ describe("parseSoulFile", () => {
   it("parses minimal SOUL.md", () => {
     const minimal = `---
 name: Max
-entityId: entity_dog
 realm: pet
 identity: {}
 ---`;
     const soul = parseSoulFile(minimal);
     expect(soul.name).toBe("Max");
+    expect(soul.entityId).toBeUndefined();
     expect(soul.catchphrases).toEqual([]);
     expect(soul.proactiveRules).toEqual([]);
+  });
+
+  it("parses SOUL.md without entityId", () => {
+    const noEntityId = `---
+name: Octy
+realm: pet
+identity:
+  role: Digital octopus companion
+  personality: Curious and playful
+---`;
+    const soul = parseSoulFile(noEntityId);
+    expect(soul.name).toBe("Octy");
+    expect(soul.entityId).toBeUndefined();
+    expect(soul.realm).toBe("pet");
   });
 
   it("rejects invalid YAML", () => {

@@ -10,6 +10,12 @@ defaultEntities:
       breed: ""
       age: ""
       weight: ""
+  - name: Octy
+    type: living
+    soulFile: souls/octy.soul.md
+    attributes:
+      species: octopus
+      breed: digital
 skills:
   - vet-lookup
   - pet-schedule
