@@ -7,6 +7,20 @@ import type { EmbeddingProviderRegistry } from "./embedding/embedding-registry.j
 
 const log = createLogger("memory-extractor");
 
+/** Compute cosine similarity between two vectors */
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0;
+  let magA = 0;
+  let magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(magA) * Math.sqrt(magB);
+  return denom === 0 ? 0 : dot / denom;
+}
+
 const EXTRACTION_PROMPT = `You are a knowledge extraction system. Given a conversation between a user and an AI assistant, extract durable facts worth remembering for future conversations.
 
 Rules:
@@ -59,6 +73,54 @@ export class MemoryExtractor {
 
       const entries: MemoryEntry[] = [];
       for (const fact of facts) {
+        // Check for duplicates before storing (only when embedding provider available)
+        if (this.embeddingRegistry?.hasProvider()) {
+          try {
+            const provider = this.embeddingRegistry.getProvider();
+            const factVec = await provider.embed(fact);
+            const similar = this.memoryRepo.searchSemantic(factVec, params.realmId, 3);
+
+            if (similar.length > 0 && similar[0].embedding) {
+              const similarity = cosineSimilarity(factVec, similar[0].embedding);
+
+              if (similarity > 0.85) {
+                log.debug(`Skipping duplicate fact (similarity=${similarity.toFixed(2)}): ${fact.slice(0, 50)}...`);
+                continue; // skip this fact entirely
+              }
+
+              if (similarity >= 0.6) {
+                // Merge: combine old + new into one entry
+                const merged = await this.mergeFacts(similar[0].content, fact);
+                this.memoryRepo.updateContent(similar[0].id, merged);
+                // Re-embed the merged content
+                const mergedVec = await provider.embed(merged);
+                this.memoryRepo.updateEmbedding(similar[0].id, mergedVec);
+                log.debug(`Merged fact (similarity=${similarity.toFixed(2)}): ${fact.slice(0, 50)}...`);
+                entries.push({ ...similar[0], content: merged });
+                continue;
+              }
+            }
+
+            // Similarity < 0.6 or no similar found — insert as new
+            const entry = this.memoryRepo.create({
+              realmId: params.realmId,
+              entityId: params.entityId,
+              tier: "archival",
+              content: fact,
+              metadata: {
+                source: "conversation",
+                extractedAt: new Date().toISOString(),
+              },
+            });
+            this.memoryRepo.updateEmbedding(entry.id, factVec);
+            entries.push(entry);
+            continue;
+          } catch {
+            // Fall through to non-dedup insert if embedding fails
+          }
+        }
+
+        // No embedding provider — insert normally (existing behavior)
         const entry = this.memoryRepo.create({
           realmId: params.realmId,
           entityId: params.entityId,
@@ -70,16 +132,6 @@ export class MemoryExtractor {
           },
         });
         entries.push(entry);
-
-        // Generate and store embedding for the extracted fact
-        if (this.embeddingRegistry?.hasProvider()) {
-          try {
-            const vec = await this.embeddingRegistry.getProvider().embed(fact);
-            this.memoryRepo.updateEmbedding(entry.id, vec);
-          } catch {
-            // Non-critical — fact is stored without embedding
-          }
-        }
       }
 
       log.info(`Extracted ${entries.length} memories for realm ${params.realmId}`);
@@ -95,6 +147,29 @@ export class MemoryExtractor {
     } catch (err) {
       log.warn(`Memory extraction failed: ${err instanceof Error ? err.message : String(err)}`);
       return [];
+    }
+  }
+
+  private async mergeFacts(existing: string, newFact: string): Promise<string> {
+    if (!this.llmRegistry.hasRealProvider()) {
+      return `${existing}; ${newFact}`;
+    }
+    try {
+      const provider = this.llmRegistry.getProvider();
+      const model = this.llmRegistry.resolveModel();
+      const result = await provider.chat({
+        model,
+        messages: [
+          {
+            role: "user",
+            content: `Existing fact: "${existing}"\nNew information: "${newFact}"\n\nCombine into a single, updated factual statement. Output ONLY the merged fact, nothing else.`,
+          },
+        ],
+        maxTokens: 200,
+      });
+      return result.content.trim();
+    } catch {
+      return `${existing}; ${newFact}`;
     }
   }
 
