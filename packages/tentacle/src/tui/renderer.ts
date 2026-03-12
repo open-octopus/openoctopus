@@ -469,3 +469,59 @@ export function renderEntityList(
   }
   return lines.join("\n");
 }
+
+// ── Proactive Message ──
+
+export function renderProactiveMessage(params: {
+  ruleId: string;
+  realmId?: string;
+  content: string;
+}): string {
+  const lines: string[] = [];
+  lines.push(pc.cyan("\u{1F4AC}") + " " + pc.bold("Proactive"));
+  if (params.realmId) {
+    lines.push(pc.dim(`  Realm: ${params.realmId}`));
+  }
+  lines.push(`  ${params.content}`);
+  return lines.join("\n");
+}
+
+// ── Health Alert ──
+
+export function renderHealthAlert(params: {
+  realmId: string;
+  realmName: string;
+  previousScore: number;
+  currentScore: number;
+  delta: number;
+  issues: Array<{ kind: string; description: string }>;
+}): string {
+  const icon = params.delta < 0 ? pc.red("\u26A0\uFE0F") : pc.green("\u{1F4A1}");
+  const deltaStr = params.delta > 0 ? `+${params.delta}` : String(params.delta);
+  const deltaColored = params.delta > 0 ? pc.green(deltaStr) : pc.red(deltaStr);
+
+  const lines: string[] = [];
+  lines.push(`${icon} ${pc.bold("Health Alert:")} ${params.realmName}`);
+  lines.push(`  Score: ${params.previousScore} \u2192 ${params.currentScore} (${deltaColored})`);
+
+  if (params.issues.length > 0) {
+    lines.push(pc.dim("  Top issues:"));
+    for (const issue of params.issues.slice(0, 3)) {
+      lines.push(`    ${pc.yellow("\u25B8")} [${issue.kind}] ${issue.description}`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+// ── Maturity Ready ──
+
+export function renderMaturityReady(params: {
+  entityId: string;
+  entityName: string;
+  realmId: string;
+  realmName: string;
+  maturityScore: number;
+}): string {
+  return pc.cyan(`\u{1F4A1} ${pc.bold(params.entityName)} (${params.realmName}) is ready to be summoned! Score: ${params.maturityScore}/100\n   Use /summon ${params.entityId} to activate.`);
+}

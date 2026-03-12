@@ -5,7 +5,7 @@ import type Database from "better-sqlite3";
 import { createLogger, loadConfig, type OpenOctopusConfig, toErrorResponse } from "@openoctopus/shared";
 import { createDatabase, MemoryRepo, HealthReportRepo, ScannedFileRepo, type DatabaseOptions } from "@openoctopus/storage";
 import path from "node:path";
-import { RealmManager, EntityManager, AgentRunner, Router, SkillRegistry, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner, EmbeddingProviderRegistry } from "@openoctopus/core";
+import { RealmManager, EntityManager, AgentRunner, Router, SkillRegistry, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner, EmbeddingProviderRegistry, Scheduler } from "@openoctopus/core";
 import { SummonEngine } from "@openoctopus/summon";
 import { ChannelManager } from "@openoctopus/channels";
 import { createRealmRoutes } from "./routes/realms.js";
@@ -74,6 +74,24 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   const realmLoader = new RealmLoader(realmManager, entityManager);
   await realmLoader.loadFromDirectory(path.resolve(process.cwd(), "realms"));
 
+  // ── Scheduler for proactive behavior and health checks ──
+  const scheduler = new Scheduler();
+
+  // Built-in health check rules
+  scheduler.addRule({
+    id: "system.health.daily",
+    trigger: "0 3 * * *", // Daily at 03:00
+    action: "system:health.computeAll",
+    enabled: true,
+  });
+
+  scheduler.addRule({
+    id: "system.maturity.daily",
+    trigger: "30 3 * * *", // Daily at 03:30
+    action: "system:maturity.scanAll",
+    enabled: true,
+  });
+
   // Initialize channel manager
   const channelManager = new ChannelManager();
   if (config.channels && Object.keys(config.channels).length > 0) {
@@ -99,6 +117,7 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     crossRealmReactor,
     directoryScanner,
     embeddingRegistry,
+    scheduler,
     startTime,
   };
 
@@ -150,6 +169,79 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     },
   };
 
+  // ── Wire Scheduler action handlers ──
+  scheduler.setActionHandler(async (rule) => {
+    if (rule.action.startsWith("system:")) {
+      // System rules — health checks and maturity scans
+      if (rule.action === "system:health.computeAll") {
+        log.info("Scheduled health computation for all realms");
+        const reports = await memoryHealthManager.computeAllHealth();
+
+        // Persist each report and check for significant score changes
+        for (const report of reports) {
+          await healthReportRepo.create(report);
+
+          // Broadcast alert if score changed significantly (> 10 points)
+          if (report.previousScore !== undefined && Math.abs(report.healthScore - report.previousScore) > 10) {
+            const realm = realmManager.get(report.realmId);
+            rpcServices.wsBroadcaster?.broadcast({
+              jsonrpc: "2.0",
+              method: "health.alert",
+              params: {
+                realmId: report.realmId,
+                realmName: realm?.name ?? "Unknown",
+                previousScore: report.previousScore,
+                currentScore: report.healthScore,
+                delta: report.healthScore - report.previousScore,
+                issues: report.issues.slice(0, 3),
+              },
+            });
+          }
+        }
+
+        log.info(`Health computed for ${reports.length} realms`);
+        return;
+      }
+
+      if (rule.action === "system:maturity.scanAll") {
+        log.info("Scheduled maturity scan for all realms");
+        const suggestions = await maturityScanner.scanAll();
+
+        // Broadcast summon suggestions for ready entities
+        for (const s of suggestions) {
+          rpcServices.wsBroadcaster?.broadcast({
+            jsonrpc: "2.0",
+            method: "maturity.ready",
+            params: s,
+          });
+        }
+
+        log.info(`Maturity scan complete, ${suggestions.length} entities ready to summon`);
+        return;
+      }
+    }
+
+    // User rules — proactive agent responses
+    log.info(`Executing proactive rule: ${rule.id}`);
+    const result = await agentRunner.run({
+      realmId: rule.realmId,
+      messages: [{ role: "user", content: rule.prompt ?? `Scheduled trigger: ${rule.trigger}` }],
+      systemPrompt: "You are a proactive assistant. Generate a brief, helpful notification based on the scheduled trigger.",
+    });
+
+    // Broadcast proactive message to connected clients
+    rpcServices.wsBroadcaster?.broadcast({
+      jsonrpc: "2.0",
+      method: "proactive",
+      params: {
+        ruleId: rule.id,
+        realmId: rule.realmId,
+        content: result.response.content,
+        tokensUsed: result.tokensUsed,
+      },
+    });
+  });
+
   // ── Wire channels into chat pipeline (with streaming support) ──
   channelManager.setStreamingHandler(async (msg, onToken) => {
     try {
@@ -181,6 +273,10 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
 
   // Start channels after servers are ready
   await channelManager.startAll();
+
+  // Start scheduler for proactive behavior and health checks
+  scheduler.start();
+  log.info("Scheduler started");
 
   log.info(`Ink HTTP bridge listening on http://${host}:${httpPort}`);
   log.info(`Ink WebSocket RPC listening on ws://${host}:${wsPort}`);
@@ -215,7 +311,11 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     close: async () => {
       log.info("Shutting down...");
 
-      // 1. Stop channels
+      // 1. Stop scheduler
+      scheduler.stop();
+      log.info("Scheduler stopped");
+
+      // 2. Stop channels
       await channelManager.stopAll();
 
       // 2. Close WS connections with 1001 (Going Away)

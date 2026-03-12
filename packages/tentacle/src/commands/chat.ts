@@ -3,7 +3,7 @@ import consola from "consola";
 import readline from "node:readline";
 import { WsRpcClient, ApiClient } from "../api-client.js";
 import { createInitialState } from "../tui/state.js";
-import { renderStatusBar, renderMessage, renderWelcomeDashboard, showThinking, clearThinking, renderSummonSuggestion } from "../tui/renderer.js";
+import { renderStatusBar, renderMessage, renderWelcomeDashboard, showThinking, clearThinking, renderSummonSuggestion, renderProactiveMessage, renderHealthAlert, renderMaturityReady } from "../tui/renderer.js";
 import { handleSlashCommand } from "../tui/commands.js";
 
 export const chatCommand = defineCommand({
@@ -87,6 +87,18 @@ async function runWsChat(
     if (event === "crossrealm.reaction" && data) {
       const r = data as { targetRealmName: string; agentName: string; content: string };
       process.stdout.write(`\n  ${renderMessage("system", `${r.agentName} (${r.targetRealmName}): ${r.content}`)}\n`);
+    }
+    if (event === "proactive" && data) {
+      const p = data as { ruleId: string; realmId?: string; content: string };
+      process.stdout.write(`\n${renderProactiveMessage(p)}\n`);
+    }
+    if (event === "health.alert" && data) {
+      const h = data as { realmId: string; realmName: string; previousScore: number; currentScore: number; delta: number; issues: Array<{ kind: string; description: string }> };
+      process.stdout.write(`\n${renderHealthAlert(h)}\n`);
+    }
+    if (event === "maturity.ready" && data) {
+      const m = data as { entityId: string; entityName: string; realmId: string; realmName: string; maturityScore: number };
+      process.stdout.write(`\n${renderMaturityReady(m)}\n`);
     }
   });
 
