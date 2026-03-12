@@ -9,3 +9,4 @@ export { MemoryRepo } from "./repos/memory-repo.js";
 export { ScannedFileRepo, type ScannedFile } from "./repos/scanned-file-repo.js";
 export { HealthReportRepo, type HealthReportRecord } from "./repos/health-report-repo.js";
 export { OnboardingRepo, type OnboardingState } from "./repos/onboarding-repo.js";
+export { KnowledgeGraphRepo, type KnowledgeNode, type KnowledgeEdge, type RelatedNode, type EntityGraph } from "./repos/knowledge-graph-repo.js";
