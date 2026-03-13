@@ -404,7 +404,7 @@ Chat Pipeline 返回主响应 (不阻塞)
 - [ ] **反应记忆**: 将有价值的跨域反应存入目标 Realm 的记忆，形成知识跨域沉淀
 - [ ] **用户反馈闭环**: 用户可以对反应点赞/忽略，系统学习调整触发灵敏度
 - [ ] **上下文增强**: 反应时注入目标域的知识，使反应更精准（如知道用户的预算余额）
-- [ ] **召唤体间交互**: 多个 Summoned Agent 之间的对话协作（见 design-discussion.md §4.5）
+- [ ] **召唤体间交互**: 多个 Summoned Agent 之间的对话协作（见 [design-decisions.md](design-decisions.md) §4.5）
 
 ---
 
@@ -582,13 +582,13 @@ MemoryExtractor.extractAndPersist()
 
 | 类别 | 文件 | 说明 |
 |------|------|------|
-| **架构设计** | `docs/design-discussion.md` | 完整架构、Summon 设计、跨域协调 |
-| **产品定位** | `docs/project-spec.md` | 一句话定位、信息架构、里程碑 |
-| **竞品分析** | `docs/research/05-competitive-landscape.md` | 25+ 竞品分析 |
-| **技术选型** | `docs/research/06-agent-frameworks-ecosystem.md` | Agent 框架生态 |
-| **90 天路线图** | `docs/research/03-优先级路线图与90天实验.md` | P1-P3 优先方向 |
-| **待办清单** | `docs/operations/todo-checklist.md` | 23 项发布任务 |
-| **品牌规范** | `docs/branding.md` | 颜色、Logo、语调 |
+| **架构设计** | [design-decisions.md](design-decisions.md) | 完整架构、Summon 设计、跨域协调 |
+| **产品定位** | [product/positioning.md](../product/positioning.md) | 一句话定位、信息架构、里程碑 |
+| **竞品分析** | [research/05-competitive-landscape.md](../research/05-competitive-landscape.md) | 25+ 竞品分析 |
+| **技术选型** | [research/06-agent-frameworks-ecosystem.md](../research/06-agent-frameworks-ecosystem.md) | Agent 框架生态 |
+| **90 天路线图** | [research/03-优先级路线图与90天实验.md](../research/03-优先级路线图与90天实验.md) | P1-P3 优先方向 |
+| **待办清单** | [operations/todo-checklist.md](../operations/todo-checklist.md) | 23 项发布任务 |
+| **品牌规范** | [product/branding.md](../product/branding.md) | 颜色、Logo、语调 |
 | **核心类型** | `packages/shared/src/types.ts` | Zod 验证的所有数据模型 |
 | **RPC 协议** | `packages/shared/src/rpc-protocol.ts` | 35 个方法 + 8 个事件 |
 | **数据库迁移** | `packages/storage/src/migrations.ts` | v1 + v2 表结构 |

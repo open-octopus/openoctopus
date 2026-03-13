@@ -144,7 +144,7 @@ docker compose up                      # Full stack
 
 ## Documentation
 
-- `docs/project-spec.md` — Product positioning, RealmHub mechanism, milestones
-- `docs/design-discussion.md` — Deep design decisions
-- `docs/branding.md` — Brand identity, color palette
+- `docs/product/positioning.md` — Product positioning, RealmHub mechanism, milestones
+- `docs/architecture/design-decisions.md` — Deep design decisions
+- `docs/product/branding.md` — Brand identity, color palette
 - `docs/research/` — Market research, scenario mapping, roadmap

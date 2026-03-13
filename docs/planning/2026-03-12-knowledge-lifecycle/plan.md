@@ -825,6 +825,6 @@ Run: `pnpm build` — expected: all 8 packages succeed.
 
 - [ ] **Step 4: Update optimization roadmap**
 
-Update `docs/optimization-roadmap.md` sections 8 and 9 to reflect new completion status.
+Update `docs/architecture/system-overview.md` sections 8 and 9 to reflect new completion status.
 
 - [ ] **Step 5: Commit docs update**
