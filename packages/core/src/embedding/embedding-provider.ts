@@ -54,7 +54,7 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
 
     // Sort by index to preserve order
     return data.data
-      .sort((a, b) => a.index - b.index)
+      .toSorted((a, b) => a.index - b.index)
       .map((d) => d.embedding);
   }
 }

@@ -142,12 +142,12 @@ export class MemoryHealthManager {
     const seen = new Set<number>();
 
     for (let i = 0; i < memories.length; i++) {
-      if (seen.has(i)) continue;
+      if (seen.has(i)) { continue; }
 
       const group: string[] = [memories[i].id];
 
       for (let j = i + 1; j < memories.length; j++) {
-        if (seen.has(j)) continue;
+        if (seen.has(j)) { continue; }
 
         const dist = normalizedLevenshtein(memories[i].content, memories[j].content);
         if (dist < LEVENSHTEIN_THRESHOLD) {
@@ -176,7 +176,7 @@ export class MemoryHealthManager {
     }
 
     const memories = this.memoryRepo.listByRealm(realmId, "archival");
-    if (memories.length < 2) return [];
+    if (memories.length < 2) { return []; }
 
     // Batch memories for LLM check (limit to 30 to control cost)
     const batch = memories.slice(0, 30);
@@ -217,7 +217,7 @@ If no contradictions found, output [].`,
   detectStale(realmId: string, staleDays = DEFAULT_STALE_DAYS): HealthIssue[] {
     const staleMemories = this.memoryRepo.listStale(realmId, staleDays);
 
-    if (staleMemories.length === 0) return [];
+    if (staleMemories.length === 0) { return []; }
 
     return [{
       kind: "stale",
@@ -252,7 +252,7 @@ If no contradictions found, output [].`,
   async deduplicate(realmId: string, memoryIdPairs: string[][]): Promise<number> {
     let removed = 0;
     for (const group of memoryIdPairs) {
-      if (group.length < 2) continue;
+      if (group.length < 2) { continue; }
       const toDelete = group.slice(1);
       removed += this.memoryRepo.deleteMany(toDelete);
     }
@@ -278,7 +278,7 @@ If no contradictions found, output [].`,
   }
 
   async compress(realmId: string, memoryIds: string[]): Promise<MemoryEntry | null> {
-    if (memoryIds.length === 0) return null;
+    if (memoryIds.length === 0) { return null; }
 
     const memories = memoryIds
       .map(id => {
@@ -291,7 +291,7 @@ If no contradictions found, output [].`,
       })
       .filter((m): m is MemoryEntry => m !== undefined);
 
-    if (memories.length === 0) return null;
+    if (memories.length === 0) { return null; }
 
     if (!this.llmRegistry.hasRealProvider()) {
       // Simple concatenation fallback
@@ -335,7 +335,7 @@ If no contradictions found, output [].`,
 
 /** Normalized Levenshtein distance (0 = identical, 1 = completely different) */
 function normalizedLevenshtein(a: string, b: string): number {
-  if (a === b) return 0;
+  if (a === b) { return 0; }
   const maxLen = Math.max(a.length, b.length);
   if (maxLen === 0) return 0;
 

@@ -22,8 +22,8 @@ const mockLlmRegistry = {
 describe("Knowledge Lifecycle Integration", () => {
   let db: Database.Database;
   let memoryRepo: MemoryRepo;
-  let realmRepo: RealmRepo;
-  let entityRepo: EntityRepo;
+  let _realmRepo: RealmRepo;
+  let _entityRepo: EntityRepo;
   let healthReportRepo: HealthReportRepo;
   let scannedFileRepo: ScannedFileRepo;
   let onboardingRepo: OnboardingRepo;
@@ -35,8 +35,8 @@ describe("Knowledge Lifecycle Integration", () => {
     db = new Database(":memory:");
     runMigrations(db);
     memoryRepo = new MemoryRepo(db);
-    realmRepo = new RealmRepo(db);
-    entityRepo = new EntityRepo(db);
+    _realmRepo = new RealmRepo(db);
+    _entityRepo = new EntityRepo(db);
     healthReportRepo = new HealthReportRepo(db);
     scannedFileRepo = new ScannedFileRepo(db);
     onboardingRepo = new OnboardingRepo(db);
@@ -137,7 +137,7 @@ describe("Knowledge Lifecycle Integration", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "oo-integration-"));
 
     try {
-      const realm = realmManager.create({ name: "pet", description: "Pet care" });
+      realmManager.create({ name: "pet", description: "Pet care" });
       fs.writeFileSync(path.join(tmpDir, "notes.md"), "My cat Luna likes fish");
 
       const distributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, mockLlmRegistry as any);
@@ -197,9 +197,9 @@ describe("Knowledge Lifecycle Integration", () => {
 
   it("cross-realm keyword matching: best agent selected among 3 realms", async () => {
     // This test verifies the keyword scoring logic with real realm data
-    const petRealm = realmManager.create({ name: "pet", description: "Pets" });
-    const financeRealm = realmManager.create({ name: "finance", description: "Finance" });
-    const healthRealm = realmManager.create({ name: "health", description: "Health" });
+    realmManager.create({ name: "pet", description: "Pets" });
+    realmManager.create({ name: "finance", description: "Finance" });
+    realmManager.create({ name: "health", description: "Health" });
 
     const distributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, mockLlmRegistry as any);
 

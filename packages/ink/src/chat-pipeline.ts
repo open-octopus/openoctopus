@@ -396,7 +396,7 @@ function inferPreviousRealmFromTranscript(
       const keywords = realmKeywords[realm.name.toLowerCase()] ?? [];
       let score = 0;
       for (const kw of keywords) {
-        if (lowered.includes(kw)) score++;
+        if (lowered.includes(kw)) { score++; }
       }
       if (score > bestScore) {
         bestScore = score;
