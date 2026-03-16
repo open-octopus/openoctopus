@@ -204,14 +204,17 @@ async function runWsChat(
 
         if (!hasTokens) {
           clearThinking();
+          // For non-streaming responses (e.g., system actions), display the message content
+          if (response.result) {
+            const result = response.result as { sessionId?: string; message?: { content?: string } };
+            state.sessionId = result.sessionId;
+            if (result.message?.content) {
+              console.log(renderMessage("assistant", result.message.content));
+            }
+          }
         }
 
         process.stdout.write("\n\n");
-
-        if (response.result) {
-          const result = response.result as { sessionId?: string };
-          state.sessionId = result.sessionId;
-        }
 
         if (response.error) {
           console.log(renderMessage("error", response.error.message));
