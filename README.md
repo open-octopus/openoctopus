@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://github.com/open-octopus/openoctopus/actions"><img src="https://img.shields.io/github/actions/workflow/status/open-octopus/openoctopus/ci.yml?style=for-the-badge&label=CI" alt="CI"></a>
   <a href="https://github.com/open-octopus/openoctopus/releases"><img src="https://img.shields.io/github/v/release/open-octopus/openoctopus?style=for-the-badge&include_prereleases" alt="Release"></a>
-  <a href="https://discord.gg/openoctopus"><img src="https://img.shields.io/badge/Discord-The%20Reef-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://discord.gg/mwNTk8g5fV"><img src="https://img.shields.io/badge/Discord-The%20Reef-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
 </p>
 
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/project-spec.md">Spec</a> · <a href="docs/design-discussion.md">Design</a> · <a href="docs/branding.md">Brand</a> · <a href="docs/research/README.md">Research</a> · <a href="https://discord.gg/openoctopus">Discord</a>
+  <a href="docs/project-spec.md">Spec</a> · <a href="docs/design-discussion.md">Design</a> · <a href="docs/branding.md">Brand</a> · <a href="docs/research/README.md">Research</a> · <a href="https://discord.gg/mwNTk8g5fV">Discord</a>
 </p>
 
 ---

@@ -127,7 +127,7 @@ Official community for OpenOctopus — the realm-native life agent system. Discu
 **Invite Link（建议）：**
 
 ```
-discord.gg/openoctopus
+discord.gg/mwNTk8g5fV
 ```
 
 **Category 频道建议：**

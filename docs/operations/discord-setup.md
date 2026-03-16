@@ -8,7 +8,7 @@
 | Icon | `docs/assets/openoctopus-avatar.png` |
 | Banner | `docs/assets/openoctopus-banner.png` |
 | Description | Official community for OpenOctopus — the realm-native life agent system. |
-| Invite Link | `discord.gg/openoctopus` (Vanity URL，需 Boost Level 3) |
+| Invite Link | `discord.gg/mwNTk8g5fV` (Vanity URL，需 Boost Level 3) |
 | 语言 | 中英双语（中文为主，英文频道预留） |
 
 ## 2. Server 创建步骤

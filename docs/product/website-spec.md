@@ -374,7 +374,7 @@ tentacle summon --realm pet --name "Momo" --type living
 | 官网 | `https://openoctopus.club` |
 | GitHub（产品） | `https://github.com/open-octopus/openoctopus` |
 | GitHub（网站） | `https://github.com/open-octopus/openoctopus.club` |
-| Discord | `https://discord.gg/openoctopus`（The Reef） |
+| Discord | `https://discord.gg/mwNTk8g5fV`（The Reef） |
 | X/Twitter | `@openoctopus` |
 | Product Hunt | 待注册 |
 | 小红书 | 待注册 |
@@ -557,7 +557,7 @@ proactive:
   <a href="https://github.com/open-octopus/openoctopus">
     <img src="https://img.shields.io/github/stars/open-octopus/openoctopus?style=for-the-badge" alt="Stars">
   </a>
-  <a href="https://discord.gg/openoctopus">
+  <a href="https://discord.gg/mwNTk8g5fV">
     <img src="https://img.shields.io/badge/Discord-The%20Reef-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
   </a>
   <a href="https://github.com/open-octopus/openoctopus/blob/main/LICENSE">

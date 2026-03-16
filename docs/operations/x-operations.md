@@ -86,7 +86,7 @@ How OpenOctopus routes your intent to the right realm 🧵
 
 [引用/截图]
 
-Share yours in The Reef → discord.gg/openoctopus
+Share yours in The Reef → discord.gg/mwNTk8g5fV
 ```
 
 #### 趣味 (Fun/Meme)
