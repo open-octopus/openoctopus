@@ -3,6 +3,7 @@ import {
   type AgentConfig,
   type RealmState,
   type MemoryEntry,
+  type Entity,
   generateId,
   createRpcEvent,
   RPC_EVENTS,
@@ -261,20 +262,57 @@ async function handleSystemAction(
       const entityName = args.entityName;
       if (!entityName) return "Please specify which entity to summon.";
 
-      // Find entity by name across all realms
+      // Find entity by name across all realms (case-insensitive exact match)
       const realms = services.realmManager.list();
       for (const realm of realms) {
         const entity = services.entityManager.findByNameInRealm(realm.id, entityName);
         if (entity) {
           try {
             const result = await services.summonEngine.summon(entity.id);
-            return `${entityName} has been summoned! (Realm: ${realm.name})\nYou can now chat with ${entityName} using the entity chat mode.\n\nAgent: ${result.agent.name}`;
+            return `${entity.name} has been summoned! (Realm: ${realm.name})\nYou can now chat with ${entity.name} using the entity chat mode.\n\nAgent: ${result.agent.name}`;
           } catch (err) {
             return `Failed to summon ${entityName}: ${err instanceof Error ? err.message : String(err)}`;
           }
         }
       }
-      return `Entity "${entityName}" not found. Check available entities with "list entities" or create one first.`;
+
+      // Try fuzzy/case-insensitive matching
+      const allEntities: Array<{ entity: Entity; realm: Realm }> = [];
+      for (const realm of realms) {
+        const entities = services.entityManager.listByRealm(realm.id);
+        for (const entity of entities) {
+          allEntities.push({ entity, realm });
+        }
+      }
+
+      const searchLower = entityName.toLowerCase();
+      const fuzzyMatches = allEntities.filter(
+        ({ entity }) =>
+          entity.name.toLowerCase().includes(searchLower) ||
+          searchLower.includes(entity.name.toLowerCase())
+      );
+
+      if (fuzzyMatches.length === 1) {
+        const { entity, realm } = fuzzyMatches[0];
+        try {
+          const result = await services.summonEngine.summon(entity.id);
+          return `${entity.name} has been summoned! (Realm: ${realm.name})\nYou can now chat with ${entity.name} using the entity chat mode.\n\nAgent: ${result.agent.name}`;
+        } catch (err) {
+          return `Failed to summon ${entity.name}: ${err instanceof Error ? err.message : String(err)}`;
+        }
+      }
+
+      if (fuzzyMatches.length > 1) {
+        const suggestions = fuzzyMatches.map(({ entity }) => `  - ${entity.name}`).join("\n");
+        return `Multiple entities match "${entityName}":\n${suggestions}\n\nPlease be more specific.`;
+      }
+
+      // List available entities to help the user
+      const entityList = allEntities.length > 0
+        ? "\n\nAvailable entities:\n" + allEntities.map(({ entity }) => `  - ${entity.name}`).join("\n")
+        : "\n\nNo entities found. Create one first using entity.create.";
+
+      return `Entity "${entityName}" not found.${entityList}`;
     }
 
     case "unsummon": {
