@@ -4,6 +4,7 @@ import { Entities } from "./pages/Entities";
 import { Home } from "./pages/Home";
 import { Members } from "./pages/Members";
 import { RouteView } from "./pages/RouteView";
+import { Settings } from "./pages/Settings";
 
 function Placeholder({ name }: { name: string }) {
   return <div className="p-6 text-lg text-ocean">{name} - Coming Soon</div>;
@@ -18,7 +19,7 @@ export function App() {
           <Route path="route" element={<RouteView />} />
           <Route path="members" element={<Members />} />
           <Route path="entities" element={<Entities />} />
-          <Route path="settings" element={<Placeholder name="⚙️ 设置" />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>
