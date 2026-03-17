@@ -15,8 +15,8 @@
 </p>
 
 <p align="center">
-  Realm-native life agent system.<br>
-  Organize life by realms. Summon anything into a living agent.
+  AI family home hub.<br>
+  One event, every member, the right context. Summon anything into a living agent.
 </p>
 
 <p align="center">
@@ -25,9 +25,9 @@
 
 ---
 
-OpenOctopus is not another unified chatbox. It organizes your life into **Realms** — pet, parents, finance, work, legal, hobbies — each with its own knowledge base, agent team, and skill set. Like an octopus, each tentacle has its own nerve center and acts autonomously, while the central brain coordinates everything.
+OpenOctopus is not another unified chatbox — it's **a family member in the group chat**. It organizes family life into **Realms** — pet, parents, finance, work, health — each with its own knowledge base, agent team, and skill set. Like an octopus, each tentacle has its own nerve center and acts autonomously, while the central brain coordinates everything.
 
-What makes it unique: **Summon**. Turn any real-world object — your dog, your mom, your car — into a living AI agent with memory, personality, and proactive behavior.
+What makes it unique: **intelligent family routing**. The same event reaches every family member with role-appropriate context — dad gets action items with medical history, mom gets a coordination view, grandpa gets large-text essentials. Plus **Summon**: turn any real-world entity into a living AI agent with memory, personality, and proactive behavior.
 
 <p align="center">
   <img src="docs/assets/openoctopus-banner.png" alt="OpenOctopus — each tentacle connects to a life realm" width="720">
