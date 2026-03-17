@@ -56,6 +56,8 @@
     "start": "tsx packages/tentacle/src/cli.ts start",
     "chat": "tsx packages/tentacle/src/cli.ts chat",
     "restart": "pnpm build && tsx packages/tentacle/src/cli.ts start",
+    "dashboard:dev": "pnpm --filter @openoctopus/dashboard dev",
+    "dashboard:build": "pnpm --filter @openoctopus/dashboard build",
     "clean": "pnpm -r exec rm -rf dist",
     "doctor": "pnpm check && pnpm test:unit"
   },

@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-ocean: #1E3A5F;
+  --color-cyan: #00D4AA;
+  --color-purple: #6C3FA0;
+}

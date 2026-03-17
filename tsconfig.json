@@ -8,6 +8,7 @@
     { "path": "packages/channels" },
     { "path": "packages/ink" },
     { "path": "packages/tentacle" },
-    { "path": "packages/realmhub" }
+    { "path": "packages/realmhub" },
+    { "path": "packages/dashboard" }
   ]
 }
