@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import { Shell } from "./components/layout/Shell";
+import { Entities } from "./pages/Entities";
 import { Home } from "./pages/Home";
 import { Members } from "./pages/Members";
 import { RouteView } from "./pages/RouteView";
@@ -16,7 +17,7 @@ export function App() {
           <Route index element={<Home />} />
           <Route path="route" element={<RouteView />} />
           <Route path="members" element={<Members />} />
-          <Route path="entities" element={<Placeholder name="🎯 实体管理" />} />
+          <Route path="entities" element={<Entities />} />
           <Route path="settings" element={<Placeholder name="⚙️ 设置" />} />
         </Route>
       </Routes>
