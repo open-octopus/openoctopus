@@ -5,6 +5,8 @@ import { MemoryRepo } from "./memory-repo.js";
 import { RealmRepo } from "./realm-repo.js";
 import { EntityRepo } from "./entity-repo.js";
 
+const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
+
 let db: Database.Database;
 let repo: MemoryRepo;
 let realmRepo: RealmRepo;
@@ -253,7 +255,6 @@ describe("MemoryRepo", () => {
     it("backfillEmbeddings processes memories without embeddings", async () => {
       repo.create({ realmId: "realm_sem", tier: "archival", content: "fact1" });
       repo.create({ realmId: "realm_sem", tier: "archival", content: "fact2" });
-      const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
       const result = await repo.backfillEmbeddings(mockEmbed);
       expect(result.processed).toBe(2);
       expect(result.skipped).toBe(0);
@@ -263,7 +264,6 @@ describe("MemoryRepo", () => {
       const e = repo.create({ realmId: "realm_sem", tier: "archival", content: "has_emb" });
       repo.updateEmbedding(e.id, [0.5, 0.5, 0.5]);
       repo.create({ realmId: "realm_sem", tier: "archival", content: "no_emb" });
-      const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
       const result = await repo.backfillEmbeddings(mockEmbed);
       expect(result.processed).toBe(1);
       expect(result.skipped).toBe(1);

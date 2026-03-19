@@ -46,7 +46,7 @@ export class CrossRealmReactor {
     const { sourceRealmId, userMessage, assistantResponse, onReaction } = params;
 
     const activeSummoned = this.summonEngine.listActive();
-    if (activeSummoned.length === 0) return;
+    if (activeSummoned.length === 0) {return;}
 
     const realms = this.realmManager.list();
     const combinedText = `${userMessage} ${assistantResponse}`;
@@ -56,10 +56,10 @@ export class CrossRealmReactor {
 
     for (const summoned of activeSummoned) {
       // Skip agents in the source realm
-      if (summoned.entity.realmId === sourceRealmId) continue;
+      if (summoned.entity.realmId === sourceRealmId) {continue;}
 
       const targetRealm = realms.find(r => r.id === summoned.entity.realmId);
-      if (!targetRealm) continue;
+      if (!targetRealm) {continue;}
 
       const score = this.computeRelevanceScore(combinedText, targetRealm);
       if (score > 0 && (!bestMatch || score > bestMatch.score)) {
@@ -72,7 +72,7 @@ export class CrossRealmReactor {
       }
     }
 
-    if (!bestMatch) return;
+    if (!bestMatch) {return;}
 
     // Generate reaction from the best-matching agent
     try {
@@ -108,7 +108,7 @@ export class CrossRealmReactor {
 
     let score = 0;
     for (const kw of keywords) {
-      if (lowered.includes(kw)) score++;
+      if (lowered.includes(kw)) {score++;}
     }
 
     return score;
@@ -121,7 +121,7 @@ export class CrossRealmReactor {
     sourceRealmId: string,
     conversationSummary: string,
   ): Promise<string | null> {
-    if (!this.llmRegistry.hasRealProvider()) return null;
+    if (!this.llmRegistry.hasRealProvider()) {return null;}
 
     try {
       const provider = this.llmRegistry.getProvider();
@@ -143,7 +143,7 @@ If nothing truly relevant from your domain's perspective, respond with exactly "
       });
 
       const content = result.content.trim();
-      if (content === "SKIP" || content.length < 5) return null;
+      if (content === "SKIP" || content.length < 5) {return null;}
 
       return content;
     } catch (err) {

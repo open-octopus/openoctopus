@@ -80,7 +80,7 @@ export class EmbeddingProviderRegistry {
 
     // Try exact match
     const provider = this.providers.get(providerName);
-    if (provider) return provider;
+    if (provider) {return provider;}
 
     // Try first configured provider
     if (this.providerOrder.length > 0) {

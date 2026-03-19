@@ -160,7 +160,7 @@ describe("DirectoryScanner", () => {
     it("should not call distributeFromText in dryRun mode", async () => {
       fs.writeFileSync(path.join(tmpDir, "notes.md"), "some content");
 
-      const result = await scanner.scanDirectory(tmpDir, { dryRun: true });
+      await scanner.scanDirectory(tmpDir, { dryRun: true });
       expect(mockKnowledgeDistributor.distributeFromText).not.toHaveBeenCalled();
     });
 

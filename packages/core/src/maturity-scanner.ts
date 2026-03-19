@@ -36,7 +36,7 @@ export class MaturityScanner {
 
   computeEntityMaturity(entityId: string): MaturityScore {
     const entity = this.entityManager.get(entityId);
-    const realm = this.realmManager.get(entity.realmId);
+    const _realm = this.realmManager.get(entity.realmId);
 
     // Attribute completeness (30%): non-empty attributes / total defined attributes
     const attrs = entity.attributes;

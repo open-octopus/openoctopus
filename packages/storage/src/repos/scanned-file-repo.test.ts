@@ -49,7 +49,7 @@ describe("ScannedFileRepo", () => {
   it("upsert overwrites on conflict", () => {
     repo.upsert({ path: "/dup.md", fileHash: "h1", factsExtracted: 1 });
     repo.upsert({ path: "/dup.md", fileHash: "h2", factsExtracted: 2 });
-    const all = repo.listByRealm("realm_any");
+    const _all = repo.listByRealm("realm_any");
     // Both entries have no realmId matching "realm_any", so this returns 0
     // Instead verify by findByPath that there is only one record
     const file = repo.findByPath("/dup.md");

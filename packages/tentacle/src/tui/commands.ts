@@ -291,7 +291,7 @@ async function handleInject(client: WsRpcClient, text?: string): Promise<SlashCo
   }
 }
 
-async function handleMaturity(client: WsRpcClient, realmName?: string, state?: TuiState): Promise<SlashCommandResult> {
+async function handleMaturity(client: WsRpcClient, realmName?: string, _state?: TuiState): Promise<SlashCommandResult> {
   try {
     if (realmName) {
       const listResponse = await client.call("realm.list");

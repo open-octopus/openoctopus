@@ -34,7 +34,7 @@ const mockEmbeddingRegistry = {
 
 /** Helper: create a unit vector pointing along a single dimension */
 function basisVector(dim: number, size = 128): number[] {
-  const v = new Array(size).fill(0);
+  const v = Array.from({ length: size }, () => 0);
   v[dim] = 1;
   return v;
 }
@@ -42,7 +42,7 @@ function basisVector(dim: number, size = 128): number[] {
 /** Helper: create a vector that is `similarity` cosine-similar to a basis vector at dim */
 function vectorWithSimilarity(baseDim: number, similarity: number, size = 128): number[] {
   // Start with the basis vector scaled by similarity, add orthogonal component
-  const v = new Array(size).fill(0);
+  const v = Array.from({ length: size }, () => 0);
   v[baseDim] = similarity;
   // Add orthogonal component in the next dimension to make it a unit vector
   const orthDim = (baseDim + 1) % size;

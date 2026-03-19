@@ -161,7 +161,7 @@ export class MemoryRepo {
   }
 
   deleteMany(ids: string[]): number {
-    if (ids.length === 0) return 0;
+    if (ids.length === 0) {return 0;}
     const placeholders = ids.map(() => "?").join(",");
     const result = this.db.prepare(`DELETE FROM memories WHERE id IN (${placeholders})`).run(...ids);
     return result.changes;
@@ -179,7 +179,7 @@ export class MemoryRepo {
 
   getById(id: string): MemoryEntry {
     const row = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as MemoryRow | undefined;
-    if (!row) throw new Error(`Memory ${id} not found`);
+    if (!row) {throw new Error(`Memory ${id} not found`);}
     return rowToMemory(row);
   }
 
@@ -193,18 +193,18 @@ export class MemoryRepo {
 
     for (const row of rows) {
       const entry = rowToMemory(row);
-      if (!entry.embedding) continue;
+      if (!entry.embedding) {continue;}
       // Filter by matching dimension count
       const embeddingDim = (entry.metadata as Record<string, unknown>).embeddingDim as number | undefined;
-      if (embeddingDim !== undefined && embeddingDim !== queryDim) continue;
-      if (entry.embedding.length !== queryDim) continue;
+      if (embeddingDim !== undefined && embeddingDim !== queryDim) {continue;}
+      if (entry.embedding.length !== queryDim) {continue;}
 
       const score = cosineSimilarity(queryVector, entry.embedding);
       scored.push({ entry, score });
     }
 
     return scored
-      .sort((a, b) => b.score - a.score)
+      .toSorted((a, b) => b.score - a.score)
       .slice(0, topK)
       .map(s => s.entry);
   }

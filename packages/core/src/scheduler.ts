@@ -25,7 +25,7 @@ const TRIGGER_MAP: Record<string, string> = {
 
 /** Simple cron expression validator (5-field format) */
 const CRON_REGEX =
-  /^(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)\s+(\*|[0-9,\-\/]+)$/;
+  /^(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)\s+(\*|[0-9,\-/]+)$/;
 
 /** Match "every day Xam" or "every day Xpm" */
 const TIME_REGEX = /^every\s+day\s+(\d{1,2})(am|pm)$/i;
@@ -33,18 +33,18 @@ const TIME_REGEX = /^every\s+day\s+(\d{1,2})(am|pm)$/i;
 /** Convert cron expression to milliseconds interval (MVP approximation) */
 function cronToInterval(cron: string): number {
   const parts = cron.split(/\s+/);
-  if (parts.length !== 5) return 24 * 60 * 60 * 1000; // default: daily
+  if (parts.length !== 5) {return 24 * 60 * 60 * 1000;} // default: daily
 
   const [_minute, hour, dayOfMonth, , dayOfWeek] = parts;
 
   // "0 * * * *" → hourly
-  if (hour === "*") return 60 * 60 * 1000;
+  if (hour === "*") {return 60 * 60 * 1000;}
 
   // "0 9 * * 1" → weekly (day of week specified)
-  if (dayOfWeek !== "*") return 7 * 24 * 60 * 60 * 1000;
+  if (dayOfWeek !== "*") {return 7 * 24 * 60 * 60 * 1000;}
 
   // "0 9 1 * *" → monthly (day of month specified, not *)
-  if (dayOfMonth !== "*") return 30 * 24 * 60 * 60 * 1000;
+  if (dayOfMonth !== "*") {return 30 * 24 * 60 * 60 * 1000;}
 
   // Default: daily
   return 24 * 60 * 60 * 1000;
@@ -59,23 +59,23 @@ export class Scheduler {
   /** Parse a human-readable trigger or cron expression */
   static parseTrigger(trigger: string): string | null {
     const trimmed = trigger.trim().toLowerCase();
-    if (!trimmed) return null;
+    if (!trimmed) {return null;}
 
     // Check exact matches in map
-    if (TRIGGER_MAP[trimmed]) return TRIGGER_MAP[trimmed];
+    if (TRIGGER_MAP[trimmed]) {return TRIGGER_MAP[trimmed];}
 
     // Check "every day Xam/pm" pattern
     const timeMatch = trimmed.match(TIME_REGEX);
     if (timeMatch) {
       let hour = parseInt(timeMatch[1], 10);
       const period = timeMatch[2].toLowerCase();
-      if (period === "pm" && hour !== 12) hour += 12;
-      if (period === "am" && hour === 12) hour = 0;
+      if (period === "pm" && hour !== 12) {hour += 12;}
+      if (period === "am" && hour === 12) {hour = 0;}
       return `0 ${hour} * * *`;
     }
 
     // Check raw cron expression
-    if (CRON_REGEX.test(trimmed)) return trimmed;
+    if (CRON_REGEX.test(trimmed)) {return trimmed;}
 
     return null;
   }
@@ -124,7 +124,7 @@ export class Scheduler {
   }
 
   start(): void {
-    if (this.running) return;
+    if (this.running) {return;}
     this.running = true;
 
     for (const rule of this.rules) {

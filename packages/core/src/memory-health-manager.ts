@@ -117,7 +117,6 @@ export class MemoryHealthManager {
       for (const issue of dups) {
         if (issue.memoryIds.length >= 2) {
           // Keep first, delete rest
-          const toDelete = issue.memoryIds.slice(1);
           deduplicatedCount += await this.deduplicate(realmId, [issue.memoryIds]);
         }
       }
@@ -337,7 +336,7 @@ If no contradictions found, output [].`,
 function normalizedLevenshtein(a: string, b: string): number {
   if (a === b) { return 0; }
   const maxLen = Math.max(a.length, b.length);
-  if (maxLen === 0) return 0;
+  if (maxLen === 0) {return 0;}
 
   // For performance, skip very long strings
   if (maxLen > 500) {
@@ -346,7 +345,7 @@ function normalizedLevenshtein(a: string, b: string): number {
     const setB = new Set(b.toLowerCase().split(/\s+/));
     let overlap = 0;
     for (const w of setA) {
-      if (setB.has(w)) overlap++;
+      if (setB.has(w)) {overlap++;}
     }
     const union = new Set([...setA, ...setB]).size;
     return union > 0 ? 1 - overlap / union : 1;
@@ -356,8 +355,8 @@ function normalizedLevenshtein(a: string, b: string): number {
   const n = b.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0) as number[]);
 
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 0; i <= m; i++) {dp[i][0] = i;}
+  for (let j = 0; j <= n; j++) {dp[0][j] = j;}
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {

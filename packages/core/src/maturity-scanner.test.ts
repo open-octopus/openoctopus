@@ -269,11 +269,11 @@ describe("MaturityScanner", () => {
         { id: "r2", name: "finance" },
       ]);
       mockEntityManager.listByRealm.mockImplementation((realmId: string) => {
-        if (realmId === "r1") return [{ id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" }];
+        if (realmId === "r1") {return [{ id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" }];}
         return [{ id: "e2", name: "Account", realmId: "r2", attributes: { x: 1 }, summonStatus: "dormant" }];
       });
       mockEntityManager.get.mockImplementation((id: string) => {
-        if (id === "e1") return { id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" };
+        if (id === "e1") {return { id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" };}
         return { id: "e2", name: "Account", realmId: "r2", attributes: { x: 1 }, summonStatus: "dormant" };
       });
       mockRealmManager.get.mockImplementation((id: string) => ({ id, name: id === "r1" ? "pet" : "finance" }));

@@ -151,7 +151,7 @@ export class KnowledgeDistributor {
       const classification = await this.classifyToRealm(fact, realms);
 
       // Skip if the fact belongs to the source realm (already handled)
-      if (!classification || classification.realmId === sourceRealmId) continue;
+      if (!classification || classification.realmId === sourceRealmId) {continue;}
 
       this.memoryRepo.create({
         realmId: classification.realmId,
@@ -224,7 +224,7 @@ Write facts in the same language as the input.`,
         .filter(item => item.fact && item.realm)
         .map((item): ExtractedFact | null => {
           const matchedRealm = realms.find(r => r.name.toLowerCase() === item.realm.toLowerCase());
-          if (!matchedRealm) return null;
+          if (!matchedRealm) {return null;}
           return {
             content: item.fact,
             realmId: matchedRealm.id,
@@ -252,7 +252,7 @@ Write facts in the same language as the input.`,
       const keywords = REALM_KEYWORDS[realm.name.toLowerCase()] ?? [];
       let score = 0;
       for (const kw of keywords) {
-        if (lowered.includes(kw)) score++;
+        if (lowered.includes(kw)) {score++;}
       }
       if (score > bestScore) {
         bestScore = score;
@@ -288,7 +288,7 @@ Write facts in the same language as the input.`,
       const keywords = REALM_KEYWORDS[realm.name.toLowerCase()] ?? [];
       let score = 0;
       for (const kw of keywords) {
-        if (lowered.includes(kw)) score++;
+        if (lowered.includes(kw)) {score++;}
       }
       if (score > bestScore) {
         bestScore = score;
@@ -304,11 +304,11 @@ Write facts in the same language as the input.`,
   }
 
   private async createMissingEntity(fact: ExtractedFact): Promise<void> {
-    if (!fact.entityName) return;
+    if (!fact.entityName) {return;}
 
     try {
       const existing = this.entityManager.findByNameInRealm(fact.realmId, fact.entityName);
-      if (existing) return;
+      if (existing) {return;}
 
       const validTypes = ["living", "asset", "organization", "abstract"] as const;
       const entityType = validTypes.includes(fact.entityType as typeof validTypes[number])

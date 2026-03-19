@@ -86,7 +86,7 @@ export class MemoryExtractor {
     try {
       const extraction = await this.extractFacts(params.userMessage, params.assistantMessage);
       const { facts, importance, relations } = extraction;
-      if (facts.length === 0) return { memories: [], attributeUpdates: [] };
+      if (facts.length === 0) {return { memories: [], attributeUpdates: [] };}
 
       const entries: MemoryEntry[] = [];
       for (let i = 0; i < facts.length; i++) {
@@ -296,7 +296,7 @@ export class MemoryExtractor {
     relations: ExtractionResult["relations"],
     realmId: string,
   ): Promise<void> {
-    if (!this.knowledgeGraphRepo || relations.length === 0) return;
+    if (!this.knowledgeGraphRepo || relations.length === 0) {return;}
 
     for (const rel of relations) {
       try {

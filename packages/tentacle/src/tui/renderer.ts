@@ -297,9 +297,9 @@ export interface HealthReportData {
 }
 
 function healthIcon(score: number): string {
-  if (score >= 80) return pc.green("\u2705");
-  if (score >= 50) return pc.yellow("\u26A0\uFE0F");
-  if (score >= 20) return pc.red("\u274C");
+  if (score >= 80) {return pc.green("\u2705");}
+  if (score >= 50) {return pc.yellow("\u26A0\uFE0F");}
+  if (score >= 20) {return pc.red("\u274C");}
   return "\u{1F4A4}";
 }
 
@@ -326,7 +326,7 @@ export function renderHealthReport(report: HealthReportData): string {
 }
 
 export function renderHealthDashboard(reports: HealthReportData[]): string {
-  if (reports.length === 0) return pc.dim("No realms to report on.");
+  if (reports.length === 0) {return pc.dim("No realms to report on.");}
 
   const lines: string[] = [];
   lines.push(pc.bold("  Knowledge Health Report"));

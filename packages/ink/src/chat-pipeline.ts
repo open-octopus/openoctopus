@@ -260,7 +260,7 @@ async function handleSystemAction(
   switch (action) {
     case "summon": {
       const entityName = args.entityName;
-      if (!entityName) return "Please specify which entity to summon.";
+      if (!entityName) {return "Please specify which entity to summon.";}
 
       // Find entity by name across all realms (case-insensitive exact match)
       const realms = services.realmManager.list();
@@ -317,7 +317,7 @@ async function handleSystemAction(
 
     case "unsummon": {
       const entityName = args.entityName;
-      if (!entityName) return "Please specify which entity to unsummon.";
+      if (!entityName) {return "Please specify which entity to unsummon.";}
 
       const active = services.summonEngine.listActive();
       const match = active.find(a => a.entity.name.toLowerCase() === entityName.toLowerCase());
@@ -330,7 +330,7 @@ async function handleSystemAction(
 
     case "list_realms": {
       const realms = services.realmManager.list();
-      if (realms.length === 0) return "No realms configured yet.";
+      if (realms.length === 0) {return "No realms configured yet.";}
 
       const lines = realms.map(r => {
         const icon = r.icon ? `${r.icon} ` : "";
@@ -354,13 +354,13 @@ async function handleSystemAction(
           }
         }
       }
-      if (lines.length === 0) return "No entities found across any realm.";
+      if (lines.length === 0) {return "No entities found across any realm.";}
       return `Entities:${lines.join("\n")}`;
     }
 
     case "switch_realm": {
       const realmName = args.realmName;
-      if (!realmName) return "Please specify which realm to switch to.";
+      if (!realmName) {return "Please specify which realm to switch to.";}
 
       const realm = services.realmManager.findByName(realmName);
       if (realm) {
@@ -411,7 +411,7 @@ function inferPreviousRealmFromTranscript(
 ): string | undefined {
   // Look at the last few messages for realm-related content
   const recent = messages.slice(-4);
-  if (recent.length === 0) return undefined;
+  if (recent.length === 0) {return undefined;}
 
   // Check if any recent message metadata contains realm info
   // For now, use keyword matching on recent messages
@@ -473,7 +473,7 @@ function inferRealmFromMessage(message: string, services: RpcServices): string |
     const keywords = realmKeywords[realm.name.toLowerCase()] ?? [];
     let score = 0;
     for (const kw of keywords) {
-      if (lowered.includes(kw)) score++;
+      if (lowered.includes(kw)) {score++;}
     }
     if (score > bestScore) {
       bestScore = score;

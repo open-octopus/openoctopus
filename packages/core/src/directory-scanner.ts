@@ -178,22 +178,22 @@ export class DirectoryScanner {
         resolvedPath,
         { recursive: true, persistent: false },
         (eventType, filename) => {
-          if (!filename || closed) return;
+          if (!filename || closed) {return;}
 
           // Check extension
           const ext = path.extname(filename).toLowerCase();
-          if (!extensions.includes(ext)) return;
+          if (!extensions.includes(ext)) {return;}
 
           const filePath = path.join(resolvedPath, filename);
 
           // Debounce: clear any pending scan for this file
           const existing = pendingScans.get(filePath);
-          if (existing) clearTimeout(existing);
+          if (existing) {clearTimeout(existing);}
 
           // Schedule new scan
           const timer = setTimeout(() => {
             pendingScans.delete(filePath);
-            if (closed) return;
+            if (closed) {return;}
 
             // Scan the file (fire-and-forget)
             this.scanFile(filePath).catch((err) => {
@@ -239,9 +239,9 @@ export class DirectoryScanner {
 
       for (const entry of entries) {
         // Skip hidden files/dirs
-        if (entry.name.startsWith(".")) continue;
+        if (entry.name.startsWith(".")) {continue;}
         // Skip node_modules, etc.
-        if (entry.name === "node_modules" || entry.name === "__pycache__") continue;
+        if (entry.name === "node_modules" || entry.name === "__pycache__") {continue;}
 
         const fullPath = path.join(dirPath, entry.name);
 
