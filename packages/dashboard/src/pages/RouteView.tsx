@@ -1,10 +1,11 @@
+import { useFamilyStore } from "../stores/family";
 import { TopologyGraph } from "../components/family/TopologyGraph";
 
 const PLACEHOLDER_MEMBERS = [
-  { id: "grandpa", name: "\u7237\u7237", icon: "\u{1F474}" },
-  { id: "dad", name: "\u7238\u7238", icon: "\u{1F468}" },
-  { id: "mom", name: "\u5988\u5988", icon: "\u{1F469}" },
-  { id: "daughter", name: "\u5973\u513F", icon: "\u{1F467}" },
+  { id: "grandpa", name: "爷爷", icon: "👴" },
+  { id: "dad", name: "爸爸", icon: "👨" },
+  { id: "mom", name: "妈妈", icon: "👩" },
+  { id: "daughter", name: "女儿", icon: "👧" },
 ];
 
 const PLACEHOLDER_ROUTES = [
@@ -13,21 +14,60 @@ const PLACEHOLDER_ROUTES = [
   { from: "grandpa", to: "daughter", relevance: "low" as const, pushed: false },
 ];
 
+const RELEVANCE_LABEL = { high: "高相关", medium: "中相关", low: "低相关" } as const;
+
 export function RouteView() {
+  const storeMembers = useFamilyStore((s) => s.members);
+  const routeEvents = useFamilyStore((s) => s.routeEvents);
+
+  const members = storeMembers.length > 0
+    ? storeMembers.map((m) => ({ id: m.id, name: m.name, icon: m.avatar ?? "👤" }))
+    : PLACEHOLDER_MEMBERS;
+
+  const routes = routeEvents.length > 0
+    ? routeEvents.flatMap((ev) =>
+        ev.targets.map((t) => ({
+          from: ev.source.memberId,
+          to: t.memberId,
+          relevance: t.relevance,
+          pushed: t.pushed,
+        })),
+      )
+    : PLACEHOLDER_ROUTES;
+
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-5xl">
-      <h1 className="text-xl font-bold text-ocean">{"\u{1F500}"} \u6D88\u606F\u8DEF\u7531</h1>
-      <TopologyGraph members={PLACEHOLDER_MEMBERS} routes={PLACEHOLDER_ROUTES} />
+      <h1 className="text-xl font-bold text-ocean">🔀 消息路由</h1>
+      <TopologyGraph members={members} routes={routes} />
 
       <div className="bg-white rounded-card border border-gray-200 p-4">
-        <h3 className="text-sm font-medium text-ocean mb-3">\u6700\u8FD1\u8DEF\u7531</h3>
+        <h3 className="text-sm font-medium text-ocean mb-3">最近路由</h3>
         <div className="space-y-3">
-          <div className="text-xs space-y-1">
-            <p className="font-medium text-gray-800">[\u7237\u7237\u819D\u76D6\u75BC] Health {"\u2192"} Finance, Calendar</p>
-            <p className="text-gray-600 pl-3">{"\u2192"} {"\u{1F468}"} \u7238\u7238\uFF1A\u5C31\u533B\u5EFA\u8BAE\uFF08\u9AD8\u76F8\u5173\uFF09</p>
-            <p className="text-gray-600 pl-3">{"\u2192"} {"\u{1F469}"} \u5988\u5988\uFF1A\u91C7\u8D2D\u6B62\u75DB\u8D34\uFF08\u4E2D\u76F8\u5173\uFF09</p>
-            <p className="text-gray-400 pl-3">{"\u2192"} {"\u{1F467}"} \u5973\u513F\uFF1A\u672A\u63A8\u9001\uFF08\u4F4E\u76F8\u5173\uFF09</p>
-          </div>
+          {routeEvents.length > 0 ? (
+            routeEvents.slice(0, 5).map((ev) => (
+              <div key={ev.id} className="text-xs space-y-1">
+                <p className="font-medium text-gray-800">
+                  [{ev.source.message}] {ev.realms.join(", ")}
+                </p>
+                {ev.targets.map((t) => (
+                  <p
+                    key={t.memberId}
+                    className={`pl-3 ${t.pushed ? "text-gray-600" : "text-gray-400"}`}
+                  >
+                    → {t.memberId}：{t.summary}（{RELEVANCE_LABEL[t.relevance]}）
+                    {!t.pushed && " — 未推送"}
+                  </p>
+                ))}
+              </div>
+            ))
+          ) : (
+            <div className="text-xs space-y-1">
+              <p className="font-medium text-gray-800">[爷爷膝盖疼] Health → Finance, Calendar</p>
+              <p className="text-gray-600 pl-3">→ 👨 爸爸：就医建议（高相关）</p>
+              <p className="text-gray-600 pl-3">→ 👩 妈妈：采购止痛贴（中相关）</p>
+              <p className="text-gray-400 pl-3">→ 👧 女儿：未推送（低相关）</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

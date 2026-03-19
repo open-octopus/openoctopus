@@ -1,3 +1,4 @@
+import { useFamilyStore } from "../stores/family";
 import { MemberCard } from "../components/family/MemberCard";
 
 const PLACEHOLDER_MEMBERS = [
@@ -8,6 +9,18 @@ const PLACEHOLDER_MEMBERS = [
 ];
 
 export function Members() {
+  const storeMembers = useFamilyStore((s) => s.members);
+
+  const members = storeMembers.length > 0
+    ? storeMembers.map((m) => ({
+        name: m.name,
+        icon: m.avatar ?? "👤",
+        role: m.role,
+        channels: m.channels,
+        watchedRealms: m.watchedRealms,
+      }))
+    : PLACEHOLDER_MEMBERS;
+
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
@@ -17,7 +30,7 @@ export function Members() {
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {PLACEHOLDER_MEMBERS.map((m) => (
+        {members.map((m) => (
           <MemberCard key={m.name} {...m} />
         ))}
       </div>

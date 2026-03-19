@@ -1,3 +1,4 @@
+import { useRealmsStore } from "../../stores/realms";
 import { RealmCard } from "./RealmCard";
 
 const PLACEHOLDER_REALMS = [
@@ -9,10 +10,26 @@ const PLACEHOLDER_REALMS = [
   { name: "家务", icon: "🏠", lines: ["洗衣液快用完", "猫粮剩 3 天"] },
 ];
 
+const REALM_ICONS: Record<string, string> = {
+  health: "🏥", finance: "💰", pet: "🐱", education: "📚",
+  vehicle: "🚗", household: "🏠", legal: "⚖️", work: "💼",
+};
+
 export function RealmGrid() {
+  const storeRealms = useRealmsStore((s) => s.realms);
+
+  const realms = storeRealms.length > 0
+    ? storeRealms.map((r) => ({
+        name: r.name,
+        icon: r.icon ?? REALM_ICONS[r.name.toLowerCase()] ?? "📦",
+        lines: [`${r.entityCount ?? 0} 个实体`, `健康分 ${r.healthScore ?? "--"}`],
+        alert: (r.healthScore ?? 100) < 70,
+      }))
+    : PLACEHOLDER_REALMS;
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-      {PLACEHOLDER_REALMS.map((r) => (
+      {realms.map((r) => (
         <RealmCard key={r.name} {...r} />
       ))}
     </div>
