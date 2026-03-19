@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { GatewayClient } from "./client";
 
-// Mock WebSocket
+// Mock WebSocket with addEventListener support
 class MockWebSocket {
   static CONNECTING = 0;
   static OPEN = 1;
@@ -9,12 +9,16 @@ class MockWebSocket {
   static CLOSED = 3;
 
   readyState = MockWebSocket.CONNECTING;
-  onopen: (() => void) | null = null;
-  onclose: (() => void) | null = null;
-  onmessage: ((e: { data: string }) => void) | null = null;
-  onerror: ((e: unknown) => void) | null = null;
-
   sent: string[] = [];
+
+  private eventHandlers = new Map<string, Array<(e: unknown) => void>>();
+
+  addEventListener(event: string, handler: (e: unknown) => void) {
+    if (!this.eventHandlers.has(event)) {
+      this.eventHandlers.set(event, []);
+    }
+    this.eventHandlers.get(event)!.push(handler);
+  }
 
   send(data: string) {
     this.sent.push(data);
@@ -22,17 +26,23 @@ class MockWebSocket {
 
   close() {
     this.readyState = MockWebSocket.CLOSED;
-    this.onclose?.();
+    this.dispatch("close", undefined);
   }
 
   // Test helpers
   simulateOpen() {
     this.readyState = MockWebSocket.OPEN;
-    this.onopen?.();
+    this.dispatch("open", undefined);
   }
 
   simulateMessage(data: unknown) {
-    this.onmessage?.({ data: JSON.stringify(data) });
+    this.dispatch("message", { data: JSON.stringify(data) });
+  }
+
+  private dispatch(event: string, detail: unknown) {
+    for (const handler of this.eventHandlers.get(event) ?? []) {
+      handler(detail);
+    }
   }
 }
 
@@ -45,7 +55,6 @@ describe("GatewayClient", () => {
     const MockWSConstructor = vi.fn(function () {
       return mockWs;
     });
-    // Set static constants so WebSocket.OPEN etc. work in client code
     Object.assign(MockWSConstructor, {
       CONNECTING: 0,
       OPEN: 1,
@@ -72,7 +81,6 @@ describe("GatewayClient", () => {
 
     const promise = client.request("realm.list", {});
 
-    // Parse sent message and respond
     const sent = JSON.parse(mockWs.sent[0]);
     expect(sent.method).toBe("realm.list");
 

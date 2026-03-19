@@ -83,30 +83,30 @@ export class GatewayClient {
   private createConnection(): void {
     this.ws = new WebSocket(this.url);
 
-    this.ws.onopen = () => {
+    this.ws.addEventListener("open", () => {
       this.reconnectDelay = 800;
       this.emit("_connected", null);
-    };
+    });
 
-    this.ws.onclose = () => {
+    this.ws.addEventListener("close", () => {
       this.emit("_disconnected", null);
       if (this.shouldReconnect) {
         this.scheduleReconnect();
       }
-    };
+    });
 
-    this.ws.onerror = () => {
-      // onclose will fire after this
-    };
+    this.ws.addEventListener("error", () => {
+      // close event will fire after this
+    });
 
-    this.ws.onmessage = (e) => {
+    this.ws.addEventListener("message", (e) => {
       try {
         const data = JSON.parse(e.data as string);
         this.handleMessage(data);
       } catch {
         // Ignore malformed messages
       }
-    };
+    });
   }
 
   private handleMessage(data: RpcResponse | RpcEvent): void {

@@ -6,10 +6,6 @@ import { Members } from "./pages/Members";
 import { RouteView } from "./pages/RouteView";
 import { Settings } from "./pages/Settings";
 
-function Placeholder({ name }: { name: string }) {
-  return <div className="p-6 text-lg text-ocean">{name} - Coming Soon</div>;
-}
-
 export function App() {
   return (
     <BrowserRouter basename="/dashboard">
