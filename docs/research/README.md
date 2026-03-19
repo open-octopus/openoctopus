@@ -14,6 +14,13 @@ OpenOctopus 项目立项前的外部环境调研与场景分析资料。
 | [04-参考来源](04-参考来源.md) | 全部调研引用链接（17 篇） |
 | [05-competitive-landscape](05-competitive-landscape.md) | 竞品分析：AI 生活管理、多 Agent 个人系统、数字孪生、AI PKM、中国市场 |
 | [06-agent-frameworks-ecosystem](06-agent-frameworks-ecosystem.md) | Agent 框架与生态研究：编排框架、记忆/知识图谱、TypeScript 工具链、市场生态、互操作协议 |
+| [07-market-deep-dive-and-real-scenarios](07-market-deep-dive-and-real-scenarios.md) | 深度市场调研：真实痛点验证、杀手级 Demo 场景设计、市场数据弹药库（2026-03-16） |
+| [08-dashboard-research](08-dashboard-research.md) | Dashboard 调研 |
+| [09-product-form-exploration](09-product-form-exploration.md) | 产品形态探索：智能家居 / 家庭共用 / AI 玩具三条方向的市场数据、竞品分析、战略评估（2026-03-16） |
+| [10-product-form-factor-and-deployment](10-product-form-factor-and-deployment.md) | 产品形态与部署策略：微信小程序/PWA/Tauri 对比、家庭 Realm 架构设计、部署简化、OpenClaw 重定位（2026-03-16） |
+| [11-competition-playbook](11-competition-playbook.md) | 参赛手册：9 个评委 Q&A 标准回答、赛事匹配表、一句话定位库、6 个必做 + 4 个禁忌（2026-03-16） |
+| [12-family-hub-spoke-model](12-family-hub-spoke-model.md) | AI 家庭中枢管家：点对点→星型路由范式转变、Mental Load 数据验证、竞品分析（Ollie/Maple/Hearth）、架构映射、杀手级场景（2026-03-17） |
+| [13-product-final-form](13-product-final-form.md) | 产品最终形态：三层架构（对话+主动卡片+看板）、各终端形态、交互设计、管家人格、隐私边界、技术映射（2026-03-17） |
 
 ## 建议阅读顺序
 
@@ -23,6 +30,12 @@ OpenOctopus 项目立项前的外部环境调研与场景分析资料。
 4. **04** — 深挖原始来源
 5. **05** — 了解竞品格局与差异化
 6. **06** — 评估技术底座选型
+7. **07** — 市场深度调研：真实痛点 + 杀手级 Demo 场景
+8. **09** — 产品形态探索：智能家居 / 家庭共用 / AI 玩具
+9. **10** — 产品形态与部署：从 CLI 到家庭产品的跨越
+10. **11** — 参赛前必读：评委 Q&A + 赛事匹配 + 一句话定位
+11. **12** — ⭐ 核心叙事：家庭中枢管家 + Hub-and-Spoke 路由模型
+12. **13** — ⭐ 产品最终形态：三层架构 + 交互设计 + 技术映射
 
 ## 核心结论
 

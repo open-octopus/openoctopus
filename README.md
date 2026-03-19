@@ -48,20 +48,20 @@ What makes it unique: **intelligent family routing**. The same event reaches eve
 
 Your life, organized as a grid. Each Realm is an independent domain:
 
-| Realm | What lives inside | Example agents |
-|---|---|---|
-| `pet` | Pets, vets, food records | Health advisor, **Momo** (summoned) |
-| `parents` | Parents, health files | Care assistant, **Mom** (summoned) |
-| `partner` | Partner, anniversaries | Relationship advisor |
-| `finance` | Accounts, investments, debts | Budget planner, tax assistant |
-| `work` | Projects, colleagues, goals | Task manager, weekly reporter |
-| `legal` | Contracts, cases, statutes | Contract lawyer, labor law advisor |
-| `vehicle` | Car, insurance, maintenance | Maintenance tracker, cost reporter |
-| `home` | House, appliances, repairs | Home manager |
-| `health` | Check-ups, prescriptions | Health monitor |
-| `fitness` | Training plans, body data | Fitness coach |
-| `hobby` | Projects, learning materials | Learning coach |
-| `friends` | Social circle, events | Social radar |
+| Realm     | What lives inside            | Example agents                      |
+| --------- | ---------------------------- | ----------------------------------- |
+| `pet`     | Pets, vets, food records     | Health advisor, **Momo** (summoned) |
+| `parents` | Parents, health files        | Care assistant, **Mom** (summoned)  |
+| `partner` | Partner, anniversaries       | Relationship advisor                |
+| `finance` | Accounts, investments, debts | Budget planner, tax assistant       |
+| `work`    | Projects, colleagues, goals  | Task manager, weekly reporter       |
+| `legal`   | Contracts, cases, statutes   | Contract lawyer, labor law advisor  |
+| `vehicle` | Car, insurance, maintenance  | Maintenance tracker, cost reporter  |
+| `home`    | House, appliances, repairs   | Home manager                        |
+| `health`  | Check-ups, prescriptions     | Health monitor                      |
+| `fitness` | Training plans, body data    | Fitness coach                       |
+| `hobby`   | Projects, learning materials | Learning coach                      |
+| `friends` | Social circle, events        | Social radar                        |
 
 Create, merge, or delete realms freely. The above are starter templates.
 
@@ -77,12 +77,12 @@ The killer feature. Turn data into a living agent.
 Raw data → Structured Entity → SUMMON → Agent with memory, personality & initiative
 ```
 
-| Entity type | Examples | After summoning |
-|---|---|---|
-| **Living** | Pet, family, friend | Simulated dialogue, personality, emotional expression |
-| **Asset** | Car, house, portfolio | Status monitoring, maintenance alerts, cost reports |
-| **Organization** | Company, hospital | Process guides, contact management |
-| **Abstract** | Goal, project, habit | Progress tracking, deviation alerts, retrospectives |
+| Entity type      | Examples              | After summoning                                       |
+| ---------------- | --------------------- | ----------------------------------------------------- |
+| **Living**       | Pet, family, friend   | Simulated dialogue, personality, emotional expression |
+| **Asset**        | Car, house, portfolio | Status monitoring, maintenance alerts, cost reports   |
+| **Organization** | Company, hospital     | Process guides, contact management                    |
+| **Abstract**     | Goal, project, habit  | Progress tracking, deviation alerts, retrospectives   |
 
 **What a summoned agent can do:**
 
@@ -160,36 +160,36 @@ Every agent action follows the trust chain:
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Runtime | Node.js >= 22 + TypeScript |
-| Gateway | Unified orchestration (ref: OpenClaw Gateway) |
-| Client | Web Dashboard (Realm Matrix) + CLI (`tentacle`) |
-| Data | SQLite (local-first) + PostgreSQL / Supabase (optional sync) |
-| Vector | pgvector / local vector store (per-realm sharding) |
-| Plugin | Global Skill + Realm Skill + Realm Package spec |
+| Layer   | Choice                                                       |
+| ------- | ------------------------------------------------------------ |
+| Runtime | Node.js >= 22 + TypeScript                                   |
+| Gateway | Unified orchestration (ref: OpenClaw Gateway)                |
+| Client  | Web Dashboard (Realm Matrix) + CLI (`tentacle`)              |
+| Data    | SQLite (local-first) + PostgreSQL / Supabase (optional sync) |
+| Vector  | pgvector / local vector store (per-realm sharding)           |
+| Plugin  | Global Skill + Realm Skill + Realm Package spec              |
 
 ## Docs
 
-| Doc | What's inside |
-|---|---|
-| **[Project Spec](docs/project-spec.md)** | Naming, RealmHub, information architecture, milestones |
+| Doc                                               | What's inside                                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **[Project Spec](docs/project-spec.md)**          | Naming, RealmHub, information architecture, milestones                         |
 | **[Design Deep Dive](docs/design-discussion.md)** | Realm naming, Summon mechanism, layered architecture, cross-realm coordination |
-| **[Brand Guide](docs/branding.md)** | Taglines, colors, mascot Octo, logo prompts, ecosystem naming |
-| **[Social Profiles](docs/social-profiles.md)** | GitHub / X / Discord / Product Hunt / 中文平台文案与配置 |
-| **[Research Index](docs/research/README.md)** | AI Native signals, scenario mapping, competitive landscape, agent frameworks |
+| **[Brand Guide](docs/branding.md)**               | Taglines, colors, mascot Octo, logo prompts, ecosystem naming                  |
+| **[Social Profiles](docs/social-profiles.md)**    | GitHub / X / Discord / Product Hunt / 中文平台文案与配置                       |
+| **[Research Index](docs/research/README.md)**     | AI Native signals, scenario mapping, competitive landscape, agent frameworks   |
 
 ## Ecosystem
 
-| Component | Name | Metaphor |
-|---|---|---|
-| Realm marketplace | **RealmHub** | Realm package hub |
-| CLI | **tentacle** | Tentacle = reach & touch |
-| Agent gateway | **ink** | Ink = information flow |
-| Summon engine | **summon** | Core feature |
-| Community | **The Reef** | Coral reef = habitat |
-| Realm config | **REALM.md** | Realm definition |
-| Entity persona | **SOUL.md** | Summoned agent personality |
+| Component         | Name         | Metaphor                   |
+| ----------------- | ------------ | -------------------------- |
+| Realm marketplace | **RealmHub** | Realm package hub          |
+| CLI               | **tentacle** | Tentacle = reach & touch   |
+| Agent gateway     | **ink**      | Ink = information flow     |
+| Summon engine     | **summon**   | Core feature               |
+| Community         | **The Reef** | Coral reef = habitat       |
+| Realm config      | **REALM.md** | Realm definition           |
+| Entity persona    | **SOUL.md**  | Summoned agent personality |
 
 ## Octo
 
@@ -197,7 +197,7 @@ Every agent action follows the trust chain:
 
 The mascot. A deep-sea octopus named **Octo** — calm, multi-threaded, quietly brilliant. Eight arms juggling your entire life while one brain keeps it all in sync. The tentacle tips glow cyan when summoning entities to life.
 
-*"A deep-sea octopus, definitely."*
+_"A deep-sea octopus, definitely."_
 
 <br clear="right">
 

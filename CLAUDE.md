@@ -10,25 +10,25 @@ OpenOctopus is a **Realm-native** personal life assistant Agent system. It organ
 
 ## Tech Stack
 
-| Layer | Choice |
-|-------|--------|
-| Runtime | Node.js >= 22 + TypeScript 5.7+ (strict) |
-| Package Manager | pnpm (workspaces) |
-| Bundler | tsdown (Rollup-based) |
-| Linter | oxlint |
-| Formatter | oxfmt |
-| Test | Vitest 4 (V8 coverage, pool: forks) |
-| Dead Code | knip |
-| DB (local) | SQLite via better-sqlite3 |
-| Sessions | JSONL append-only files |
-| Schema Validation | Zod |
-| Config | JSON5 (~/.openoctopus/config.json5) + Zod validation |
-| Gateway | Express 5 (HTTP bridge) + WebSocket RPC (ws) |
-| LLM Providers | Anthropic, OpenAI, Google, Ollama (multi-provider + failover) |
-| Channels | grammY (Telegram), Discord.js, Slack Bolt (plugin architecture) |
-| CLI | citty + consola + WS RPC client |
-| Deploy | Docker multi-stage + docker-compose (gateway + cli) |
-| Versioning | CalVer (YYYY.M.D) |
+| Layer             | Choice                                                          |
+| ----------------- | --------------------------------------------------------------- |
+| Runtime           | Node.js >= 22 + TypeScript 5.7+ (strict)                        |
+| Package Manager   | pnpm (workspaces)                                               |
+| Bundler           | tsdown (Rollup-based)                                           |
+| Linter            | oxlint                                                          |
+| Formatter         | oxfmt                                                           |
+| Test              | Vitest 4 (V8 coverage, pool: forks)                             |
+| Dead Code         | knip                                                            |
+| DB (local)        | SQLite via better-sqlite3                                       |
+| Sessions          | JSONL append-only files                                         |
+| Schema Validation | Zod                                                             |
+| Config            | JSON5 (~/.openoctopus/config.json5) + Zod validation            |
+| Gateway           | Express 5 (HTTP bridge) + WebSocket RPC (ws)                    |
+| LLM Providers     | Anthropic, OpenAI, Google, Ollama (multi-provider + failover)   |
+| Channels          | grammY (Telegram), Discord.js, Slack Bolt (plugin architecture) |
+| CLI               | citty + consola + WS RPC client                                 |
+| Deploy            | Docker multi-stage + docker-compose (gateway + cli)             |
+| Versioning        | CalVer (YYYY.M.D)                                               |
 
 ## Monorepo Structure
 
@@ -77,16 +77,16 @@ Realm -> Entity -> [Summon] -> Agent Team -> Skill -> Action / Insight
 
 ## Naming Conventions & Ecosystem
 
-| Component | Name | Purpose |
-|-----------|------|---------|
-| CLI tool | `tentacle` | Command-line interface |
-| Agent gateway | `ink` | Information flow medium (dual-port: WS 19789 + HTTP 19790) |
-| Summon engine | `summon` | Entity summoning core |
-| Channel system | `channels` | Messaging platform adapters (Telegram, Discord, etc.) |
-| Realm marketplace | `RealmHub` | Domain package distribution |
-| Community | `The Reef` | User community |
-| Realm config file | `REALM.md` | Domain definition |
-| Entity personality file | `SOUL.md` | Summoned entity character |
+| Component               | Name       | Purpose                                                    |
+| ----------------------- | ---------- | ---------------------------------------------------------- |
+| CLI tool                | `tentacle` | Command-line interface                                     |
+| Agent gateway           | `ink`      | Information flow medium (dual-port: WS 19789 + HTTP 19790) |
+| Summon engine           | `summon`   | Entity summoning core                                      |
+| Channel system          | `channels` | Messaging platform adapters (Telegram, Discord, etc.)      |
+| Realm marketplace       | `RealmHub` | Domain package distribution                                |
+| Community               | `The Reef` | User community                                             |
+| Realm config file       | `REALM.md` | Domain definition                                          |
+| Entity personality file | `SOUL.md`  | Summoned entity character                                  |
 
 ## Key Design Decisions
 
@@ -103,11 +103,13 @@ Realm -> Entity -> [Summon] -> Agent Team -> Skill -> Action / Insight
 ## Gateway Architecture
 
 **Port 19789 — WebSocket RPC (primary gateway):**
+
 - JSON-RPC protocol for CLI-to-gateway streaming
 - Methods: `chat.send`, `realm.list/get/create`, `entity.list/get`, `summon.invoke/release`, `status.health`
 - Events: `chat.token` (streaming), `chat.done`, `channel.message`
 
 **Port 19790 — HTTP REST Bridge:**
+
 - `GET /healthz`, `/readyz` — health checks
 - `CRUD /api/realms`, `/api/entities` — resource management
 - `POST /api/chat` — auto-routed chat
