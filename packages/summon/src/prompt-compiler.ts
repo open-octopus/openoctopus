@@ -23,10 +23,18 @@ export function compileSystemPrompt(ctx: PromptContext): string {
 
   // Identity section
   sections.push(`# Identity: ${soul.name}`);
-  if (soul.identity.role) { sections.push(`Role: ${soul.identity.role}`); }
-  if (soul.identity.personality) { sections.push(`Personality: ${soul.identity.personality}`); }
-  if (soul.identity.background) { sections.push(`Background: ${soul.identity.background}`); }
-  if (soul.identity.speaking_style) { sections.push(`Speaking style: ${soul.identity.speaking_style}`); }
+  if (soul.identity.role) {
+    sections.push(`Role: ${soul.identity.role}`);
+  }
+  if (soul.identity.personality) {
+    sections.push(`Personality: ${soul.identity.personality}`);
+  }
+  if (soul.identity.background) {
+    sections.push(`Background: ${soul.identity.background}`);
+  }
+  if (soul.identity.speaking_style) {
+    sections.push(`Speaking style: ${soul.identity.speaking_style}`);
+  }
 
   // Catchphrases
   if (soul.catchphrases.length > 0) {

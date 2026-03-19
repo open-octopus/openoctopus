@@ -36,7 +36,9 @@ export class ScannedFileRepo {
   constructor(private db: Database.Database) {}
 
   findByPath(path: string): ScannedFile | null {
-    const row = this.db.prepare("SELECT * FROM scanned_files WHERE path = ?").get(path) as ScannedFileRow | undefined;
+    const row = this.db.prepare("SELECT * FROM scanned_files WHERE path = ?").get(path) as
+      | ScannedFileRow
+      | undefined;
     return row ? rowToScannedFile(row) : null;
   }
 

@@ -1,17 +1,27 @@
-import { vi } from "vitest";
+import type {
+  RealmManager,
+  EntityManager,
+  AgentRunner,
+  AgentRunResult,
+  Router,
+} from "@openoctopus/core";
+import type { LlmProviderRegistry, LlmProvider } from "@openoctopus/core";
 import type { RealmState, Entity, MemoryEntry, RouterIntent } from "@openoctopus/shared";
 import type { HealthReportRecord, OnboardingState } from "@openoctopus/storage";
 import type { MemoryRepo } from "@openoctopus/storage";
-import type { RealmManager, EntityManager, AgentRunner, AgentRunResult, Router } from "@openoctopus/core";
-import type { LlmProviderRegistry, LlmProvider } from "@openoctopus/core";
 import type { SummonEngine, SummonedAgent } from "@openoctopus/summon";
+import { vi } from "vitest";
 import type { WebSocket } from "ws";
 
 // ────────────────────────────────────────────────────────────────
 // 1. Mock Factories
 // ────────────────────────────────────────────────────────────────
 
-type MockOf<T> = { [K in keyof T]: T[K] extends (...args: infer A) => infer R ? ReturnType<typeof vi.fn<(...args: A) => R>> : T[K] };
+type MockOf<T> = {
+  [K in keyof T]: T[K] extends (...args: infer A) => infer R
+    ? ReturnType<typeof vi.fn<(...args: A) => R>>
+    : T[K];
+};
 
 /** Mock MemoryRepo — all methods are vi.fn() */
 export function createMockMemoryRepo(): MockOf<MemoryRepo> {

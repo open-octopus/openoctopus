@@ -1,7 +1,7 @@
-import type Database from "better-sqlite3";
 import type { RealmState } from "@openoctopus/shared";
 import { createLogger, ConflictError } from "@openoctopus/shared";
 import { RealmRepo, AuditRepo } from "@openoctopus/storage";
+import type Database from "better-sqlite3";
 
 const log = createLogger("realm-manager");
 
@@ -46,7 +46,10 @@ export class RealmManager {
     return realm;
   }
 
-  update(id: string, data: Partial<{ name: string; description: string; status: string; icon: string }>): RealmState {
+  update(
+    id: string,
+    data: Partial<{ name: string; description: string; status: string; icon: string }>,
+  ): RealmState {
     const realm = this.realmRepo.update(id, data);
     log.info(`Updated realm: ${realm.name} (${realm.id})`);
 

@@ -1,10 +1,10 @@
 import fs from "node:fs";
-import type Database from "better-sqlite3";
 import type { Entity, AgentConfig, SoulFile } from "@openoctopus/shared";
 import { createLogger, ValidationError } from "@openoctopus/shared";
 import { EntityRepo, AgentRepo, MemoryRepo } from "@openoctopus/storage";
-import { parseSoulFile } from "./soul-parser.js";
+import type Database from "better-sqlite3";
 import { compileSystemPrompt } from "./prompt-compiler.js";
+import { parseSoulFile } from "./soul-parser.js";
 
 const log = createLogger("summon");
 
@@ -32,7 +32,9 @@ export class SummonEngine {
 
     if (entity.summonStatus === "active") {
       const existing = this.active.get(entityId);
-      if (existing) { return existing; }
+      if (existing) {
+        return existing;
+      }
     }
 
     if (!entity.soulPath) {
@@ -75,7 +77,12 @@ export class SummonEngine {
 
       // Activate
       this.entityRepo.updateSummonStatus(entityId, "active");
-      const summoned: SummonedAgent = { entity: this.entityRepo.getById(entityId), agent, soul, systemPrompt };
+      const summoned: SummonedAgent = {
+        entity: this.entityRepo.getById(entityId),
+        agent,
+        soul,
+        systemPrompt,
+      };
       this.active.set(entityId, summoned);
 
       log.info(`Summoned entity: ${soul.name} (${entityId})`);

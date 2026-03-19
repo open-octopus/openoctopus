@@ -4,12 +4,7 @@ const config: KnipConfig = {
   workspaces: {
     ".": {
       entry: ["packages/*/src/index.ts"],
-      ignoreDependencies: [
-        "tsx",
-        "@types/better-sqlite3",
-        "@types/express",
-        "@types/ws",
-      ],
+      ignoreDependencies: ["tsx", "@types/better-sqlite3", "@types/express", "@types/ws"],
     },
     "packages/shared": {
       entry: ["src/index.ts"],
@@ -24,11 +19,7 @@ const config: KnipConfig = {
     },
     "packages/summon": {
       entry: ["src/index.ts"],
-      ignoreDependencies: [
-        "@openoctopus/shared",
-        "@openoctopus/core",
-        "@openoctopus/storage",
-      ],
+      ignoreDependencies: ["@openoctopus/shared", "@openoctopus/core", "@openoctopus/storage"],
     },
     "packages/channels": {
       entry: ["src/index.ts"],
@@ -58,12 +49,7 @@ const config: KnipConfig = {
       ignoreDependencies: ["@openoctopus/shared", "@openoctopus/core"],
     },
   },
-  ignore: [
-    "**/*.test.ts",
-    "**/*.integration.test.ts",
-    "**/*.e2e.test.ts",
-    "test/**",
-  ],
+  ignore: ["**/*.test.ts", "**/*.integration.test.ts", "**/*.e2e.test.ts", "test/**"],
 };
 
 export default config;

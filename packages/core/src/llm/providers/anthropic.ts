@@ -1,5 +1,11 @@
 import { createLogger } from "@openoctopus/shared";
-import type { LlmProvider, LlmChatRequest, LlmChatResponse, LlmStreamChunk, LlmMessage } from "../provider.js";
+import type {
+  LlmProvider,
+  LlmChatRequest,
+  LlmChatResponse,
+  LlmStreamChunk,
+  LlmMessage,
+} from "../provider.js";
 
 const log = createLogger("llm:anthropic");
 
@@ -88,16 +94,22 @@ export class AnthropicProvider implements LlmProvider {
       while (true) {
         // eslint-disable-next-line no-await-in-loop
         const { done, value } = await reader.read();
-        if (done) { break; }
+        if (done) {
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
 
         for (const line of lines) {
-          if (!line.startsWith("data: ")) { continue; }
+          if (!line.startsWith("data: ")) {
+            continue;
+          }
           const json = line.slice(6).trim();
-          if (json === "[DONE]") { continue; }
+          if (json === "[DONE]") {
+            continue;
+          }
 
           try {
             const event = JSON.parse(json) as Record<string, unknown>;
@@ -110,10 +122,14 @@ export class AnthropicProvider implements LlmProvider {
               }
             } else if (eventType === "message_delta") {
               const usage = event.usage as { output_tokens?: number } | undefined;
-              if (usage?.output_tokens) { outputTokens = usage.output_tokens; }
+              if (usage?.output_tokens) {
+                outputTokens = usage.output_tokens;
+              }
             } else if (eventType === "message_start") {
               const message = event.message as { usage?: { input_tokens?: number } } | undefined;
-              if (message?.usage?.input_tokens) { inputTokens = message.usage.input_tokens; }
+              if (message?.usage?.input_tokens) {
+                inputTokens = message.usage.input_tokens;
+              }
             }
           } catch {
             // Skip malformed SSE lines

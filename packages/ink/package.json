@@ -18,11 +18,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@openoctopus/shared": "workspace:*",
+    "@openoctopus/channels": "workspace:*",
     "@openoctopus/core": "workspace:*",
+    "@openoctopus/shared": "workspace:*",
     "@openoctopus/storage": "workspace:*",
     "@openoctopus/summon": "workspace:*",
-    "@openoctopus/channels": "workspace:*",
     "express": "^5.1.0",
     "ws": "^8.18.0"
   }

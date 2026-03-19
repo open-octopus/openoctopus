@@ -8,8 +8,17 @@
   "rules": {
     "curly": "error",
     "typescript/no-explicit-any": "error",
-    "typescript/no-unsafe-type-assertion": "off"
+    "typescript/no-unsafe-type-assertion": "off",
+    "no-await-in-loop": "off"
   },
+  "overrides": [
+    {
+      "files": ["*.test.ts", "*.integration.test.ts"],
+      "rules": {
+        "typescript/no-explicit-any": "off"
+      }
+    }
+  ],
   "ignorePatterns": [
     "dist/",
     "node_modules/",
@@ -17,6 +26,7 @@
     "realms/",
     "skills/",
     "docs/",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    ".claude/"
   ]
 }

@@ -8,6 +8,8 @@ export const stopCommand = defineCommand({
   },
   async run() {
     consola.info("To stop the server, press Ctrl+C in the terminal where it's running.");
-    consola.info("Daemon mode with background process management will be added in a future release.");
+    consola.info(
+      "Daemon mode with background process management will be added in a future release.",
+    );
   },
 });

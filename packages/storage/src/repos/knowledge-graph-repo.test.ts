@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runMigrations } from "../migrations.js";
 import { KnowledgeGraphRepo } from "./knowledge-graph-repo.js";
 
@@ -11,7 +11,11 @@ beforeEach(() => {
   runMigrations(db);
   repo = new KnowledgeGraphRepo(db);
   // Create a test realm for FK constraints
-  db.prepare("INSERT INTO realms (id, name, description) VALUES (?, ?, ?)").run("realm_test", "test", "test realm");
+  db.prepare("INSERT INTO realms (id, name, description) VALUES (?, ?, ?)").run(
+    "realm_test",
+    "test",
+    "test realm",
+  );
 });
 
 afterEach(() => {
@@ -60,7 +64,7 @@ describe("KnowledgeGraphRepo", () => {
 
     const related = repo.getRelatedNodes(n1.id);
     expect(related.length).toBe(2);
-    const labels = related.map(r => r.node.label);
+    const labels = related.map((r) => r.node.label);
     expect(labels).toContain("mom");
     expect(labels).toContain("vet");
   });

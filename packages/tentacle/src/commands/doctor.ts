@@ -1,14 +1,8 @@
-import { defineCommand } from "citty";
-import consola from "consola";
 import fs from "node:fs";
 import path from "node:path";
-import {
-  DATA_DIR,
-  DB_FILE,
-  resolveConfigPath,
-  loadConfig,
-  resetConfig,
-} from "@openoctopus/shared";
+import { DATA_DIR, DB_FILE, resolveConfigPath, loadConfig, resetConfig } from "@openoctopus/shared";
+import { defineCommand } from "citty";
+import consola from "consola";
 import { ApiClient, WsRpcClient } from "../api-client.js";
 
 interface CheckResult {
@@ -108,7 +102,9 @@ export const doctorCommand = defineCommand({
     // Check WebSocket gateway connectivity
     const wsClient = new WsRpcClient(config.gateway.wsPort);
     const wsAlive = await wsClient.tryConnect();
-    if (wsAlive) { await wsClient.disconnect(); }
+    if (wsAlive) {
+      await wsClient.disconnect();
+    }
     checks.push({
       name: "WebSocket RPC",
       status: wsAlive ? "pass" : "warn",
@@ -119,7 +115,8 @@ export const doctorCommand = defineCommand({
 
     // Display results
     for (const check of checks) {
-      const icon = check.status === "pass" ? "[PASS]" : check.status === "warn" ? "[WARN]" : "[FAIL]";
+      const icon =
+        check.status === "pass" ? "[PASS]" : check.status === "warn" ? "[WARN]" : "[FAIL]";
       consola.log(`  ${icon} ${check.name}: ${check.message}`);
     }
 

@@ -21,13 +21,17 @@ export class SkillRegistry {
 
   get(id: string): SkillDefinition {
     const skill = this.skills.get(id);
-    if (!skill) { throw new SkillNotFoundError(id); }
+    if (!skill) {
+      throw new SkillNotFoundError(id);
+    }
     return skill;
   }
 
   findByName(name: string): SkillDefinition | undefined {
     for (const skill of this.skills.values()) {
-      if (skill.name === name) { return skill; }
+      if (skill.name === name) {
+        return skill;
+      }
     }
     return undefined;
   }

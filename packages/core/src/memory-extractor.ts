@@ -1,9 +1,9 @@
 import type { MemoryEntry, MemoryTier } from "@openoctopus/shared";
 import { createLogger } from "@openoctopus/shared";
 import type { MemoryRepo, KnowledgeGraphRepo } from "@openoctopus/storage";
-import type { LlmProviderRegistry } from "./llm/provider-registry.js";
-import type { KnowledgeDistributor } from "./knowledge-distributor.js";
 import type { EmbeddingProviderRegistry } from "./embedding/embedding-registry.js";
+import type { KnowledgeDistributor } from "./knowledge-distributor.js";
+import type { LlmProviderRegistry } from "./llm/provider-registry.js";
 
 const log = createLogger("memory-extractor");
 
@@ -86,7 +86,9 @@ export class MemoryExtractor {
     try {
       const extraction = await this.extractFacts(params.userMessage, params.assistantMessage);
       const { facts, importance, relations } = extraction;
-      if (facts.length === 0) return { memories: [], attributeUpdates: [] };
+      if (facts.length === 0) {
+        return { memories: [], attributeUpdates: [] };
+      }
 
       const entries: MemoryEntry[] = [];
       for (let i = 0; i < facts.length; i++) {
@@ -113,7 +115,9 @@ export class MemoryExtractor {
               const similarity = cosineSimilarity(factVec, similar[0].embedding);
 
               if (similarity > 0.85) {
-                log.debug(`Skipping duplicate fact (similarity=${similarity.toFixed(2)}): ${fact.slice(0, 50)}...`);
+                log.debug(
+                  `Skipping duplicate fact (similarity=${similarity.toFixed(2)}): ${fact.slice(0, 50)}...`,
+                );
                 continue; // skip this fact entirely
               }
 
@@ -124,7 +128,9 @@ export class MemoryExtractor {
                 // Re-embed the merged content
                 const mergedVec = await provider.embed(merged);
                 this.memoryRepo.updateEmbedding(similar[0].id, mergedVec);
-                log.debug(`Merged fact (similarity=${similarity.toFixed(2)}): ${fact.slice(0, 50)}...`);
+                log.debug(
+                  `Merged fact (similarity=${similarity.toFixed(2)}): ${fact.slice(0, 50)}...`,
+                );
                 entries.push({ ...similar[0], content: merged });
                 continue;
               }
@@ -172,9 +178,7 @@ export class MemoryExtractor {
 
       // Cross-realm distribution (fire-and-forget)
       if (this.knowledgeDistributor && facts.length > 0) {
-        this.knowledgeDistributor
-          .classifyAndDistribute(facts, params.realmId)
-          .catch(() => {});
+        this.knowledgeDistributor.classifyAndDistribute(facts, params.realmId).catch(() => {});
       }
 
       return { memories: entries, attributeUpdates: extraction.attributeUpdates };
@@ -207,11 +211,19 @@ export class MemoryExtractor {
     }
   }
 
-  private async extractFacts(userMessage: string, assistantMessage: string): Promise<ExtractionResult> {
+  private async extractFacts(
+    userMessage: string,
+    assistantMessage: string,
+  ): Promise<ExtractionResult> {
     const provider = this.llmRegistry.getProvider();
     const model = this.llmRegistry.resolveModel();
 
-    const empty: ExtractionResult = { facts: [], importance: [], relations: [], attributeUpdates: [] };
+    const empty: ExtractionResult = {
+      facts: [],
+      importance: [],
+      relations: [],
+      attributeUpdates: [],
+    };
 
     const result = await provider.chat({
       model,
@@ -228,9 +240,13 @@ export class MemoryExtractor {
       // Parse the JSON from the response
       const content = result.content.trim();
       // Handle markdown code blocks
-      const jsonStr = content.startsWith("[") || content.startsWith("{")
-        ? content
-        : content.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+      const jsonStr =
+        content.startsWith("[") || content.startsWith("{")
+          ? content
+          : content
+              .replace(/```json?\n?/g, "")
+              .replace(/```/g, "")
+              .trim();
       const parsed = JSON.parse(jsonStr);
 
       // Backward compatibility: if the LLM returns a plain array (old format), wrap it
@@ -296,15 +312,23 @@ export class MemoryExtractor {
     relations: ExtractionResult["relations"],
     realmId: string,
   ): Promise<void> {
-    if (!this.knowledgeGraphRepo || relations.length === 0) return;
+    if (!this.knowledgeGraphRepo || relations.length === 0) {
+      return;
+    }
 
     for (const rel of relations) {
       try {
-        const subjectNode = this.knowledgeGraphRepo.findOrCreateNode(realmId, rel.subject, "entity");
+        const subjectNode = this.knowledgeGraphRepo.findOrCreateNode(
+          realmId,
+          rel.subject,
+          "entity",
+        );
         const objectNode = this.knowledgeGraphRepo.findOrCreateNode(realmId, rel.object, "entity");
         this.knowledgeGraphRepo.addEdge(subjectNode.id, objectNode.id, rel.relation);
       } catch (err) {
-        log.warn(`Failed to process relation ${rel.subject} -[${rel.relation}]-> ${rel.object}: ${err instanceof Error ? err.message : String(err)}`);
+        log.warn(
+          `Failed to process relation ${rel.subject} -[${rel.relation}]-> ${rel.object}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
   }

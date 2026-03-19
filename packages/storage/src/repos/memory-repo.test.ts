@@ -1,9 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runMigrations } from "../migrations.js";
+import { EntityRepo } from "./entity-repo.js";
 import { MemoryRepo } from "./memory-repo.js";
 import { RealmRepo } from "./realm-repo.js";
-import { EntityRepo } from "./entity-repo.js";
+
+const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
 
 let db: Database.Database;
 let repo: MemoryRepo;
@@ -45,8 +47,18 @@ describe("MemoryRepo", () => {
     it("listByEntity with tier filter", () => {
       const realm = realmRepo.create({ name: "test" });
       const entity = entityRepo.create({ realmId: realm.id, name: "Luna", type: "living" });
-      repo.create({ realmId: realm.id, entityId: entity.id, tier: "archival", content: "archival fact" });
-      repo.create({ realmId: realm.id, entityId: entity.id, tier: "working", content: "working fact" });
+      repo.create({
+        realmId: realm.id,
+        entityId: entity.id,
+        tier: "archival",
+        content: "archival fact",
+      });
+      repo.create({
+        realmId: realm.id,
+        entityId: entity.id,
+        tier: "working",
+        content: "working fact",
+      });
       const archival = repo.listByEntity(entity.id, "archival");
       expect(archival).toHaveLength(1);
       expect(archival[0].content).toBe("archival fact");
@@ -189,7 +201,11 @@ describe("MemoryRepo", () => {
   describe("embedding storage", () => {
     it("should store and retrieve embedding data", () => {
       // Create parent realm first (FK constraint)
-      db.prepare("INSERT INTO realms (id, name, description) VALUES (?, ?, ?)").run("realm_emb", "emb", "test");
+      db.prepare("INSERT INTO realms (id, name, description) VALUES (?, ?, ?)").run(
+        "realm_emb",
+        "emb",
+        "test",
+      );
 
       const entry = repo.create({
         realmId: "realm_emb",
@@ -202,7 +218,11 @@ describe("MemoryRepo", () => {
     });
 
     it("should store embeddingDim in metadata", () => {
-      db.prepare("INSERT OR IGNORE INTO realms (id, name, description) VALUES (?, ?, ?)").run("realm_emb2", "emb2", "test");
+      db.prepare("INSERT OR IGNORE INTO realms (id, name, description) VALUES (?, ?, ?)").run(
+        "realm_emb2",
+        "emb2",
+        "test",
+      );
       const entry = repo.create({ realmId: "realm_emb2", tier: "archival", content: "x" });
       repo.updateEmbedding(entry.id, [1, 2, 3, 4]);
       const retrieved = repo.getById(entry.id);
@@ -216,7 +236,11 @@ describe("MemoryRepo", () => {
 
   describe("semantic search", () => {
     beforeEach(() => {
-      db.prepare("INSERT OR IGNORE INTO realms (id, name, description) VALUES (?, ?, ?)").run("realm_sem", "sem", "test");
+      db.prepare("INSERT OR IGNORE INTO realms (id, name, description) VALUES (?, ?, ?)").run(
+        "realm_sem",
+        "sem",
+        "test",
+      );
     });
 
     it("searchSemantic returns entries sorted by cosine similarity", () => {
@@ -242,7 +266,7 @@ describe("MemoryRepo", () => {
     it("only returns entries with matching dimensions", () => {
       const e1 = repo.create({ realmId: "realm_sem", tier: "archival", content: "a" });
       const e2 = repo.create({ realmId: "realm_sem", tier: "archival", content: "b" });
-      repo.updateEmbedding(e1.id, [1, 0, 0]);       // 3-dim
+      repo.updateEmbedding(e1.id, [1, 0, 0]); // 3-dim
       repo.updateEmbedding(e2.id, [1, 0, 0, 0, 0]); // 5-dim
 
       const results = repo.searchSemantic([1, 0, 0], "realm_sem", 10);
@@ -253,7 +277,6 @@ describe("MemoryRepo", () => {
     it("backfillEmbeddings processes memories without embeddings", async () => {
       repo.create({ realmId: "realm_sem", tier: "archival", content: "fact1" });
       repo.create({ realmId: "realm_sem", tier: "archival", content: "fact2" });
-      const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
       const result = await repo.backfillEmbeddings(mockEmbed);
       expect(result.processed).toBe(2);
       expect(result.skipped).toBe(0);
@@ -263,7 +286,6 @@ describe("MemoryRepo", () => {
       const e = repo.create({ realmId: "realm_sem", tier: "archival", content: "has_emb" });
       repo.updateEmbedding(e.id, [0.5, 0.5, 0.5]);
       repo.create({ realmId: "realm_sem", tier: "archival", content: "no_emb" });
-      const mockEmbed = async (texts: string[]) => texts.map(() => [1, 0, 0]);
       const result = await repo.backfillEmbeddings(mockEmbed);
       expect(result.processed).toBe(1);
       expect(result.skipped).toBe(1);

@@ -36,18 +36,17 @@ export class MaturityScanner {
 
   computeEntityMaturity(entityId: string): MaturityScore {
     const entity = this.entityManager.get(entityId);
-    const realm = this.realmManager.get(entity.realmId);
+    const _realm = this.realmManager.get(entity.realmId);
 
     // Attribute completeness (30%): non-empty attributes / total defined attributes
     const attrs = entity.attributes;
     const attrKeys = Object.keys(attrs);
-    const nonEmptyAttrs = attrKeys.filter(k => {
+    const nonEmptyAttrs = attrKeys.filter((k) => {
       const v = attrs[k];
       return v !== undefined && v !== null && v !== "";
     }).length;
-    const attributeCompleteness = attrKeys.length > 0
-      ? Math.round((nonEmptyAttrs / attrKeys.length) * 100)
-      : 0;
+    const attributeCompleteness =
+      attrKeys.length > 0 ? Math.round((nonEmptyAttrs / attrKeys.length) * 100) : 0;
 
     // Memory depth (40%): min(archivalCount / 10, 1) * 100
     const archivalCount = this.memoryRepo.countByEntity(entityId, "archival");
@@ -60,9 +59,7 @@ export class MaturityScanner {
 
     // Weighted overall score
     const overall = Math.round(
-      attributeCompleteness * 0.3 +
-      memoryDepth * 0.4 +
-      interactionFrequency * 0.3,
+      attributeCompleteness * 0.3 + memoryDepth * 0.4 + interactionFrequency * 0.3,
     );
 
     return {
@@ -79,7 +76,7 @@ export class MaturityScanner {
 
   scanRealm(realmId: string): MaturityScore[] {
     const entities = this.entityManager.listByRealm(realmId);
-    return entities.map(e => this.computeEntityMaturity(e.id));
+    return entities.map((e) => this.computeEntityMaturity(e.id));
   }
 
   scanAll(): SummonSuggestion[] {

@@ -1,7 +1,7 @@
-import type Database from "better-sqlite3";
 import type { Entity } from "@openoctopus/shared";
 import { createLogger } from "@openoctopus/shared";
 import { EntityRepo, RealmRepo, AuditRepo } from "@openoctopus/storage";
+import type Database from "better-sqlite3";
 
 const log = createLogger("entity-manager");
 
@@ -57,12 +57,15 @@ export class EntityManager {
     return entity;
   }
 
-  update(id: string, data: Partial<{
-    name: string;
-    type: Entity["type"];
-    avatar: string;
-    attributes: Record<string, unknown>;
-  }>): Entity {
+  update(
+    id: string,
+    data: Partial<{
+      name: string;
+      type: Entity["type"];
+      avatar: string;
+      attributes: Record<string, unknown>;
+    }>,
+  ): Entity {
     const entity = this.entityRepo.update(id, data);
     log.info(`Updated entity: ${entity.name} (${id})`);
 

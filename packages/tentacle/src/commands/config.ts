@@ -1,7 +1,12 @@
+import fs from "node:fs";
+import {
+  resolveConfigPath,
+  writeDefaultConfig,
+  loadConfig,
+  resetConfig,
+} from "@openoctopus/shared";
 import { defineCommand } from "citty";
 import consola from "consola";
-import { resolveConfigPath, writeDefaultConfig, loadConfig, resetConfig } from "@openoctopus/shared";
-import fs from "node:fs";
 
 export const configCommand = defineCommand({
   meta: {
@@ -77,7 +82,9 @@ export const configCommand = defineCommand({
           consola.info(`Providers: ${Object.keys(config.llm.providers).join(", ") || "none"}`);
           consola.info(`Channels: ${Object.keys(config.channels).join(", ") || "none"}`);
         } catch (err) {
-          consola.error(`Config validation failed: ${err instanceof Error ? err.message : String(err)}`);
+          consola.error(
+            `Config validation failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
           process.exit(1);
         }
       },

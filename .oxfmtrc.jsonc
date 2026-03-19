@@ -3,11 +3,5 @@
   "experimentalSortPackageJson": { "sortScripts": true },
   "tabWidth": 2,
   "useTabs": false,
-  "ignorePatterns": [
-    "dist/",
-    "node_modules/",
-    "coverage/",
-    "docs/",
-    "realms/"
-  ]
+  "ignorePatterns": ["dist/", "node_modules/", "coverage/", "docs/", "realms/"],
 }

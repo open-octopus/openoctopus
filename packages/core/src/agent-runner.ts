@@ -36,7 +36,6 @@ export class AgentRunner {
     const provider = this.registry.getProvider();
     const model = this.registry.resolveModel(undefined, agent.model);
 
-
     const llmMessages = toLlmMessages(messages);
 
     let responseText: string;
@@ -82,7 +81,9 @@ export class AgentRunner {
   }
 
   /** Stream tokens as async iterable (for WebSocket RPC) */
-  async *runStream(options: Omit<AgentRunOptions, "onToken">): AsyncIterable<LlmStreamChunk & { sessionId: string }> {
+  async *runStream(
+    options: Omit<AgentRunOptions, "onToken">,
+  ): AsyncIterable<LlmStreamChunk & { sessionId: string }> {
     const { agent, messages, systemPrompt } = options;
     const sessionId = generateId("session");
 

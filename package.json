@@ -2,32 +2,26 @@
   "name": "openoctopus",
   "version": "2026.3.10",
   "description": "Realm-native personal life assistant Agent system",
-  "type": "module",
-  "license": "MIT",
+  "keywords": [
+    "agent",
+    "ai",
+    "assistant",
+    "cli",
+    "llm",
+    "octopus",
+    "realm",
+    "summon"
+  ],
   "homepage": "https://github.com/openoctopus/openoctopus",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/openoctopus/openoctopus.git"
   },
-  "keywords": [
-    "ai",
-    "agent",
-    "assistant",
-    "realm",
-    "summon",
-    "octopus",
-    "llm",
-    "cli"
-  ],
-  "packageManager": "pnpm@10.30.2",
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "bin": {
-    "tentacle": "openoctopus.mjs",
-    "openoctopus": "openoctopus.mjs"
+    "openoctopus": "openoctopus.mjs",
+    "tentacle": "openoctopus.mjs"
   },
-  "main": "dist/gateway.mjs",
   "files": [
     "openoctopus.mjs",
     "dist/",
@@ -35,29 +29,31 @@
     "README.md",
     "LICENSE"
   ],
+  "type": "module",
+  "main": "dist/gateway.mjs",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "build": "pnpm -r build",
     "build:dist": "tsdown",
+    "chat": "tsx packages/tentacle/src/cli.ts chat",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check",
+    "clean": "pnpm -r exec rm -rf dist",
     "dev": "pnpm --filter @openoctopus/ink dev",
-    "prepack": "pnpm build && pnpm build:dist",
-    "test": "vitest",
-    "test:unit": "vitest --project unit",
-    "test:integration": "vitest --project integration",
-    "lint": "oxlint .",
+    "doctor": "pnpm check && pnpm test:unit",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "typecheck": "tsc --build",
-    "check": "pnpm typecheck && pnpm lint && pnpm format:check",
     "knip": "knip",
-    "tentacle": "tsx packages/tentacle/src/cli.ts",
-    "start": "tsx packages/tentacle/src/cli.ts start",
-    "chat": "tsx packages/tentacle/src/cli.ts chat",
+    "lint": "oxlint --ignore-pattern '.claude/**' .",
+    "prepack": "pnpm build && pnpm build:dist",
     "restart": "pnpm build && tsx packages/tentacle/src/cli.ts start",
-    "clean": "pnpm -r exec rm -rf dist",
-    "doctor": "pnpm check && pnpm test:unit"
+    "start": "tsx packages/tentacle/src/cli.ts start",
+    "tentacle": "tsx packages/tentacle/src/cli.ts",
+    "test": "vitest",
+    "test:integration": "vitest --project integration",
+    "test:unit": "vitest --project unit",
+    "typecheck": "tsc --build"
   },
   "dependencies": {
     "@clack/prompts": "^0.11.0",
@@ -71,16 +67,6 @@
     "yaml": "^2.7.0",
     "zod": "^3.24.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "better-sqlite3",
-      "esbuild"
-    ],
-    "overrides": {
-      "tough-cookie": ">=5.0.0",
-      "tar": ">=7.0.0"
-    }
-  },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
     "@types/express": "^5.0.0",
@@ -93,5 +79,19 @@
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "vitest": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@10.30.2",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ],
+    "overrides": {
+      "tough-cookie": ">=5.0.0",
+      "tar": ">=7.0.0"
+    }
   }
 }

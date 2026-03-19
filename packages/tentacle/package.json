@@ -2,12 +2,12 @@
   "name": "@openoctopus/tentacle",
   "version": "2026.3.10",
   "private": true,
-  "type": "module",
-  "main": "src/index.ts",
-  "types": "dist/index.d.mts",
   "bin": {
     "tentacle": "dist/cli.mjs"
   },
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "dist/index.d.mts",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",

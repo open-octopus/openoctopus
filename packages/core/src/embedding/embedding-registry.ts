@@ -1,6 +1,10 @@
 import { createLogger } from "@openoctopus/shared";
 import type { EmbeddingProvider } from "./embedding-provider.js";
-import { OpenAIEmbeddingProvider, OllamaEmbeddingProvider, StubEmbeddingProvider } from "./embedding-provider.js";
+import {
+  OpenAIEmbeddingProvider,
+  OllamaEmbeddingProvider,
+  StubEmbeddingProvider,
+} from "./embedding-provider.js";
 
 const log = createLogger("embedding:registry");
 
@@ -32,8 +36,9 @@ export class EmbeddingProviderRegistry {
     this.defaultProvider = config?.defaultProvider ?? "stub";
 
     if (config?.providers) {
-      const sorted = Object.entries(config.providers)
-        .toSorted(([, a], [, b]) => (b.priority ?? 0) - (a.priority ?? 0));
+      const sorted = Object.entries(config.providers).toSorted(
+        ([, a], [, b]) => (b.priority ?? 0) - (a.priority ?? 0),
+      );
 
       for (const [name, cfg] of sorted) {
         const provider = this.createProvider(name, cfg);
@@ -51,7 +56,10 @@ export class EmbeddingProviderRegistry {
     }
   }
 
-  private createProvider(name: string, config: EmbeddingProviderConfig): EmbeddingProvider | undefined {
+  private createProvider(
+    name: string,
+    config: EmbeddingProviderConfig,
+  ): EmbeddingProvider | undefined {
     switch (config.api) {
       case "openai":
         if (!config.apiKey) {
@@ -80,7 +88,9 @@ export class EmbeddingProviderRegistry {
 
     // Try exact match
     const provider = this.providers.get(providerName);
-    if (provider) return provider;
+    if (provider) {
+      return provider;
+    }
 
     // Try first configured provider
     if (this.providerOrder.length > 0) {

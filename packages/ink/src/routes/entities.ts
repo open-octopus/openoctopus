@@ -1,7 +1,7 @@
-import { Router } from "express";
 import type { EntityManager } from "@openoctopus/core";
 import { toErrorResponse } from "@openoctopus/shared";
 import type { Entity } from "@openoctopus/shared";
+import { Router } from "express";
 
 export function createEntityRoutes(entityManager: EntityManager): Router {
   const router = Router();
@@ -11,7 +11,11 @@ export function createEntityRoutes(entityManager: EntityManager): Router {
     try {
       const realmId = req.query.realmId as string;
       if (!realmId) {
-        res.status(400).json({ status: 400, code: "VALIDATION_ERROR", message: "realmId query parameter is required" });
+        res.status(400).json({
+          status: 400,
+          code: "VALIDATION_ERROR",
+          message: "realmId query parameter is required",
+        });
         return;
       }
       const entities = entityManager.listByRealm(realmId);

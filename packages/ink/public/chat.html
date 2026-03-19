@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenOctopus — Web Chat</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #0a0e17;
+        --surface: #111827;
+        --border: #1f2937;
+        --text: #e5e7eb;
+        --muted: #6b7280;
+        --accent: #06b6d4;
+        --accent-dim: #0e7490;
+        --user-bg: #1e293b;
+        --assistant-bg: #0f172a;
+        --error: #ef4444;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--surface);
+      }
+
+      header .logo {
+        font-size: 24px;
+      }
+
+      header h1 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      header .status {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      header .status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--error);
+      }
+
+      header .status .dot.connected {
+        background: #22c55e;
+      }
+
+      #chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .message {
+        max-width: 720px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        line-height: 1.5;
+        font-size: 14px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .message.user {
+        align-self: flex-end;
+        background: var(--user-bg);
+        border: 1px solid var(--border);
+      }
+
+      .message.assistant {
+        align-self: flex-start;
+        background: var(--assistant-bg);
+        border: 1px solid var(--border);
+      }
+
+      .message.system {
+        align-self: center;
+        color: var(--muted);
+        font-size: 12px;
+        background: none;
+        border: none;
+      }
+
+      .message .meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      .message .realm-tag {
+        display: inline-block;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: var(--accent-dim);
+        color: #e5e7eb;
+        margin-left: 6px;
+      }
+
+      .typing {
+        align-self: flex-start;
+        color: var(--accent);
+        font-size: 13px;
+        padding: 8px 14px;
+      }
+
+      .typing::after {
+        content: "...";
+        animation: dots 1.2s steps(4, end) infinite;
+      }
+
+      @keyframes dots {
+        0%,
+        20% {
+          content: "";
+        }
+        40% {
+          content: ".";
+        }
+        60% {
+          content: "..";
+        }
+        80%,
+        100% {
+          content: "...";
+        }
+      }
+
+      #input-area {
+        padding: 12px 20px;
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        display: flex;
+        gap: 10px;
+      }
+
+      #input-area input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--text);
+        font-size: 14px;
+        outline: none;
+      }
+
+      #input-area input:focus {
+        border-color: var(--accent);
+      }
+
+      #input-area input::placeholder {
+        color: var(--muted);
+      }
+
+      #input-area button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      #input-area button:hover {
+        background: var(--accent-dim);
+      }
+
+      #input-area button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="logo">🐙</span>
+      <h1>OpenOctopus</h1>
+      <div class="status">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Disconnected</span>
+      </div>
+    </header>
+
+    <div id="chat"></div>
+
+    <div id="input-area">
+      <input
+        type="text"
+        id="msgInput"
+        placeholder="Type a message..."
+        autocomplete="off"
+        disabled
+      />
+      <button id="sendBtn" disabled>Send</button>
+    </div>
+
+    <script>
+      const WS_URL = `ws://${location.hostname || "localhost"}:19789`;
+      const chat = document.getElementById("chat");
+      const msgInput = document.getElementById("msgInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const statusDot = document.getElementById("statusDot");
+      const statusText = document.getElementById("statusText");
+
+      let ws = null;
+      let sessionId = null;
+      let pendingRequest = null;
+      let streamBuffer = "";
+      let streamEl = null;
+
+      function connect() {
+        ws = new WebSocket(WS_URL);
+
+        ws.onopen = () => {
+          statusDot.classList.add("connected");
+          statusText.textContent = "Connected";
+          msgInput.disabled = false;
+          sendBtn.disabled = false;
+          msgInput.focus();
+        };
+
+        ws.onclose = () => {
+          statusDot.classList.remove("connected");
+          statusText.textContent = "Disconnected";
+          msgInput.disabled = true;
+          sendBtn.disabled = true;
+          setTimeout(connect, 3000);
+        };
+
+        ws.onerror = () => {
+          statusText.textContent = "Error";
+        };
+
+        ws.onmessage = (event) => {
+          let data;
+          try {
+            data = JSON.parse(event.data);
+          } catch {
+            return;
+          }
+
+          // Welcome message
+          if (data.type === "connected") {
+            addSystem("Connected to OpenOctopus gateway");
+            return;
+          }
+
+          // Streaming token event
+          if (data.event === "chat.token" && data.data) {
+            if (!streamEl) {
+              removeTyping();
+              streamEl = addMessage("assistant", "");
+            }
+            streamBuffer += data.data.token;
+            const contentEl = streamEl.querySelector(".content");
+            contentEl.textContent = streamBuffer;
+            chat.scrollTop = chat.scrollHeight;
+            return;
+          }
+
+          // RPC response (chat.done is implicit in the response)
+          if (data.id && pendingRequest && data.id === pendingRequest) {
+            removeTyping();
+            pendingRequest = null;
+            sendBtn.disabled = false;
+            msgInput.disabled = false;
+
+            if (data.error) {
+              addSystem("Error: " + data.error.message);
+            } else if (data.result) {
+              if (data.result.sessionId) {
+                sessionId = data.result.sessionId;
+              }
+
+              // If we were streaming, the content is already shown
+              if (!streamEl && data.result.message) {
+                const content = data.result.message.content || "";
+                const realmName = data.result.realm ? data.result.realm.name : undefined;
+                addMessage("assistant", content, realmName);
+              } else if (streamEl && data.result.realm) {
+                // Update realm tag if available
+                const realmName = data.result.realm.name;
+                if (realmName) {
+                  const tag = document.createElement("span");
+                  tag.className = "realm-tag";
+                  tag.textContent = realmName;
+                  const meta = streamEl.querySelector(".meta");
+                  if (meta) {
+                    meta.appendChild(document.createTextNode(" "));
+                    meta.appendChild(tag);
+                  }
+                }
+              }
+            }
+
+            streamBuffer = "";
+            streamEl = null;
+            msgInput.focus();
+            return;
+          }
+
+          // Cross-realm reaction
+          if (data.event === "crossrealm.reaction" && data.data) {
+            const r = data.data;
+            addSystem("[" + (r.realmName || "cross-realm") + "] " + r.reaction);
+          }
+
+          // Maturity suggestion
+          if (data.event === "maturity.suggestion" && data.data) {
+            addSystem("Summon suggestion: " + data.data.entityName + " is ready to summon!");
+          }
+        };
+      }
+
+      function sendMessage() {
+        const text = msgInput.value.trim();
+        if (!text || !ws || ws.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        addMessage("user", text);
+        msgInput.value = "";
+
+        const id = "rpc_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+        pendingRequest = id;
+        sendBtn.disabled = true;
+        msgInput.disabled = true;
+
+        ws.send(
+          JSON.stringify({
+            id: id,
+            method: "chat.send",
+            params: {
+              message: text,
+              sessionId: sessionId || undefined,
+            },
+          }),
+        );
+
+        addTyping();
+      }
+
+      function addMessage(role, content, realmName) {
+        const el = document.createElement("div");
+        el.className = "message " + role;
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = role === "user" ? "You" : "Octo";
+
+        if (realmName) {
+          const tag = document.createElement("span");
+          tag.className = "realm-tag";
+          tag.textContent = realmName;
+          meta.appendChild(document.createTextNode(" "));
+          meta.appendChild(tag);
+        }
+
+        const contentEl = document.createElement("div");
+        contentEl.className = "content";
+        contentEl.textContent = content;
+
+        el.appendChild(meta);
+        el.appendChild(contentEl);
+        chat.appendChild(el);
+        chat.scrollTop = chat.scrollHeight;
+        return el;
+      }
+
+      function addSystem(text) {
+        const el = document.createElement("div");
+        el.className = "message system";
+        el.textContent = text;
+        chat.appendChild(el);
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      function addTyping() {
+        const el = document.createElement("div");
+        el.className = "typing";
+        el.id = "typing";
+        el.textContent = "Thinking";
+        chat.appendChild(el);
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      function removeTyping() {
+        const el = document.getElementById("typing");
+        if (el) {
+          el.remove();
+        }
+      }
+
+      msgInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      sendBtn.addEventListener("click", sendMessage);
+
+      connect();
+    </script>
+  </body>
+</html>

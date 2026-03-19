@@ -1,20 +1,48 @@
 import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { ChannelManager } from "@openoctopus/channels";
+import {
+  RealmManager,
+  EntityManager,
+  AgentRunner,
+  Router,
+  SkillRegistry,
+  LlmProviderRegistry,
+  RealmLoader,
+  MemoryExtractor,
+  MemoryHealthManager,
+  KnowledgeDistributor,
+  MaturityScanner,
+  CrossRealmReactor,
+  DirectoryScanner,
+  EmbeddingProviderRegistry,
+  Scheduler,
+} from "@openoctopus/core";
+import {
+  createLogger,
+  loadConfig,
+  type OpenOctopusConfig,
+  toErrorResponse,
+} from "@openoctopus/shared";
+import {
+  createDatabase,
+  MemoryRepo,
+  HealthReportRepo,
+  ScannedFileRepo,
+  type DatabaseOptions,
+} from "@openoctopus/storage";
+import { SummonEngine } from "@openoctopus/summon";
+import type Database from "better-sqlite3";
 import express from "express";
 import { WebSocketServer } from "ws";
-import type Database from "better-sqlite3";
-import { createLogger, loadConfig, type OpenOctopusConfig, toErrorResponse } from "@openoctopus/shared";
-import { createDatabase, MemoryRepo, HealthReportRepo, ScannedFileRepo, type DatabaseOptions } from "@openoctopus/storage";
-import path from "node:path";
-import { RealmManager, EntityManager, AgentRunner, Router, SkillRegistry, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner, EmbeddingProviderRegistry, Scheduler } from "@openoctopus/core";
-import { SummonEngine } from "@openoctopus/summon";
-import { ChannelManager } from "@openoctopus/channels";
-import { createRealmRoutes } from "./routes/realms.js";
-import { createEntityRoutes } from "./routes/entities.js";
-import { createChatRoutes } from "./routes/chat.js";
-import { createHealthRoutes } from "./routes/health.js";
-import { setupWebSocket } from "./ws.js";
-import type { RpcServices } from "./rpc-handlers.js";
 import { processChatMessage } from "./chat-pipeline.js";
+import { createChatRoutes } from "./routes/chat.js";
+import { createEntityRoutes } from "./routes/entities.js";
+import { createHealthRoutes } from "./routes/health.js";
+import { createRealmRoutes } from "./routes/realms.js";
+import type { RpcServices } from "./rpc-handlers.js";
+import { setupWebSocket } from "./ws.js";
 
 const log = createLogger("ink");
 
@@ -63,11 +91,32 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   const scannedFileRepo = new ScannedFileRepo(db);
 
   // Knowledge lifecycle services
-  const knowledgeDistributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, llmRegistry);
-  const memoryExtractor = new MemoryExtractor(memoryRepo, llmRegistry, knowledgeDistributor, embeddingRegistry);
-  const memoryHealthManager = new MemoryHealthManager(memoryRepo, realmManager, entityManager, healthReportRepo, llmRegistry);
+  const knowledgeDistributor = new KnowledgeDistributor(
+    memoryRepo,
+    realmManager,
+    entityManager,
+    llmRegistry,
+  );
+  const memoryExtractor = new MemoryExtractor(
+    memoryRepo,
+    llmRegistry,
+    knowledgeDistributor,
+    embeddingRegistry,
+  );
+  const memoryHealthManager = new MemoryHealthManager(
+    memoryRepo,
+    realmManager,
+    entityManager,
+    healthReportRepo,
+    llmRegistry,
+  );
   const maturityScanner = new MaturityScanner(memoryRepo, entityManager, realmManager);
-  const crossRealmReactor = new CrossRealmReactor(realmManager, summonEngine, agentRunner, llmRegistry);
+  const crossRealmReactor = new CrossRealmReactor(
+    realmManager,
+    summonEngine,
+    agentRunner,
+    llmRegistry,
+  );
   const directoryScanner = new DirectoryScanner(knowledgeDistributor, scannedFileRepo, llmRegistry);
 
   // Load realms from REALM.md files (also seeds default entities)
@@ -133,12 +182,21 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   app.use("/", createHealthRoutes({ llmRegistry, channelManager }));
   app.use("/api/realms", createRealmRoutes(realmManager));
   app.use("/api/entities", createEntityRoutes(entityManager));
-  app.use("/api/chat", createChatRoutes(realmManager, entityManager, agentRunner, router, summonEngine));
+  app.use(
+    "/api/chat",
+    createChatRoutes(realmManager, entityManager, agentRunner, router, summonEngine),
+  );
 
-  app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    const response = toErrorResponse(err);
-    res.status(response.status).json(response);
-  });
+  // Serve static web chat page
+  const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "public");
+  app.use(express.static(publicDir));
+
+  app.use(
+    (err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+      const response = toErrorResponse(err);
+      res.status(response.status).json(response);
+    },
+  );
 
   const httpServer = http.createServer(app);
 
@@ -246,8 +304,15 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
           skills: [],
           proactive: true,
         },
-        messages: [{ role: "user", content: rule.prompt ?? `Scheduled trigger: ${rule.trigger}`, timestamp: new Date().toISOString() }],
-        systemPrompt: "You are a proactive assistant. Generate a brief, helpful notification based on the scheduled trigger.",
+        messages: [
+          {
+            role: "user",
+            content: rule.prompt ?? `Scheduled trigger: ${rule.trigger}`,
+            timestamp: new Date().toISOString(),
+          },
+        ],
+        systemPrompt:
+          "You are a proactive assistant. Generate a brief, helpful notification based on the scheduled trigger.",
       });
 
       // Broadcast proactive message to connected clients
@@ -309,9 +374,9 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     log.info(`Embedding providers: ${embeddingRegistry.listProviders().join(", ")}`);
   }
 
-  const activeChannels = channelManager.list().filter(c => c.running);
+  const activeChannels = channelManager.list().filter((c) => c.running);
   if (activeChannels.length > 0) {
-    log.info(`Channels: ${activeChannels.map(c => c.name).join(", ")}`);
+    log.info(`Channels: ${activeChannels.map((c) => c.name).join(", ")}`);
   } else {
     log.info("Channels: none configured");
   }
@@ -354,8 +419,8 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
 
       // 4. Close HTTP servers
       await Promise.all([
-        new Promise<void>(r => httpServer.close(() => r())),
-        new Promise<void>(r => wsServer.close(() => r())),
+        new Promise<void>((r) => httpServer.close(() => r())),
+        new Promise<void>((r) => wsServer.close(() => r())),
       ]);
 
       // 5. Close database

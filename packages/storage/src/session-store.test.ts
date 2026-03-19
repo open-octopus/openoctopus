@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { ChatMessage } from "@openoctopus/shared";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { appendMessage, deleteTranscript, listSessions, readTranscript } from "./session-store.js";
 
 let tmpDir: string;
@@ -24,7 +24,11 @@ describe("session-store", () => {
     };
 
     appendMessage("session-1", msg, tmpDir);
-    appendMessage("session-1", { role: "assistant", content: "Hi!", timestamp: new Date().toISOString() }, tmpDir);
+    appendMessage(
+      "session-1",
+      { role: "assistant", content: "Hi!", timestamp: new Date().toISOString() },
+      tmpDir,
+    );
 
     const transcript = readTranscript("session-1", tmpDir);
     expect(transcript.sessionId).toBe("session-1");

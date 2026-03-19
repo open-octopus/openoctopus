@@ -294,7 +294,9 @@ export const RealmPackageSchema = z.object({
   author: z.string().optional(),
   description: z.string().default(""),
   realmConfig: RealmConfigSchema.omit({ id: true }),
-  entities: z.array(EntitySchema.omit({ id: true, realmId: true, createdAt: true, updatedAt: true })).default([]),
+  entities: z
+    .array(EntitySchema.omit({ id: true, realmId: true, createdAt: true, updatedAt: true }))
+    .default([]),
   soulFiles: z.array(SoulFileSchema.omit({ entityId: true })).default([]),
   skills: z.array(SkillDefinitionSchema.omit({ id: true })).default([]),
 });
@@ -302,7 +304,13 @@ export type RealmPackage = z.infer<typeof RealmPackageSchema>;
 
 // ── System Action (meta-commands detected from natural language) ──
 
-export const SystemActionSchema = z.enum(["summon", "unsummon", "list_realms", "list_entities", "switch_realm"]);
+export const SystemActionSchema = z.enum([
+  "summon",
+  "unsummon",
+  "list_realms",
+  "list_entities",
+  "switch_realm",
+]);
 export type SystemAction = z.infer<typeof SystemActionSchema>;
 
 // ── Router Intent ──
@@ -320,7 +328,12 @@ export type RouterIntent = z.infer<typeof RouterIntentSchema>;
 
 // ── Health Report ──
 
-export const HealthIssueKindSchema = z.enum(["duplicate", "contradiction", "stale", "incomplete_entity"]);
+export const HealthIssueKindSchema = z.enum([
+  "duplicate",
+  "contradiction",
+  "stale",
+  "incomplete_entity",
+]);
 export type HealthIssueKind = z.infer<typeof HealthIssueKindSchema>;
 
 export const HealthIssueSchema = z.object({

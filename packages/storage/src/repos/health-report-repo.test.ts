@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runMigrations } from "../migrations.js";
 import { HealthReportRepo } from "./health-report-repo.js";
 import { RealmRepo } from "./realm-repo.js";
@@ -55,7 +55,10 @@ describe("HealthReportRepo", () => {
       issues: [],
     });
     // Push the first report's computed_at into the past so ordering is deterministic
-    db.prepare("UPDATE health_reports SET computed_at = ? WHERE id = ?").run("2020-01-01T00:00:00.000Z", older.id);
+    db.prepare("UPDATE health_reports SET computed_at = ? WHERE id = ?").run(
+      "2020-01-01T00:00:00.000Z",
+      older.id,
+    );
     repo.create({
       realmId: realm.id,
       healthScore: 95,
@@ -72,16 +75,42 @@ describe("HealthReportRepo", () => {
 
   it("listByRealm with limit", () => {
     const realm = realmRepo.create({ name: "test" });
-    repo.create({ realmId: realm.id, healthScore: 80, memoryCount: 1, duplicateCount: 0, staleCount: 0, contradictionCount: 0, issues: [] });
-    repo.create({ realmId: realm.id, healthScore: 85, memoryCount: 2, duplicateCount: 0, staleCount: 0, contradictionCount: 0, issues: [] });
-    repo.create({ realmId: realm.id, healthScore: 90, memoryCount: 3, duplicateCount: 0, staleCount: 0, contradictionCount: 0, issues: [] });
+    repo.create({
+      realmId: realm.id,
+      healthScore: 80,
+      memoryCount: 1,
+      duplicateCount: 0,
+      staleCount: 0,
+      contradictionCount: 0,
+      issues: [],
+    });
+    repo.create({
+      realmId: realm.id,
+      healthScore: 85,
+      memoryCount: 2,
+      duplicateCount: 0,
+      staleCount: 0,
+      contradictionCount: 0,
+      issues: [],
+    });
+    repo.create({
+      realmId: realm.id,
+      healthScore: 90,
+      memoryCount: 3,
+      duplicateCount: 0,
+      staleCount: 0,
+      contradictionCount: 0,
+      issues: [],
+    });
     const reports = repo.listByRealm(realm.id, 2);
     expect(reports).toHaveLength(2);
   });
 
   it("issues JSON roundtrip", () => {
     const realm = realmRepo.create({ name: "test" });
-    const issues = [{ kind: "duplicate", memoryIds: ["m1"], description: "dup", suggestion: "fix" }];
+    const issues = [
+      { kind: "duplicate", memoryIds: ["m1"], description: "dup", suggestion: "fix" },
+    ];
     repo.create({
       realmId: realm.id,
       healthScore: 60,

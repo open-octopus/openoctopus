@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import type { AuditEvent } from "@openoctopus/shared";
 import { generateId } from "@openoctopus/shared";
+import type Database from "better-sqlite3";
 
 interface AuditRow {
   id: string;

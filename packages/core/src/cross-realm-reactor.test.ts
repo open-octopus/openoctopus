@@ -24,10 +24,10 @@ describe("CrossRealmReactor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     reactor = new CrossRealmReactor(
-      mockRealmManager as any,
-      mockSummonEngine as any,
-      mockAgentRunner as any,
-      mockLlmRegistry as any,
+      mockRealmManager as unknown as ConstructorParameters<typeof CrossRealmReactor>[0],
+      mockSummonEngine as unknown as ConstructorParameters<typeof CrossRealmReactor>[1],
+      mockAgentRunner as unknown as ConstructorParameters<typeof CrossRealmReactor>[2],
+      mockLlmRegistry as unknown as ConstructorParameters<typeof CrossRealmReactor>[3],
     );
   });
 
@@ -48,13 +48,13 @@ describe("CrossRealmReactor", () => {
 
     it("should skip when summoned agent is in same realm", async () => {
       const onReaction = vi.fn();
-      mockSummonEngine.listActive.mockReturnValue([{
-        entity: { realmId: "r1", id: "e1" },
-        agent: { name: "Pet Agent" },
-      }]);
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet" },
+      mockSummonEngine.listActive.mockReturnValue([
+        {
+          entity: { realmId: "r1", id: "e1" },
+          agent: { name: "Pet Agent" },
+        },
       ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet" }]);
 
       await reactor.checkReactions({
         sourceRealmId: "r1",
@@ -68,10 +68,12 @@ describe("CrossRealmReactor", () => {
 
     it("should detect relevance by keywords", async () => {
       const onReaction = vi.fn();
-      mockSummonEngine.listActive.mockReturnValue([{
-        entity: { realmId: "r2", id: "e1" },
-        agent: { name: "Finance Agent" },
-      }]);
+      mockSummonEngine.listActive.mockReturnValue([
+        {
+          entity: { realmId: "r2", id: "e1" },
+          agent: { name: "Finance Agent" },
+        },
+      ]);
       mockRealmManager.list.mockReturnValue([
         { id: "r1", name: "pet" },
         { id: "r2", name: "finance" },
@@ -99,10 +101,12 @@ describe("CrossRealmReactor", () => {
       });
       mockLlmRegistry.resolveModel.mockReturnValue("test-model");
 
-      mockSummonEngine.listActive.mockReturnValue([{
-        entity: { realmId: "r2", id: "e1" },
-        agent: { name: "Finance Agent" },
-      }]);
+      mockSummonEngine.listActive.mockReturnValue([
+        {
+          entity: { realmId: "r2", id: "e1" },
+          agent: { name: "Finance Agent" },
+        },
+      ]);
       mockRealmManager.list.mockReturnValue([
         { id: "r1", name: "pet" },
         { id: "r2", name: "finance" },
@@ -117,10 +121,12 @@ describe("CrossRealmReactor", () => {
       });
 
       expect(onReaction).toHaveBeenCalledTimes(1);
-      expect(onReaction).toHaveBeenCalledWith(expect.objectContaining({
-        targetRealmName: "finance",
-        agentName: "Finance Agent",
-      }));
+      expect(onReaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetRealmName: "finance",
+          agentName: "Finance Agent",
+        }),
+      );
     });
   });
 
@@ -154,10 +160,12 @@ describe("CrossRealmReactor", () => {
       // finance keywords: 钱, 费用, 支出, 预算, expense = ~5 hits
       // health keywords: 病 = ~1 hit
       // Finance should win
-      expect(onReaction).toHaveBeenCalledWith(expect.objectContaining({
-        targetRealmName: "finance",
-        agentName: "Finance Agent",
-      }));
+      expect(onReaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetRealmName: "finance",
+          agentName: "Finance Agent",
+        }),
+      );
     });
   });
 
@@ -280,10 +288,12 @@ describe("CrossRealmReactor", () => {
 
       // health has most keyword hits: 病, 医生, 药, symptoms(?), 健康, doctor = many
       // finance: 0, work: 0
-      expect(onReaction).toHaveBeenCalledWith(expect.objectContaining({
-        targetRealmName: "health",
-        agentName: "Health Agent",
-      }));
+      expect(onReaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetRealmName: "health",
+          agentName: "Health Agent",
+        }),
+      );
     });
   });
 
@@ -335,9 +345,11 @@ describe("CrossRealmReactor", () => {
       });
 
       // fitness keywords: 健身, 锻炼, 运动 all match
-      expect(onReaction).toHaveBeenCalledWith(expect.objectContaining({
-        targetRealmName: "fitness",
-      }));
+      expect(onReaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetRealmName: "fitness",
+        }),
+      );
     });
   });
 });

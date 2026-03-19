@@ -91,7 +91,11 @@ export function createRpcRequest(method: string, params?: Record<string, unknown
   };
 }
 
-export function createRpcResponse(id: string, result?: unknown, error?: { code: number; message: string }): RpcResponse {
+export function createRpcResponse(
+  id: string,
+  result?: unknown,
+  error?: { code: number; message: string },
+): RpcResponse {
   return { id, result, error };
 }
 

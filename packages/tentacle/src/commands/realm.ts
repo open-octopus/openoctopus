@@ -1,6 +1,6 @@
+import type { RealmState } from "@openoctopus/shared";
 import { defineCommand } from "citty";
 import consola from "consola";
-import type { RealmState } from "@openoctopus/shared";
 import { ApiClient } from "../api-client.js";
 
 const listCommand = defineCommand({
@@ -19,7 +19,9 @@ const listCommand = defineCommand({
     for (const realm of realms) {
       const status = realm.status === "active" ? "[active]" : `[${realm.status}]`;
       consola.log(`  ${status} ${realm.name} (${realm.id})`);
-      if (realm.description) { consola.log(`      ${realm.description}`); }
+      if (realm.description) {
+        consola.log(`      ${realm.description}`);
+      }
     }
   },
 });
@@ -68,7 +70,9 @@ const infoCommand = defineCommand({
     consola.log(`  Health:      ${realm.healthScore}/100`);
     consola.log(`  Description: ${realm.description || "(none)"}`);
     consola.log(`  Created:     ${realm.createdAt}`);
-    if (realm.lastActivity) { consola.log(`  Last Active: ${realm.lastActivity}`); }
+    if (realm.lastActivity) {
+      consola.log(`  Last Active: ${realm.lastActivity}`);
+    }
   },
 });
 

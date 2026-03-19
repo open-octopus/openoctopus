@@ -1,9 +1,9 @@
 import type { RealmHealthReport, HealthIssue, MemoryEntry } from "@openoctopus/shared";
 import { createLogger } from "@openoctopus/shared";
 import type { MemoryRepo, HealthReportRepo } from "@openoctopus/storage";
-import type { RealmManager } from "./realm-manager.js";
 import type { EntityManager } from "./entity-manager.js";
 import type { LlmProviderRegistry } from "./llm/provider-registry.js";
+import type { RealmManager } from "./realm-manager.js";
 
 const log = createLogger("memory-health");
 
@@ -46,20 +46,31 @@ export class MemoryHealthManager {
     const contradictionCount = contradictionIssues.length;
     const incompleteCount = incompleteIssues.length;
 
-    const issues = [...duplicateIssues, ...staleIssues, ...contradictionIssues, ...incompleteIssues];
+    const issues = [
+      ...duplicateIssues,
+      ...staleIssues,
+      ...contradictionIssues,
+      ...incompleteIssues,
+    ];
 
     // Health score formula
     const dupRate = totalMemories > 0 ? duplicateCount / totalMemories : 0;
     const staleRate = totalMemories > 0 ? staleCount / totalMemories : 0;
     const incompleteRate = entityCount > 0 ? incompleteCount / entityCount : 0;
 
-    const score = Math.max(0, Math.min(100, Math.round(
-      100
-      - dupRate * 20 * 100
-      - staleRate * 15 * 100
-      - contradictionCount * 10
-      - incompleteRate * 10 * 100,
-    )));
+    const score = Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(
+          100 -
+            dupRate * 20 * 100 -
+            staleRate * 15 * 100 -
+            contradictionCount * 10 -
+            incompleteRate * 10 * 100,
+        ),
+      ),
+    );
 
     const report: RealmHealthReport = {
       realmId,
@@ -116,8 +127,6 @@ export class MemoryHealthManager {
       const dups = await this.detectDuplicates(realmId);
       for (const issue of dups) {
         if (issue.memoryIds.length >= 2) {
-          // Keep first, delete rest
-          const toDelete = issue.memoryIds.slice(1);
           deduplicatedCount += await this.deduplicate(realmId, [issue.memoryIds]);
         }
       }
@@ -125,7 +134,7 @@ export class MemoryHealthManager {
 
     if (opts.archiveStale) {
       const staleIssues = this.detectStale(realmId, opts.staleDays);
-      const staleIds = staleIssues.flatMap(i => i.memoryIds);
+      const staleIds = staleIssues.flatMap((i) => i.memoryIds);
       if (staleIds.length > 0) {
         archivedCount = this.archiveStale(realmId, staleIds);
       }
@@ -142,12 +151,16 @@ export class MemoryHealthManager {
     const seen = new Set<number>();
 
     for (let i = 0; i < memories.length; i++) {
-      if (seen.has(i)) { continue; }
+      if (seen.has(i)) {
+        continue;
+      }
 
       const group: string[] = [memories[i].id];
 
       for (let j = i + 1; j < memories.length; j++) {
-        if (seen.has(j)) { continue; }
+        if (seen.has(j)) {
+          continue;
+        }
 
         const dist = normalizedLevenshtein(memories[i].content, memories[j].content);
         if (dist < LEVENSHTEIN_THRESHOLD) {
@@ -176,7 +189,9 @@ export class MemoryHealthManager {
     }
 
     const memories = this.memoryRepo.listByRealm(realmId, "archival");
-    if (memories.length < 2) { return []; }
+    if (memories.length < 2) {
+      return [];
+    }
 
     // Batch memories for LLM check (limit to 30 to control cost)
     const batch = memories.slice(0, 30);
@@ -197,19 +212,26 @@ If no contradictions found, output [].`,
       });
 
       const content = result.content.trim();
-      const jsonStr = content.startsWith("[") ? content : content.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+      const jsonStr = content.startsWith("[")
+        ? content
+        : content
+            .replace(/```json?\n?/g, "")
+            .replace(/```/g, "")
+            .trim();
       const parsed = JSON.parse(jsonStr) as Array<{ indices: number[]; reason: string }>;
 
       return parsed
-        .filter(c => Array.isArray(c.indices) && c.indices.length === 2)
-        .map(c => ({
+        .filter((c) => Array.isArray(c.indices) && c.indices.length === 2)
+        .map((c) => ({
           kind: "contradiction" as const,
-          memoryIds: c.indices.filter(i => i < batch.length).map(i => batch[i].id),
+          memoryIds: c.indices.filter((i) => i < batch.length).map((i) => batch[i].id),
           description: c.reason,
           suggestion: "Review and resolve conflicting memories",
         }));
     } catch (err) {
-      log.warn(`Contradiction detection failed: ${err instanceof Error ? err.message : String(err)}`);
+      log.warn(
+        `Contradiction detection failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
       return [];
     }
   }
@@ -217,14 +239,18 @@ If no contradictions found, output [].`,
   detectStale(realmId: string, staleDays = DEFAULT_STALE_DAYS): HealthIssue[] {
     const staleMemories = this.memoryRepo.listStale(realmId, staleDays);
 
-    if (staleMemories.length === 0) { return []; }
+    if (staleMemories.length === 0) {
+      return [];
+    }
 
-    return [{
-      kind: "stale",
-      memoryIds: staleMemories.map(m => m.id),
-      description: `${staleMemories.length} memories older than ${staleDays} days`,
-      suggestion: "Archive or refresh stale memories",
-    }];
+    return [
+      {
+        kind: "stale",
+        memoryIds: staleMemories.map((m) => m.id),
+        description: `${staleMemories.length} memories older than ${staleDays} days`,
+        suggestion: "Archive or refresh stale memories",
+      },
+    ];
   }
 
   detectIncompleteEntities(realmId: string): HealthIssue[] {
@@ -252,7 +278,9 @@ If no contradictions found, output [].`,
   async deduplicate(realmId: string, memoryIdPairs: string[][]): Promise<number> {
     let removed = 0;
     for (const group of memoryIdPairs) {
-      if (group.length < 2) { continue; }
+      if (group.length < 2) {
+        continue;
+      }
       const toDelete = group.slice(1);
       removed += this.memoryRepo.deleteMany(toDelete);
     }
@@ -278,24 +306,28 @@ If no contradictions found, output [].`,
   }
 
   async compress(realmId: string, memoryIds: string[]): Promise<MemoryEntry | null> {
-    if (memoryIds.length === 0) { return null; }
+    if (memoryIds.length === 0) {
+      return null;
+    }
 
     const memories = memoryIds
-      .map(id => {
+      .map((id) => {
         try {
           const all = this.memoryRepo.listByRealm(realmId);
-          return all.find(m => m.id === id);
+          return all.find((m) => m.id === id);
         } catch {
           return undefined;
         }
       })
       .filter((m): m is MemoryEntry => m !== undefined);
 
-    if (memories.length === 0) { return null; }
+    if (memories.length === 0) {
+      return null;
+    }
 
     if (!this.llmRegistry.hasRealProvider()) {
       // Simple concatenation fallback
-      const combined = memories.map(m => m.content).join("; ");
+      const combined = memories.map((m) => m.content).join("; ");
       this.memoryRepo.deleteMany(memoryIds);
       return this.memoryRepo.create({
         realmId,
@@ -309,12 +341,13 @@ If no contradictions found, output [].`,
     try {
       const provider = this.llmRegistry.getProvider();
       const model = this.llmRegistry.resolveModel();
-      const memoryList = memories.map(m => `- ${m.content}`).join("\n");
+      const memoryList = memories.map((m) => `- ${m.content}`).join("\n");
 
       const result = await provider.chat({
         model,
         messages: [{ role: "user", content: `Memories to compress:\n${memoryList}` }],
-        systemPrompt: "Merge these related memories into a single comprehensive summary. Keep all important facts. Output only the merged text, nothing else.",
+        systemPrompt:
+          "Merge these related memories into a single comprehensive summary. Keep all important facts. Output only the merged text, nothing else.",
         maxTokens: 300,
       });
 
@@ -335,9 +368,13 @@ If no contradictions found, output [].`,
 
 /** Normalized Levenshtein distance (0 = identical, 1 = completely different) */
 function normalizedLevenshtein(a: string, b: string): number {
-  if (a === b) { return 0; }
+  if (a === b) {
+    return 0;
+  }
   const maxLen = Math.max(a.length, b.length);
-  if (maxLen === 0) return 0;
+  if (maxLen === 0) {
+    return 0;
+  }
 
   // For performance, skip very long strings
   if (maxLen > 500) {
@@ -346,7 +383,9 @@ function normalizedLevenshtein(a: string, b: string): number {
     const setB = new Set(b.toLowerCase().split(/\s+/));
     let overlap = 0;
     for (const w of setA) {
-      if (setB.has(w)) overlap++;
+      if (setB.has(w)) {
+        overlap++;
+      }
     }
     const union = new Set([...setA, ...setB]).size;
     return union > 0 ? 1 - overlap / union : 1;
@@ -356,14 +395,19 @@ function normalizedLevenshtein(a: string, b: string): number {
   const n = b.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0) as number[]);
 
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 0; i <= m; i++) {
+    dp[i][0] = i;
+  }
+  for (let j = 0; j <= n; j++) {
+    dp[0][j] = j;
+  }
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      dp[i][j] = a[i - 1] === b[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
     }
   }
 

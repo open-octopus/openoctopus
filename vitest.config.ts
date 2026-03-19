@@ -1,6 +1,6 @@
-import { defineConfig } from "vitest/config";
-import path from "node:path";
 import os from "node:os";
+import path from "node:path";
+import { defineConfig } from "vitest/config";
 
 const packages = path.resolve(import.meta.dirname, "packages");
 

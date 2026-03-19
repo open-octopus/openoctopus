@@ -1,4 +1,20 @@
-import type { WebSocket } from "ws";
+import type { ChannelManager } from "@openoctopus/channels";
+import type {
+  RealmManager,
+  EntityManager,
+  AgentRunner,
+  Router as IntentRouter,
+  LlmProviderRegistry,
+  RealmLoader,
+  MemoryExtractor,
+  MemoryHealthManager,
+  KnowledgeDistributor,
+  MaturityScanner,
+  CrossRealmReactor,
+  DirectoryScanner,
+  EmbeddingProviderRegistry,
+  Scheduler,
+} from "@openoctopus/core";
 import {
   type RpcRequest,
   createRpcResponse,
@@ -7,12 +23,11 @@ import {
   RPC_EVENTS,
   toErrorResponse,
 } from "@openoctopus/shared";
-import type { RealmManager, EntityManager, AgentRunner, Router as IntentRouter, LlmProviderRegistry, RealmLoader, MemoryExtractor, MemoryHealthManager, KnowledgeDistributor, MaturityScanner, CrossRealmReactor, DirectoryScanner, EmbeddingProviderRegistry, Scheduler } from "@openoctopus/core";
-import type { SummonEngine } from "@openoctopus/summon";
-import type { ChannelManager } from "@openoctopus/channels";
 import type { MemoryRepo } from "@openoctopus/storage";
-import type { WsBroadcaster } from "./ws.js";
+import type { SummonEngine } from "@openoctopus/summon";
+import type { WebSocket } from "ws";
 import { processChatMessage } from "./chat-pipeline.js";
+import type { WsBroadcaster } from "./ws.js";
 
 export interface RpcServices {
   realmManager: RealmManager;
@@ -51,7 +66,11 @@ handlers.set(RPC_METHODS.CHAT_SEND, async (ws, req, services) => {
   };
 
   if (!message) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "message is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "message is required" }),
+      ),
+    );
     return;
   }
 
@@ -93,32 +112,44 @@ handlers.set(RPC_METHODS.REALM_LIST, async (ws, req, services) => {
 handlers.set(RPC_METHODS.REALM_GET, async (ws, req, services) => {
   const { id } = req.params as { id?: string };
   if (!id) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "id is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
     return;
   }
   const realm = services.realmManager.get(id);
   const entities = services.entityManager.listByRealm(id);
   const meta = services.realmLoader?.getRealmAgent(id);
-  ws.send(JSON.stringify(createRpcResponse(req.id, {
-    realm: {
-      ...realm,
-      entityCount: entities.length,
-      entities: entities.map((e) => ({
-        id: e.id,
-        name: e.name,
-        type: e.type,
-        summonStatus: e.summonStatus,
-      })),
-      agentName: meta?.agentConfig.name,
-      skills: meta?.skills ?? [],
-    },
-  })));
+  ws.send(
+    JSON.stringify(
+      createRpcResponse(req.id, {
+        realm: {
+          ...realm,
+          entityCount: entities.length,
+          entities: entities.map((e) => ({
+            id: e.id,
+            name: e.name,
+            type: e.type,
+            summonStatus: e.summonStatus,
+          })),
+          agentName: meta?.agentConfig.name,
+          skills: meta?.skills ?? [],
+        },
+      }),
+    ),
+  );
 });
 
 handlers.set(RPC_METHODS.REALM_CREATE, async (ws, req, services) => {
   const data = req.params as { name?: string; description?: string };
   if (!data.name) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "name is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "name is required" }),
+      ),
+    );
     return;
   }
   const realm = services.realmManager.create(data as { name: string; description?: string });
@@ -126,9 +157,18 @@ handlers.set(RPC_METHODS.REALM_CREATE, async (ws, req, services) => {
 });
 
 handlers.set(RPC_METHODS.REALM_UPDATE, async (ws, req, services) => {
-  const { id, ...data } = req.params as { id?: string; name?: string; description?: string; status?: string };
+  const { id, ...data } = req.params as {
+    id?: string;
+    name?: string;
+    description?: string;
+    status?: string;
+  };
   if (!id) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "id is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
     return;
   }
   const realm = services.realmManager.update(id, data);
@@ -138,7 +178,11 @@ handlers.set(RPC_METHODS.REALM_UPDATE, async (ws, req, services) => {
 handlers.set(RPC_METHODS.REALM_DELETE, async (ws, req, services) => {
   const { id } = req.params as { id?: string };
   if (!id) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "id is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
     return;
   }
   services.realmManager.delete(id);
@@ -150,7 +194,11 @@ handlers.set(RPC_METHODS.REALM_DELETE, async (ws, req, services) => {
 handlers.set(RPC_METHODS.ENTITY_LIST, async (ws, req, services) => {
   const { realmId } = req.params as { realmId?: string };
   if (!realmId) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "realmId is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "realmId is required" }),
+      ),
+    );
     return;
   }
   const entities = services.entityManager.listByRealm(realmId);
@@ -160,7 +208,11 @@ handlers.set(RPC_METHODS.ENTITY_LIST, async (ws, req, services) => {
 handlers.set(RPC_METHODS.ENTITY_GET, async (ws, req, services) => {
   const { id } = req.params as { id?: string };
   if (!id) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "id is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
     return;
   }
   const entity = services.entityManager.get(id);
@@ -177,7 +229,14 @@ handlers.set(RPC_METHODS.ENTITY_CREATE, async (ws, req, services) => {
     soulPath?: string;
   };
   if (!data.realmId || !data.name) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "realmId and name are required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 400,
+          message: "realmId and name are required",
+        }),
+      ),
+    );
     return;
   }
   const entity = services.entityManager.create(data as Parameters<EntityManager["create"]>[0]);
@@ -193,7 +252,11 @@ handlers.set(RPC_METHODS.ENTITY_UPDATE, async (ws, req, services) => {
     attributes?: Record<string, unknown>;
   };
   if (!id) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "id is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
     return;
   }
   const entity = services.entityManager.update(id, { name, type, avatar, attributes });
@@ -203,7 +266,11 @@ handlers.set(RPC_METHODS.ENTITY_UPDATE, async (ws, req, services) => {
 handlers.set(RPC_METHODS.ENTITY_DELETE, async (ws, req, services) => {
   const { id } = req.params as { id?: string };
   if (!id) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "id is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
     return;
   }
   services.entityManager.delete(id);
@@ -220,20 +287,32 @@ handlers.set(RPC_METHODS.SUMMON_LIST, async (ws, req, services) => {
 handlers.set(RPC_METHODS.SUMMON_INVOKE, async (ws, req, services) => {
   const { entityId } = req.params as { entityId?: string };
   if (!entityId) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "entityId is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "entityId is required" }),
+      ),
+    );
     return;
   }
   const summoned = await services.summonEngine.summon(entityId);
-  ws.send(JSON.stringify(createRpcResponse(req.id, {
-    entity: { id: summoned.entity.id, name: summoned.entity.name },
-    agent: { id: summoned.agent.id, name: summoned.agent.name },
-  })));
+  ws.send(
+    JSON.stringify(
+      createRpcResponse(req.id, {
+        entity: { id: summoned.entity.id, name: summoned.entity.name },
+        agent: { id: summoned.agent.id, name: summoned.agent.name },
+      }),
+    ),
+  );
 });
 
 handlers.set(RPC_METHODS.SUMMON_RELEASE, async (ws, req, services) => {
   const { entityId } = req.params as { entityId?: string };
   if (!entityId) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "entityId is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "entityId is required" }),
+      ),
+    );
     return;
   }
   services.summonEngine.unsummon(entityId);
@@ -279,7 +358,14 @@ handlers.set(RPC_METHODS.STATUS_INFO, async (ws, req, services) => {
 
 handlers.set(RPC_METHODS.HEALTH_REPORT, async (ws, req, services) => {
   if (!services.memoryHealthManager) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 501, message: "Health manager not available" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Health manager not available",
+        }),
+      ),
+    );
     return;
   }
   const { realmId } = req.params as { realmId?: string };
@@ -294,26 +380,54 @@ handlers.set(RPC_METHODS.HEALTH_REPORT, async (ws, req, services) => {
 
 handlers.set(RPC_METHODS.HEALTH_CLEAN, async (ws, req, services) => {
   if (!services.memoryHealthManager) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 501, message: "Health manager not available" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Health manager not available",
+        }),
+      ),
+    );
     return;
   }
-  const { realmId, options } = req.params as { realmId?: string; options?: Record<string, unknown> };
+  const { realmId, options } = req.params as {
+    realmId?: string;
+    options?: Record<string, unknown>;
+  };
   if (!realmId) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "realmId is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "realmId is required" }),
+      ),
+    );
     return;
   }
-  const result = await services.memoryHealthManager.cleanup(realmId, options as { deduplicate?: boolean; archiveStale?: boolean; staleDays?: number } | undefined);
+  const result = await services.memoryHealthManager.cleanup(
+    realmId,
+    options as { deduplicate?: boolean; archiveStale?: boolean; staleDays?: number } | undefined,
+  );
   ws.send(JSON.stringify(createRpcResponse(req.id, { result })));
 });
 
 handlers.set(RPC_METHODS.KNOWLEDGE_INJECT, async (ws, req, services) => {
   if (!services.knowledgeDistributor) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 501, message: "Knowledge distributor not available" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Knowledge distributor not available",
+        }),
+      ),
+    );
     return;
   }
   const { text } = req.params as { text?: string };
   if (!text) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "text is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "text is required" }),
+      ),
+    );
     return;
   }
   const result = await services.knowledgeDistributor.distributeFromText(text);
@@ -322,7 +436,14 @@ handlers.set(RPC_METHODS.KNOWLEDGE_INJECT, async (ws, req, services) => {
 
 handlers.set(RPC_METHODS.MATURITY_SCAN, async (ws, req, services) => {
   if (!services.maturityScanner) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 501, message: "Maturity scanner not available" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Maturity scanner not available",
+        }),
+      ),
+    );
     return;
   }
   const { realmId } = req.params as { realmId?: string };
@@ -337,25 +458,56 @@ handlers.set(RPC_METHODS.MATURITY_SCAN, async (ws, req, services) => {
 
 handlers.set(RPC_METHODS.DIRECTORY_SCAN, async (ws, req, services) => {
   if (!services.directoryScanner) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 501, message: "Directory scanner not available" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Directory scanner not available",
+        }),
+      ),
+    );
     return;
   }
   const { path, options } = req.params as { path?: string; options?: Record<string, unknown> };
   if (!path) {
-    ws.send(JSON.stringify(createRpcResponse(req.id, undefined, { code: 400, message: "path is required" })));
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "path is required" }),
+      ),
+    );
     return;
   }
-  const result = await services.directoryScanner.scanDirectory(path, options as { extensions?: string[]; recursive?: boolean; maxFileSize?: number; realmId?: string; dryRun?: boolean } | undefined);
+  const result = await services.directoryScanner.scanDirectory(
+    path,
+    options as
+      | {
+          extensions?: string[];
+          recursive?: boolean;
+          maxFileSize?: number;
+          realmId?: string;
+          dryRun?: boolean;
+        }
+      | undefined,
+  );
   ws.send(JSON.stringify(createRpcResponse(req.id, { result })));
 });
 
 // ── Dispatch ──
 
-export async function dispatchRpc(ws: WebSocket, req: RpcRequest, services: RpcServices): Promise<void> {
+export async function dispatchRpc(
+  ws: WebSocket,
+  req: RpcRequest,
+  services: RpcServices,
+): Promise<void> {
   const handler = handlers.get(req.method);
   if (!handler) {
     ws.send(
-      JSON.stringify(createRpcResponse(req.id, undefined, { code: 404, message: `Unknown method: ${req.method}` })),
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 404,
+          message: `Unknown method: ${req.method}`,
+        }),
+      ),
     );
     return;
   }
@@ -365,7 +517,12 @@ export async function dispatchRpc(ws: WebSocket, req: RpcRequest, services: RpcS
   } catch (err) {
     const errResponse = toErrorResponse(err);
     ws.send(
-      JSON.stringify(createRpcResponse(req.id, undefined, { code: errResponse.status, message: errResponse.message })),
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: errResponse.status,
+          message: errResponse.message,
+        }),
+      ),
     );
   }
 }

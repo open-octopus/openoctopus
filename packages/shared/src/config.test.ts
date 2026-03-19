@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import fs from "node:fs";
-import path from "node:path";
 import os from "node:os";
+import path from "node:path";
+import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { loadConfig, resetConfig, writeDefaultConfig } from "./config.js";
 
 describe("config", () => {
@@ -21,20 +21,26 @@ describe("config", () => {
   describe("loadConfig (comments)", () => {
     it("loads JSON with // comments", () => {
       const configPath = path.join(tmpDir, "config.json5");
-      fs.writeFileSync(configPath, `{
+      fs.writeFileSync(
+        configPath,
+        `{
         // This is a comment
         "gateway": { "wsPort": 9999 }
-      }`);
+      }`,
+      );
       const config = loadConfig(configPath);
       expect(config.gateway.wsPort).toBe(9999);
     });
 
     it("loads JSON with /* */ comments", () => {
       const configPath = path.join(tmpDir, "config.json5");
-      fs.writeFileSync(configPath, `{
+      fs.writeFileSync(
+        configPath,
+        `{
         /* block comment */
         "gateway": { "httpPort": 8888 }
-      }`);
+      }`,
+      );
       const config = loadConfig(configPath);
       expect(config.gateway.httpPort).toBe(8888);
     });
@@ -57,13 +63,16 @@ describe("config", () => {
     it("interpolates $env:VAR syntax", () => {
       vi.stubEnv("TEST_OO_KEY", "my-key-123");
       const configPath = path.join(tmpDir, "config.json5");
-      fs.writeFileSync(configPath, JSON.stringify({
-        llm: {
-          providers: {
-            anthropic: { api: "anthropic-messages", apiKey: "$env:TEST_OO_KEY" },
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          llm: {
+            providers: {
+              anthropic: { api: "anthropic-messages", apiKey: "$env:TEST_OO_KEY" },
+            },
           },
-        },
-      }));
+        }),
+      );
       const config = loadConfig(configPath);
       expect(config.llm.providers.anthropic?.apiKey).toBe("my-key-123");
     });
@@ -71,26 +80,32 @@ describe("config", () => {
     it("interpolates ${VAR} syntax", () => {
       vi.stubEnv("TEST_OO_KEY2", "key-456");
       const configPath = path.join(tmpDir, "config.json5");
-      fs.writeFileSync(configPath, JSON.stringify({
-        llm: {
-          providers: {
-            openai: { api: "openai-completions", apiKey: "${TEST_OO_KEY2}" },
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          llm: {
+            providers: {
+              openai: { api: "openai-completions", apiKey: "${TEST_OO_KEY2}" },
+            },
           },
-        },
-      }));
+        }),
+      );
       const config = loadConfig(configPath);
       expect(config.llm.providers.openai?.apiKey).toBe("key-456");
     });
 
     it("replaces missing env var with empty string", () => {
       const configPath = path.join(tmpDir, "config.json5");
-      fs.writeFileSync(configPath, JSON.stringify({
-        llm: {
-          providers: {
-            test: { api: "ollama", baseUrl: "$env:NONEXISTENT_VAR_12345" },
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          llm: {
+            providers: {
+              test: { api: "ollama", baseUrl: "$env:NONEXISTENT_VAR_12345" },
+            },
           },
-        },
-      }));
+        }),
+      );
       const config = loadConfig(configPath);
       expect(config.llm.providers.test?.baseUrl).toBe("");
     });

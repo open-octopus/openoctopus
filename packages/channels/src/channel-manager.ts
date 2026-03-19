@@ -1,6 +1,6 @@
 import { createLogger, type ChannelConfig } from "@openoctopus/shared";
-import type { Channel, MessageHandler, StreamingMessageHandler } from "./channel.js";
 import { TelegramChannel } from "./adapters/telegram.js";
+import type { Channel, MessageHandler, StreamingMessageHandler } from "./channel.js";
 
 const log = createLogger("channels");
 
@@ -90,7 +90,10 @@ export class ChannelManager {
       startPromises.push(
         channel.start().then(
           () => log.info(`Channel started: ${name}`),
-          (err) => log.error(`Failed to start channel ${name}: ${err instanceof Error ? err.message : String(err)}`),
+          (err) =>
+            log.error(
+              `Failed to start channel ${name}: ${err instanceof Error ? err.message : String(err)}`,
+            ),
         ),
       );
     }
@@ -104,7 +107,10 @@ export class ChannelManager {
       stopPromises.push(
         channel.stop().then(
           () => log.debug(`Channel stopped: ${name}`),
-          (err) => log.error(`Failed to stop channel ${name}: ${err instanceof Error ? err.message : String(err)}`),
+          (err) =>
+            log.error(
+              `Failed to stop channel ${name}: ${err instanceof Error ? err.message : String(err)}`,
+            ),
         ),
       );
     }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { EmbeddingProviderRegistry } from "./embedding-registry.js";
 import { StubEmbeddingProvider } from "./embedding-provider.js";
+import { EmbeddingProviderRegistry } from "./embedding-registry.js";
 
 describe("EmbeddingProviderRegistry", () => {
   it("creates with no config and has stub fallback", () => {

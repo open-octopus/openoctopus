@@ -1,7 +1,7 @@
-import path from "node:path";
 import fs from "node:fs";
-import Database from "better-sqlite3";
+import path from "node:path";
 import { createLogger, DB_FILE, DATA_DIR } from "@openoctopus/shared";
+import Database from "better-sqlite3";
 import { runMigrations } from "./migrations.js";
 
 const log = createLogger("storage");

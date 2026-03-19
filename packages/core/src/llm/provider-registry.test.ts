@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LlmProviderRegistry } from "./provider-registry.js";
-import { StubProvider } from "./providers/stub.js";
 import type { LlmProvider, LlmChatRequest, LlmChatResponse, LlmStreamChunk } from "./provider.js";
+import { StubProvider } from "./providers/stub.js";
 
 class FakeProvider implements LlmProvider {
   readonly name: string;
@@ -11,7 +11,12 @@ class FakeProvider implements LlmProvider {
     this.api = api;
   }
   async chat(_req: LlmChatRequest): Promise<LlmChatResponse> {
-    return { content: "fake", usage: { inputTokens: 0, outputTokens: 0 }, model: "fake", finishReason: "stop" };
+    return {
+      content: "fake",
+      usage: { inputTokens: 0, outputTokens: 0 },
+      model: "fake",
+      finishReason: "stop",
+    };
   }
   async *chatStream(_req: LlmChatRequest): AsyncIterable<LlmStreamChunk> {
     yield { type: "done" };
@@ -30,8 +35,20 @@ describe("LlmProviderRegistry", () => {
         defaultProvider: "ollama",
         defaultModel: "llama3.2",
         providers: {
-          local: { api: "ollama", enabled: true, priority: 10, models: [], baseUrl: "http://localhost:11434" },
-          backup: { api: "ollama", enabled: true, priority: 5, models: [], baseUrl: "http://localhost:11435" },
+          local: {
+            api: "ollama",
+            enabled: true,
+            priority: 10,
+            models: [],
+            baseUrl: "http://localhost:11434",
+          },
+          backup: {
+            api: "ollama",
+            enabled: true,
+            priority: 5,
+            models: [],
+            baseUrl: "http://localhost:11435",
+          },
         },
       });
       const providers = reg.listProviders();

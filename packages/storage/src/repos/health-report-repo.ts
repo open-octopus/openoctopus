@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import { generateId } from "@openoctopus/shared";
+import type Database from "better-sqlite3";
 
 interface HealthReportRow {
   id: string;
@@ -59,7 +59,17 @@ export class HealthReportRepo {
         `INSERT INTO health_reports (id, realm_id, health_score, memory_count, duplicate_count, stale_count, contradiction_count, issues, computed_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(id, data.realmId, data.healthScore, data.memoryCount, data.duplicateCount, data.staleCount, data.contradictionCount, JSON.stringify(data.issues), now);
+      .run(
+        id,
+        data.realmId,
+        data.healthScore,
+        data.memoryCount,
+        data.duplicateCount,
+        data.staleCount,
+        data.contradictionCount,
+        JSON.stringify(data.issues),
+        now,
+      );
 
     return {
       id,

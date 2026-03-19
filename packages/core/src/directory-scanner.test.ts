@@ -1,8 +1,8 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { DirectoryScanner } from "./directory-scanner.js";
-import fs from "node:fs";
-import path from "node:path";
-import os from "node:os";
 
 const mockKnowledgeDistributor = {
   distributeFromText: vi.fn(),
@@ -23,9 +23,9 @@ describe("DirectoryScanner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     scanner = new DirectoryScanner(
-      mockKnowledgeDistributor as any,
-      mockScannedFileRepo as any,
-      mockLlmRegistry as any,
+      mockKnowledgeDistributor as unknown as ConstructorParameters<typeof DirectoryScanner>[0],
+      mockScannedFileRepo as unknown as ConstructorParameters<typeof DirectoryScanner>[1],
+      mockLlmRegistry as unknown as ConstructorParameters<typeof DirectoryScanner>[2],
     );
   });
 
@@ -72,7 +72,9 @@ describe("DirectoryScanner", () => {
 
       const result = await scanner.scanDirectory(tmpDir);
       expect(result.filesScanned).toBe(1);
-      expect(mockKnowledgeDistributor.distributeFromText).toHaveBeenCalledWith("My cat Luna is 3 years old");
+      expect(mockKnowledgeDistributor.distributeFromText).toHaveBeenCalledWith(
+        "My cat Luna is 3 years old",
+      );
     });
 
     it("should skip already scanned files with same hash (incremental)", async () => {
@@ -86,7 +88,11 @@ describe("DirectoryScanner", () => {
 
       // Second scan — same hash
       vi.clearAllMocks();
-      mockKnowledgeDistributor.distributeFromText.mockResolvedValue({ facts: [], realmsAffected: [], memoriesCreated: 0 });
+      mockKnowledgeDistributor.distributeFromText.mockResolvedValue({
+        facts: [],
+        realmsAffected: [],
+        memoriesCreated: 0,
+      });
       const crypto = await import("node:crypto");
       const hash = crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
       mockScannedFileRepo.findByPath.mockReturnValue({ fileHash: hash });
@@ -160,7 +166,7 @@ describe("DirectoryScanner", () => {
     it("should not call distributeFromText in dryRun mode", async () => {
       fs.writeFileSync(path.join(tmpDir, "notes.md"), "some content");
 
-      const result = await scanner.scanDirectory(tmpDir, { dryRun: true });
+      await scanner.scanDirectory(tmpDir, { dryRun: true });
       expect(mockKnowledgeDistributor.distributeFromText).not.toHaveBeenCalled();
     });
 
@@ -179,10 +185,12 @@ describe("DirectoryScanner", () => {
       mockScannedFileRepo.findByPath.mockReturnValue(null);
 
       await scanner.scanDirectory(tmpDir);
-      expect(mockScannedFileRepo.upsert).toHaveBeenCalledWith(expect.objectContaining({
-        path: filePath,
-        factsExtracted: 2,
-      }));
+      expect(mockScannedFileRepo.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: filePath,
+          factsExtracted: 2,
+        }),
+      );
     });
 
     it("should only scan custom extensions", async () => {

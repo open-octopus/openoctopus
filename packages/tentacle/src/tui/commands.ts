@@ -1,6 +1,5 @@
 import pc from "picocolors";
 import type { WsRpcClient } from "../api-client.js";
-import type { TuiState } from "./state.js";
 import {
   renderHelp,
   renderRealmCards,
@@ -14,6 +13,7 @@ import {
   renderScanResult,
   type HealthReportData,
 } from "./renderer.js";
+import type { TuiState } from "./state.js";
 
 export interface SlashCommandResult {
   output?: string;
@@ -98,11 +98,13 @@ async function handleStatus(client: WsRpcClient, state: TuiState): Promise<Slash
       `  Summoned:    ${info.summoned}`,
       `  Uptime:      ${formatUptime(info.uptime)}`,
       `  Providers:   ${info.providers.join(", ")}`,
-      `  Channels:    ${info.channels.length > 0 ? info.channels.map(c => `${c.name}(${c.running ? pc.green("up") : pc.red("down")})`).join(", ") : pc.dim("none")}`,
+      `  Channels:    ${info.channels.length > 0 ? info.channels.map((c) => `${c.name}(${c.running ? pc.green("up") : pc.red("down")})`).join(", ") : pc.dim("none")}`,
     ];
     return { output: lines.join("\n") };
   } catch (err) {
-    return { output: pc.red(`Failed to get status: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Failed to get status: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 
@@ -110,7 +112,14 @@ async function handleRealms(client: WsRpcClient): Promise<SlashCommandResult> {
   try {
     const response = await client.call("realm.list");
     const { realms } = response.result as {
-      realms: Array<{ id: string; name: string; icon?: string; status: string; description?: string; entityCount: number }>;
+      realms: Array<{
+        id: string;
+        name: string;
+        icon?: string;
+        status: string;
+        description?: string;
+        entityCount: number;
+      }>;
     };
 
     if (realms.length === 0) {
@@ -119,23 +128,34 @@ async function handleRealms(client: WsRpcClient): Promise<SlashCommandResult> {
 
     return { output: renderRealmCards(realms) };
   } catch (err) {
-    return { output: pc.red(`Failed to list realms: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Failed to list realms: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 
 async function handleRealm(client: WsRpcClient, nameOrId?: string): Promise<SlashCommandResult> {
   if (!nameOrId) {
-    return { stateUpdate: { currentRealm: undefined }, output: pc.yellow("Realm context cleared. Now using auto-routing.") };
+    return {
+      stateUpdate: { currentRealm: undefined },
+      output: pc.yellow("Realm context cleared. Now using auto-routing."),
+    };
   }
 
   try {
     // Find realm by name or ID
     const listResponse = await client.call("realm.list");
-    const { realms } = listResponse.result as { realms: Array<{ id: string; name: string; icon?: string }> };
-    const match = realms.find(r => r.id === nameOrId || r.name.toLowerCase() === nameOrId.toLowerCase());
+    const { realms } = listResponse.result as {
+      realms: Array<{ id: string; name: string; icon?: string }>;
+    };
+    const match = realms.find(
+      (r) => r.id === nameOrId || r.name.toLowerCase() === nameOrId.toLowerCase(),
+    );
 
     if (!match) {
-      return { output: pc.red(`Realm "${nameOrId}" not found. Use /realms to see available realms.`) };
+      return {
+        output: pc.red(`Realm "${nameOrId}" not found. Use /realms to see available realms.`),
+      };
     }
 
     // Fetch detailed realm info
@@ -163,11 +183,16 @@ async function handleRealm(client: WsRpcClient, nameOrId?: string): Promise<Slas
     });
 
     return {
-      stateUpdate: { currentRealm: { id: match.id, name: match.name, icon: match.icon }, currentEntity: undefined },
+      stateUpdate: {
+        currentRealm: { id: match.id, name: match.name, icon: match.icon },
+        currentEntity: undefined,
+      },
       output,
     };
   } catch (err) {
-    return { output: pc.red(`Failed to switch realm: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Failed to switch realm: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 
@@ -178,11 +203,17 @@ async function handleEntities(client: WsRpcClient, state: TuiState): Promise<Sla
 
   try {
     const response = await client.call("entity.list", { realmId: state.currentRealm.id });
-    const { entities } = response.result as { entities: Array<{ id: string; name: string; type: string; summonStatus: string }> };
+    const { entities } = response.result as {
+      entities: Array<{ id: string; name: string; type: string; summonStatus: string }>;
+    };
 
     return { output: renderEntityList(entities, state.currentRealm.name) };
   } catch (err) {
-    return { output: pc.red(`Failed to list entities: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(
+        `Failed to list entities: ${err instanceof Error ? err.message : String(err)}`,
+      ),
+    };
   }
 }
 
@@ -218,7 +249,9 @@ async function handleRelease(client: WsRpcClient, state: TuiState): Promise<Slas
       output: pc.green(`Released: ${state.currentEntity.name}`),
     };
   } catch (err) {
-    return { output: pc.red(`Release failed: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Release failed: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 
@@ -228,7 +261,7 @@ async function handleHealth(client: WsRpcClient, realmName?: string): Promise<Sl
       // Find realm ID by name
       const listResponse = await client.call("realm.list");
       const { realms } = listResponse.result as { realms: Array<{ id: string; name: string }> };
-      const match = realms.find(r => r.name.toLowerCase() === realmName.toLowerCase());
+      const match = realms.find((r) => r.name.toLowerCase() === realmName.toLowerCase());
 
       if (!match) {
         return { output: pc.red(`Realm "${realmName}" not found.`) };
@@ -243,37 +276,51 @@ async function handleHealth(client: WsRpcClient, realmName?: string): Promise<Sl
     const { reports } = response.result as { reports: HealthReportData[] };
     return { output: renderHealthDashboard(reports) };
   } catch (err) {
-    return { output: pc.red(`Health check failed: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Health check failed: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 
-async function handleClean(client: WsRpcClient, realmName?: string, state?: TuiState): Promise<SlashCommandResult> {
+async function handleClean(
+  client: WsRpcClient,
+  realmName?: string,
+  state?: TuiState,
+): Promise<SlashCommandResult> {
   // Use provided name or current realm
   const name = realmName ?? state?.currentRealm?.name;
   if (!name) {
-    return { output: pc.yellow("Usage: /clean <realmName> or select a realm first with /realm <name>") };
+    return {
+      output: pc.yellow("Usage: /clean <realmName> or select a realm first with /realm <name>"),
+    };
   }
 
   try {
     const listResponse = await client.call("realm.list");
     const { realms } = listResponse.result as { realms: Array<{ id: string; name: string }> };
-    const match = realms.find(r => r.name.toLowerCase() === name.toLowerCase());
+    const match = realms.find((r) => r.name.toLowerCase() === name.toLowerCase());
 
     if (!match) {
       return { output: pc.red(`Realm "${name}" not found.`) };
     }
 
     const response = await client.call("health.clean", { realmId: match.id });
-    const { result } = response.result as { result: { deduplicatedCount: number; archivedCount: number; issuesResolved: number } };
+    const { result } = response.result as {
+      result: { deduplicatedCount: number; archivedCount: number; issuesResolved: number };
+    };
     return { output: renderCleanupResult(result) };
   } catch (err) {
-    return { output: pc.red(`Cleanup failed: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Cleanup failed: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 
 async function handleInject(client: WsRpcClient, text?: string): Promise<SlashCommandResult> {
   if (!text || text.trim().length === 0) {
-    return { output: pc.yellow("Usage: /inject <text>\nExample: /inject 我养了一只橘猫叫肉肉3岁了") };
+    return {
+      output: pc.yellow("Usage: /inject <text>\nExample: /inject 我养了一只橘猫叫肉肉3岁了"),
+    };
   }
 
   try {
@@ -287,16 +334,22 @@ async function handleInject(client: WsRpcClient, text?: string): Promise<SlashCo
     };
     return { output: renderDistributionResult(result) };
   } catch (err) {
-    return { output: pc.red(`Injection failed: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Injection failed: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 
-async function handleMaturity(client: WsRpcClient, realmName?: string, state?: TuiState): Promise<SlashCommandResult> {
+async function handleMaturity(
+  client: WsRpcClient,
+  realmName?: string,
+  _state?: TuiState,
+): Promise<SlashCommandResult> {
   try {
     if (realmName) {
       const listResponse = await client.call("realm.list");
       const { realms } = listResponse.result as { realms: Array<{ id: string; name: string }> };
-      const match = realms.find(r => r.name.toLowerCase() === realmName.toLowerCase());
+      const match = realms.find((r) => r.name.toLowerCase() === realmName.toLowerCase());
 
       if (!match) {
         return { output: pc.red(`Realm "${realmName}" not found.`) };
@@ -328,7 +381,11 @@ async function handleMaturity(client: WsRpcClient, realmName?: string, state?: T
     };
 
     if (suggestions.length === 0) {
-      return { output: pc.dim("No entities are ready for summoning yet. Keep chatting to build knowledge!") };
+      return {
+        output: pc.dim(
+          "No entities are ready for summoning yet. Keep chatting to build knowledge!",
+        ),
+      };
     }
 
     const lines = [pc.bold("Summon Suggestions:")];
@@ -338,7 +395,9 @@ async function handleMaturity(client: WsRpcClient, realmName?: string, state?: T
     }
     return { output: lines.join("\n") };
   } catch (err) {
-    return { output: pc.red(`Maturity scan failed: ${err instanceof Error ? err.message : String(err)}`) };
+    return {
+      output: pc.red(`Maturity scan failed: ${err instanceof Error ? err.message : String(err)}`),
+    };
   }
 }
 

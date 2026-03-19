@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import type { Entity } from "@openoctopus/shared";
 import { generateId, EntityNotFoundError } from "@openoctopus/shared";
+import type Database from "better-sqlite3";
 
 interface EntityRow {
   id: string;
@@ -34,23 +34,33 @@ export class EntityRepo {
   constructor(private db: Database.Database) {}
 
   listByRealm(realmId: string): Entity[] {
-    const rows = this.db.prepare("SELECT * FROM entities WHERE realm_id = ? ORDER BY name").all(realmId) as EntityRow[];
+    const rows = this.db
+      .prepare("SELECT * FROM entities WHERE realm_id = ? ORDER BY name")
+      .all(realmId) as EntityRow[];
     return rows.map(rowToEntity);
   }
 
   findByNameInRealm(realmId: string, name: string): Entity | null {
-    const row = this.db.prepare("SELECT * FROM entities WHERE realm_id = ? AND name = ?").get(realmId, name) as EntityRow | undefined;
+    const row = this.db
+      .prepare("SELECT * FROM entities WHERE realm_id = ? AND name = ?")
+      .get(realmId, name) as EntityRow | undefined;
     return row ? rowToEntity(row) : null;
   }
 
   countByRealm(realmId: string): number {
-    const row = this.db.prepare("SELECT COUNT(*) as cnt FROM entities WHERE realm_id = ?").get(realmId) as { cnt: number };
+    const row = this.db
+      .prepare("SELECT COUNT(*) as cnt FROM entities WHERE realm_id = ?")
+      .get(realmId) as { cnt: number };
     return row.cnt;
   }
 
   getById(id: string): Entity {
-    const row = this.db.prepare("SELECT * FROM entities WHERE id = ?").get(id) as EntityRow | undefined;
-    if (!row) { throw new EntityNotFoundError(id); }
+    const row = this.db.prepare("SELECT * FROM entities WHERE id = ?").get(id) as
+      | EntityRow
+      | undefined;
+    if (!row) {
+      throw new EntityNotFoundError(id);
+    }
     return rowToEntity(row);
   }
 
@@ -85,35 +95,44 @@ export class EntityRepo {
     return this.getById(id);
   }
 
-  update(id: string, data: Partial<{
-    name: string;
-    type: Entity["type"];
-    avatar: string;
-    attributes: Record<string, unknown>;
-    summonStatus: Entity["summonStatus"];
-    soulPath: string;
-  }>): Entity {
+  update(
+    id: string,
+    data: Partial<{
+      name: string;
+      type: Entity["type"];
+      avatar: string;
+      attributes: Record<string, unknown>;
+      summonStatus: Entity["summonStatus"];
+      soulPath: string;
+    }>,
+  ): Entity {
     this.getById(id);
     const now = new Date().toISOString();
 
     if (data.name !== undefined) {
-      this.db.prepare("UPDATE entities SET name = ?, updated_at = ? WHERE id = ?").run(data.name, now, id);
+      this.db
+        .prepare("UPDATE entities SET name = ?, updated_at = ? WHERE id = ?")
+        .run(data.name, now, id);
     }
     if (data.type !== undefined) {
-      this.db.prepare("UPDATE entities SET type = ?, updated_at = ? WHERE id = ?").run(data.type, now, id);
+      this.db
+        .prepare("UPDATE entities SET type = ?, updated_at = ? WHERE id = ?")
+        .run(data.type, now, id);
     }
     if (data.attributes !== undefined) {
-      this.db.prepare("UPDATE entities SET attributes = ?, updated_at = ? WHERE id = ?").run(
-        JSON.stringify(data.attributes),
-        now,
-        id,
-      );
+      this.db
+        .prepare("UPDATE entities SET attributes = ?, updated_at = ? WHERE id = ?")
+        .run(JSON.stringify(data.attributes), now, id);
     }
     if (data.summonStatus !== undefined) {
-      this.db.prepare("UPDATE entities SET summon_status = ?, updated_at = ? WHERE id = ?").run(data.summonStatus, now, id);
+      this.db
+        .prepare("UPDATE entities SET summon_status = ?, updated_at = ? WHERE id = ?")
+        .run(data.summonStatus, now, id);
     }
     if (data.soulPath !== undefined) {
-      this.db.prepare("UPDATE entities SET soul_path = ?, updated_at = ? WHERE id = ?").run(data.soulPath, now, id);
+      this.db
+        .prepare("UPDATE entities SET soul_path = ?, updated_at = ? WHERE id = ?")
+        .run(data.soulPath, now, id);
     }
 
     return this.getById(id);

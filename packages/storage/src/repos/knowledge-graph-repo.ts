@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import { generateId } from "@openoctopus/shared";
+import type Database from "better-sqlite3";
 
 // ────────────────────────────────────────────────────────────────
 // Types

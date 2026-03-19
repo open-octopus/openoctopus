@@ -49,7 +49,11 @@ export class OpenAIProvider implements LlmProvider {
   }
 
   async *chatStream(request: LlmChatRequest): AsyncIterable<LlmStreamChunk> {
-    const body = { ...this.buildRequestBody(request), stream: true, stream_options: { include_usage: true } };
+    const body = {
+      ...this.buildRequestBody(request),
+      stream: true,
+      stream_options: { include_usage: true },
+    };
     const url = `${this.baseUrl}/chat/completions`;
 
     log.debug(`Stream request: ${url} model=${request.model}`);
@@ -86,16 +90,22 @@ export class OpenAIProvider implements LlmProvider {
       while (true) {
         // eslint-disable-next-line no-await-in-loop
         const { done, value } = await reader.read();
-        if (done) { break; }
+        if (done) {
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
 
         for (const line of lines) {
-          if (!line.startsWith("data: ")) { continue; }
+          if (!line.startsWith("data: ")) {
+            continue;
+          }
           const json = line.slice(6).trim();
-          if (json === "[DONE]") { continue; }
+          if (json === "[DONE]") {
+            continue;
+          }
 
           try {
             const event = JSON.parse(json) as {
@@ -142,8 +152,12 @@ export class OpenAIProvider implements LlmProvider {
       messages,
     };
 
-    if (request.maxTokens) { body.max_tokens = request.maxTokens; }
-    if (request.temperature !== undefined) { body.temperature = request.temperature; }
+    if (request.maxTokens) {
+      body.max_tokens = request.maxTokens;
+    }
+    if (request.temperature !== undefined) {
+      body.temperature = request.temperature;
+    }
 
     return body;
   }

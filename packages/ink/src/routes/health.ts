@@ -1,6 +1,6 @@
-import { Router } from "express";
-import type { LlmProviderRegistry } from "@openoctopus/core";
 import type { ChannelManager } from "@openoctopus/channels";
+import type { LlmProviderRegistry } from "@openoctopus/core";
+import { Router } from "express";
 
 export interface HealthDeps {
   llmRegistry?: LlmProviderRegistry;
@@ -26,9 +26,7 @@ export function createHealthRoutes(deps?: HealthDeps): Router {
         }
       : undefined;
 
-    const channels = deps?.channelManager
-      ? deps.channelManager.list()
-      : undefined;
+    const channels = deps?.channelManager ? deps.channelManager.list() : undefined;
 
     res.json({
       status: "ready",

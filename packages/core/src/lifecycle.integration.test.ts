@@ -1,16 +1,23 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import Database from "better-sqlite3";
 import fs from "node:fs";
-import path from "node:path";
 import os from "node:os";
-import { runMigrations, MemoryRepo, RealmRepo, EntityRepo, HealthReportRepo, ScannedFileRepo, OnboardingRepo } from "@openoctopus/storage";
-
-import { RealmManager } from "./realm-manager.js";
+import path from "node:path";
+import {
+  runMigrations,
+  MemoryRepo,
+  RealmRepo,
+  EntityRepo,
+  HealthReportRepo,
+  ScannedFileRepo,
+  OnboardingRepo,
+} from "@openoctopus/storage";
+import Database from "better-sqlite3";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { DirectoryScanner } from "./directory-scanner.js";
 import { EntityManager } from "./entity-manager.js";
-import { MemoryHealthManager } from "./memory-health-manager.js";
 import { KnowledgeDistributor } from "./knowledge-distributor.js";
 import { MaturityScanner } from "./maturity-scanner.js";
-import { DirectoryScanner } from "./directory-scanner.js";
+import { MemoryHealthManager } from "./memory-health-manager.js";
+import { RealmManager } from "./realm-manager.js";
 
 const mockLlmRegistry = {
   hasRealProvider: vi.fn().mockReturnValue(false),
@@ -54,14 +61,27 @@ describe("Knowledge Lifecycle Integration", () => {
     const entity = entityManager.create({ realmId: realm.id, name: "Luna", type: "living" });
 
     // Inject facts via KnowledgeDistributor (keyword fallback, no LLM)
-    const distributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, mockLlmRegistry as any);
-    const distResult = await distributor.distributeFromText("我养了一只猫叫Luna，Luna很可爱。猫咪喜欢吃鱼");
+    const distributor = new KnowledgeDistributor(
+      memoryRepo,
+      realmManager,
+      entityManager,
+      mockLlmRegistry as unknown as ConstructorParameters<typeof KnowledgeDistributor>[3],
+    );
+    const distResult = await distributor.distributeFromText(
+      "我养了一只猫叫Luna，Luna很可爱。猫咪喜欢吃鱼",
+    );
 
     expect(distResult.memoriesCreated).toBeGreaterThan(0);
     expect(distResult.realmsAffected).toContain("pet");
 
     // Compute health
-    const healthManager = new MemoryHealthManager(memoryRepo, realmManager, entityManager, healthReportRepo, mockLlmRegistry as any);
+    const healthManager = new MemoryHealthManager(
+      memoryRepo,
+      realmManager,
+      entityManager,
+      healthReportRepo,
+      mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryHealthManager>[4],
+    );
     const report = await healthManager.computeHealth(realm.id);
 
     expect(report.healthScore).toBeGreaterThanOrEqual(0);
@@ -117,11 +137,21 @@ describe("Knowledge Lifecycle Integration", () => {
     memoryRepo.create({ realmId: realm.id, tier: "archival", content: "unique fact about Luna" });
 
     // Insert a stale memory by manipulating DB directly
-    const staleId = memoryRepo.create({ realmId: realm.id, tier: "archival", content: "old stale memory" }).id;
+    const staleId = memoryRepo.create({
+      realmId: realm.id,
+      tier: "archival",
+      content: "old stale memory",
+    }).id;
     const oldDate = new Date(Date.now() - 100 * 86400000).toISOString();
     db.prepare("UPDATE memories SET updated_at = ? WHERE id = ?").run(oldDate, staleId);
 
-    const healthManager = new MemoryHealthManager(memoryRepo, realmManager, entityManager, healthReportRepo, mockLlmRegistry as any);
+    const healthManager = new MemoryHealthManager(
+      memoryRepo,
+      realmManager,
+      entityManager,
+      healthReportRepo,
+      mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryHealthManager>[4],
+    );
 
     // Compute health before cleanup
     const beforeReport = await healthManager.computeHealth(realm.id);
@@ -140,8 +170,17 @@ describe("Knowledge Lifecycle Integration", () => {
       realmManager.create({ name: "pet", description: "Pet care" });
       fs.writeFileSync(path.join(tmpDir, "notes.md"), "My cat Luna likes fish");
 
-      const distributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, mockLlmRegistry as any);
-      const dirScanner = new DirectoryScanner(distributor, scannedFileRepo, mockLlmRegistry as any);
+      const distributor = new KnowledgeDistributor(
+        memoryRepo,
+        realmManager,
+        entityManager,
+        mockLlmRegistry as unknown as ConstructorParameters<typeof KnowledgeDistributor>[3],
+      );
+      const dirScanner = new DirectoryScanner(
+        distributor,
+        scannedFileRepo,
+        mockLlmRegistry as unknown as ConstructorParameters<typeof DirectoryScanner>[2],
+      );
 
       // First scan
       const result1 = await dirScanner.scanDirectory(tmpDir);
@@ -178,21 +217,28 @@ describe("Knowledge Lifecycle Integration", () => {
     const petRealm = realmManager.create({ name: "pet", description: "Pet care" });
     const financeRealm = realmManager.create({ name: "finance", description: "Finance" });
 
-    const distributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, mockLlmRegistry as any);
+    const distributor = new KnowledgeDistributor(
+      memoryRepo,
+      realmManager,
+      entityManager,
+      mockLlmRegistry as unknown as ConstructorParameters<typeof KnowledgeDistributor>[3],
+    );
 
     // Distribute facts from pet realm that contain finance keywords
     await distributor.classifyAndDistribute(
-      ["月工资预算投资理财"],  // finance keywords only
+      ["月工资预算投资理财"], // finance keywords only
       petRealm.id,
     );
 
     // Finance realm should have received the memory
     const financeMemories = memoryRepo.listByRealm(financeRealm.id);
     expect(financeMemories.length).toBeGreaterThan(0);
-    expect(financeMemories[0].metadata).toEqual(expect.objectContaining({
-      source: "cross-realm-distribution",
-      sourceRealmId: petRealm.id,
-    }));
+    expect(financeMemories[0].metadata).toEqual(
+      expect.objectContaining({
+        source: "cross-realm-distribution",
+        sourceRealmId: petRealm.id,
+      }),
+    );
   });
 
   it("cross-realm keyword matching: best agent selected among 3 realms", async () => {
@@ -201,10 +247,17 @@ describe("Knowledge Lifecycle Integration", () => {
     realmManager.create({ name: "finance", description: "Finance" });
     realmManager.create({ name: "health", description: "Health" });
 
-    const distributor = new KnowledgeDistributor(memoryRepo, realmManager, entityManager, mockLlmRegistry as any);
+    const distributor = new KnowledgeDistributor(
+      memoryRepo,
+      realmManager,
+      entityManager,
+      mockLlmRegistry as unknown as ConstructorParameters<typeof KnowledgeDistributor>[3],
+    );
 
     // Text with primarily health keywords
-    const result = await distributor.distributeFromText("今天去看医生检查身体 symptoms are bad 健康很重要");
+    const result = await distributor.distributeFromText(
+      "今天去看医生检查身体 symptoms are bad 健康很重要",
+    );
 
     expect(result.realmsAffected).toContain("health");
   });
@@ -213,7 +266,13 @@ describe("Knowledge Lifecycle Integration", () => {
     const realm = realmManager.create({ name: "pet", description: "Pet care" });
     memoryRepo.create({ realmId: realm.id, tier: "archival", content: "Luna is a cat" });
 
-    const healthManager = new MemoryHealthManager(memoryRepo, realmManager, entityManager, healthReportRepo, mockLlmRegistry as any);
+    const healthManager = new MemoryHealthManager(
+      memoryRepo,
+      realmManager,
+      entityManager,
+      healthReportRepo,
+      mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryHealthManager>[4],
+    );
     await healthManager.computeHealth(realm.id);
 
     // Verify health_reports table has a record

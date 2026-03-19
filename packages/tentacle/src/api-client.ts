@@ -1,4 +1,3 @@
-import WebSocket from "ws";
 import {
   DEFAULT_HTTP_PORT,
   DEFAULT_WS_PORT,
@@ -8,6 +7,7 @@ import {
   RPC_METHODS,
   RPC_EVENTS,
 } from "@openoctopus/shared";
+import WebSocket from "ws";
 
 // ── HTTP API Client (bridge on port 18790) ──
 
@@ -81,11 +81,14 @@ export class WsRpcClient {
   private ws: WebSocket | undefined;
   private port: number;
   private host: string;
-  private pendingRequests = new Map<string, {
-    resolve: (value: RpcResponse) => void;
-    reject: (error: Error) => void;
-    onToken?: (token: string) => void;
-  }>();
+  private pendingRequests = new Map<
+    string,
+    {
+      resolve: (value: RpcResponse) => void;
+      reject: (error: Error) => void;
+      onToken?: (token: string) => void;
+    }
+  >();
   private connected = false;
   private eventHandlers: WsEventHandler[] = [];
 
@@ -95,7 +98,9 @@ export class WsRpcClient {
   }
 
   async connect(): Promise<void> {
-    if (this.connected) { return; }
+    if (this.connected) {
+      return;
+    }
 
     return new Promise((resolve, reject) => {
       this.ws = new WebSocket(`ws://${this.host}:${this.port}`);
@@ -166,7 +171,11 @@ export class WsRpcClient {
   }
 
   /** Send an RPC request and wait for response */
-  async call(method: string, params?: Record<string, unknown>, onToken?: (token: string) => void): Promise<RpcResponse> {
+  async call(
+    method: string,
+    params?: Record<string, unknown>,
+    onToken?: (token: string) => void,
+  ): Promise<RpcResponse> {
     if (!this.ws || !this.connected) {
       throw new Error("Not connected to gateway");
     }
@@ -193,11 +202,7 @@ export class WsRpcClient {
     options?: { sessionId?: string; realmId?: string; entityId?: string },
     onToken?: (token: string) => void,
   ): Promise<RpcResponse> {
-    return this.call(
-      RPC_METHODS.CHAT_SEND,
-      { message, ...options },
-      onToken,
-    );
+    return this.call(RPC_METHODS.CHAT_SEND, { message, ...options }, onToken);
   }
 
   /** Check if connected */

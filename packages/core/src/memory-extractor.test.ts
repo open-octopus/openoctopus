@@ -34,7 +34,7 @@ const mockEmbeddingRegistry = {
 
 /** Helper: create a unit vector pointing along a single dimension */
 function basisVector(dim: number, size = 128): number[] {
-  const v = new Array(size).fill(0);
+  const v = Array.from({ length: size }, () => 0);
   v[dim] = 1;
   return v;
 }
@@ -42,7 +42,7 @@ function basisVector(dim: number, size = 128): number[] {
 /** Helper: create a vector that is `similarity` cosine-similar to a basis vector at dim */
 function vectorWithSimilarity(baseDim: number, similarity: number, size = 128): number[] {
   // Start with the basis vector scaled by similarity, add orthogonal component
-  const v = new Array(size).fill(0);
+  const v = Array.from({ length: size }, () => 0);
   v[baseDim] = similarity;
   // Add orthogonal component in the next dimension to make it a unit vector
   const orthDim = (baseDim + 1) % size;
@@ -57,13 +57,13 @@ describe("MemoryExtractor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     extractor = new MemoryExtractor(
-      mockMemoryRepo as any,
-      mockLlmRegistry as any,
+      mockMemoryRepo as unknown as ConstructorParameters<typeof MemoryExtractor>[0],
+      mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryExtractor>[1],
     );
     extractorWithDistributor = new MemoryExtractor(
-      mockMemoryRepo as any,
-      mockLlmRegistry as any,
-      mockKnowledgeDistributor as any,
+      mockMemoryRepo as unknown as ConstructorParameters<typeof MemoryExtractor>[0],
+      mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryExtractor>[1],
+      mockKnowledgeDistributor as unknown as ConstructorParameters<typeof MemoryExtractor>[2],
     );
   });
 
@@ -97,12 +97,14 @@ describe("MemoryExtractor", () => {
 
     expect(result.memories).toHaveLength(2);
     expect(mockMemoryRepo.create).toHaveBeenCalledTimes(2);
-    expect(mockMemoryRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-      realmId: "r1",
-      entityId: "e1",
-      tier: "archival",
-      content: "Cat is 3 years old",
-    }));
+    expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        realmId: "r1",
+        entityId: "e1",
+        tier: "archival",
+        content: "Cat is 3 years old",
+      }),
+    );
   });
 
   it("should create no memories when LLM returns empty array", async () => {
@@ -169,7 +171,7 @@ describe("MemoryExtractor", () => {
     });
 
     // Allow fire-and-forget promise to resolve
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(mockKnowledgeDistributor.classifyAndDistribute).toHaveBeenCalledWith(
       ["fact about cats"],
@@ -218,10 +220,10 @@ describe("MemoryExtractor", () => {
     beforeEach(() => {
       mockEmbeddingRegistry.hasProvider.mockReturnValue(true);
       dedupExtractor = new MemoryExtractor(
-        mockMemoryRepo as any,
-        mockLlmRegistry as any,
+        mockMemoryRepo as unknown as ConstructorParameters<typeof MemoryExtractor>[0],
+        mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryExtractor>[1],
         undefined,
-        mockEmbeddingRegistry as any,
+        mockEmbeddingRegistry as unknown as ConstructorParameters<typeof MemoryExtractor>[3],
       );
     });
 
@@ -275,7 +277,8 @@ describe("MemoryExtractor", () => {
       const existingVec = vectorWithSimilarity(0, 0.75);
 
       // LLM extraction returns one fact
-      chatFn = vi.fn()
+      chatFn = vi
+        .fn()
         // First call: extraction
         .mockResolvedValueOnce({
           content: JSON.stringify(["Cat is 3 years old and healthy"]),
@@ -289,8 +292,9 @@ describe("MemoryExtractor", () => {
 
       // Embedding provider returns factVec for the fact, then a new vec for merged content
       const mergedVec = basisVector(2);
-      const embedFn = vi.fn()
-        .mockResolvedValueOnce(factVec)   // embed the new fact
+      const embedFn = vi
+        .fn()
+        .mockResolvedValueOnce(factVec) // embed the new fact
         .mockResolvedValueOnce(mergedVec); // embed the merged content
       mockEmbeddingRegistry.getProvider.mockReturnValue({
         embed: embedFn,
@@ -322,10 +326,7 @@ describe("MemoryExtractor", () => {
         "memory_existing2",
         "Cat is 3 years old, healthy, and loves fish",
       );
-      expect(mockMemoryRepo.updateEmbedding).toHaveBeenCalledWith(
-        "memory_existing2",
-        mergedVec,
-      );
+      expect(mockMemoryRepo.updateEmbedding).toHaveBeenCalledWith("memory_existing2", mergedVec);
       // The merged entry should be in the result
       expect(result.memories).toHaveLength(1);
       expect(result.memories[0].content).toBe("Cat is 3 years old, healthy, and loves fish");
@@ -404,7 +405,8 @@ describe("MemoryExtractor", () => {
       const factVec = basisVector(0);
       const existingVec = vectorWithSimilarity(0, 0.75);
 
-      chatFn = vi.fn()
+      chatFn = vi
+        .fn()
         .mockResolvedValueOnce({
           content: JSON.stringify(["Cat is 3 years old"]),
         })
@@ -414,9 +416,7 @@ describe("MemoryExtractor", () => {
       mockLlmRegistry.getProvider.mockReturnValue({ chat: chatFn });
 
       const mergedVec = basisVector(2);
-      const embedFn = vi.fn()
-        .mockResolvedValueOnce(factVec)
-        .mockResolvedValueOnce(mergedVec);
+      const embedFn = vi.fn().mockResolvedValueOnce(factVec).mockResolvedValueOnce(mergedVec);
       mockEmbeddingRegistry.getProvider.mockReturnValue({
         embed: embedFn,
       });
@@ -636,11 +636,11 @@ describe("MemoryExtractor", () => {
       });
 
       const extractorWithGraph = new MemoryExtractor(
-        mockMemoryRepo as any,
-        mockLlmRegistry as any,
+        mockMemoryRepo as unknown as ConstructorParameters<typeof MemoryExtractor>[0],
+        mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryExtractor>[1],
         undefined,
         undefined,
-        mockKnowledgeGraphRepo as any,
+        mockKnowledgeGraphRepo as unknown as ConstructorParameters<typeof MemoryExtractor>[4],
       );
 
       await extractorWithGraph.extractAndPersist({
@@ -651,7 +651,11 @@ describe("MemoryExtractor", () => {
 
       expect(mockKnowledgeGraphRepo.findOrCreateNode).toHaveBeenCalledWith("r1", "Luna", "entity");
       expect(mockKnowledgeGraphRepo.findOrCreateNode).toHaveBeenCalledWith("r1", "mom", "entity");
-      expect(mockKnowledgeGraphRepo.addEdge).toHaveBeenCalledWith("knode_Luna", "knode_mom", "gifted_by");
+      expect(mockKnowledgeGraphRepo.addEdge).toHaveBeenCalledWith(
+        "knode_Luna",
+        "knode_mom",
+        "gifted_by",
+      );
     });
 
     it("handles multiple relations", async () => {
@@ -674,11 +678,11 @@ describe("MemoryExtractor", () => {
       });
 
       const extractorWithGraph = new MemoryExtractor(
-        mockMemoryRepo as any,
-        mockLlmRegistry as any,
+        mockMemoryRepo as unknown as ConstructorParameters<typeof MemoryExtractor>[0],
+        mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryExtractor>[1],
         undefined,
         undefined,
-        mockKnowledgeGraphRepo as any,
+        mockKnowledgeGraphRepo as unknown as ConstructorParameters<typeof MemoryExtractor>[4],
       );
 
       await extractorWithGraph.extractAndPersist({

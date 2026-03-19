@@ -59,7 +59,9 @@ export function deleteTranscript(sessionId: string, dataDir?: string): boolean {
 
 export function listSessions(dataDir?: string): string[] {
   const dir = getSessionDir(dataDir);
-  if (!fs.existsSync(dir)) { return []; }
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
 
   return fs
     .readdirSync(dir)

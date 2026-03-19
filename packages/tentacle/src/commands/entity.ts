@@ -1,6 +1,6 @@
+import type { Entity } from "@openoctopus/shared";
 import { defineCommand } from "citty";
 import consola from "consola";
-import type { Entity } from "@openoctopus/shared";
 import { ApiClient } from "../api-client.js";
 
 const listCommand = defineCommand({

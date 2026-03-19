@@ -54,7 +54,9 @@ describe("parseRealmFile", () => {
   });
 
   it("throws on invalid YAML", () => {
-    expect(() => parseRealmFile("---\n: invalid: yaml: [[\n---\n")).toThrow("Failed to parse REALM.md YAML");
+    expect(() => parseRealmFile("---\n: invalid: yaml: [[\n---\n")).toThrow(
+      "Failed to parse REALM.md YAML",
+    );
   });
 
   it("throws on missing name", () => {

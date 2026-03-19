@@ -18,8 +18,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@openoctopus/shared": "workspace:*",
     "@openoctopus/core": "workspace:*",
+    "@openoctopus/shared": "workspace:*",
     "@openoctopus/storage": "workspace:*",
     "yaml": "^2.7.0"
   }

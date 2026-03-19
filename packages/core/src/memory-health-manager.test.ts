@@ -43,11 +43,11 @@ describe("MemoryHealthManager", () => {
     vi.clearAllMocks();
 
     manager = new MemoryHealthManager(
-      mockMemoryRepo as any,
-      mockRealmManager as any,
-      mockEntityManager as any,
-      mockHealthReportRepo as any,
-      mockLlmRegistry as any,
+      mockMemoryRepo as unknown as ConstructorParameters<typeof MemoryHealthManager>[0],
+      mockRealmManager as unknown as ConstructorParameters<typeof MemoryHealthManager>[1],
+      mockEntityManager as unknown as ConstructorParameters<typeof MemoryHealthManager>[2],
+      mockHealthReportRepo as unknown as ConstructorParameters<typeof MemoryHealthManager>[3],
+      mockLlmRegistry as unknown as ConstructorParameters<typeof MemoryHealthManager>[4],
     );
   });
 
@@ -97,7 +97,7 @@ describe("MemoryHealthManager", () => {
 
       const report = await manager.computeHealth("r1");
 
-      const incompleteIssues = report.issues.filter(i => i.kind === "incomplete_entity");
+      const incompleteIssues = report.issues.filter((i) => i.kind === "incomplete_entity");
       expect(incompleteIssues).toHaveLength(1);
     });
   });
@@ -131,9 +131,7 @@ describe("MemoryHealthManager", () => {
 
   describe("detectStale", () => {
     it("should detect stale memories", () => {
-      mockMemoryRepo.listStale.mockReturnValue([
-        { id: "m1", content: "old memory" },
-      ]);
+      mockMemoryRepo.listStale.mockReturnValue([{ id: "m1", content: "old memory" }]);
 
       const issues = manager.detectStale("r1", 90);
       expect(issues).toHaveLength(1);
@@ -154,9 +152,7 @@ describe("MemoryHealthManager", () => {
         { id: "m1", content: "duplicate fact" },
         { id: "m2", content: "duplicate fact" },
       ]);
-      mockMemoryRepo.listStale.mockReturnValue([
-        { id: "m3", content: "stale" },
-      ]);
+      mockMemoryRepo.listStale.mockReturnValue([{ id: "m3", content: "stale" }]);
       mockMemoryRepo.deleteMany.mockReturnValue(1);
 
       const result = await manager.cleanup("r1");
@@ -328,10 +324,12 @@ describe("MemoryHealthManager", () => {
       const result = await manager.compress("r1", ["m1", "m2"]);
       expect(result).not.toBeNull();
       expect(mockMemoryRepo.deleteMany).toHaveBeenCalledWith(["m1", "m2"]);
-      expect(mockMemoryRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-        content: "fact one; fact two",
-        metadata: expect.objectContaining({ source: "compressed", originalCount: 2 }),
-      }));
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: "fact one; fact two",
+          metadata: expect.objectContaining({ source: "compressed", originalCount: 2 }),
+        }),
+      );
     });
 
     it("should use LLM when available", async () => {
@@ -349,9 +347,11 @@ describe("MemoryHealthManager", () => {
 
       const result = await manager.compress("r1", ["m1", "m2"]);
       expect(result).not.toBeNull();
-      expect(mockMemoryRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-        content: "Merged: combined facts about cats",
-      }));
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: "Merged: combined facts about cats",
+        }),
+      );
     });
 
     it("should return null on LLM error", async () => {
@@ -360,9 +360,7 @@ describe("MemoryHealthManager", () => {
         chat: vi.fn().mockRejectedValue(new Error("LLM down")),
       });
       mockLlmRegistry.resolveModel.mockReturnValue("test-model");
-      mockMemoryRepo.listByRealm.mockReturnValue([
-        { id: "m1", content: "fact", entityId: "e1" },
-      ]);
+      mockMemoryRepo.listByRealm.mockReturnValue([{ id: "m1", content: "fact", entityId: "e1" }]);
 
       const result = await manager.compress("r1", ["m1"]);
       expect(result).toBeNull();
@@ -401,7 +399,10 @@ describe("MemoryHealthManager", () => {
         { id: "r1", name: "pet" },
         { id: "r2", name: "finance" },
       ]);
-      mockRealmManager.get.mockImplementation((id: string) => ({ id, name: id === "r1" ? "pet" : "finance" }));
+      mockRealmManager.get.mockImplementation((id: string) => ({
+        id,
+        name: id === "r1" ? "pet" : "finance",
+      }));
       mockMemoryRepo.countByRealm.mockReturnValue(0);
       mockEntityManager.countByRealm.mockReturnValue(0);
       mockMemoryRepo.listByRealm.mockReturnValue([]);
@@ -444,10 +445,12 @@ describe("MemoryHealthManager", () => {
       mockEntityManager.listByRealm.mockReturnValue([]);
 
       await manager.computeHealth("r1");
-      expect(mockHealthReportRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-        realmId: "r1",
-        healthScore: 100,
-      }));
+      expect(mockHealthReportRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          realmId: "r1",
+          healthScore: 100,
+        }),
+      );
     });
 
     it("should call realmManager.updateHealthScore on computeHealth", async () => {

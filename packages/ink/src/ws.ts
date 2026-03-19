@@ -1,5 +1,5 @@
-import WebSocket, { type WebSocketServer } from "ws";
 import { createLogger, RpcRequestSchema, createRpcResponse } from "@openoctopus/shared";
+import WebSocket, { type WebSocketServer } from "ws";
 import { dispatchRpc, type RpcServices } from "./rpc-handlers.js";
 
 const log = createLogger("ws");
@@ -35,10 +35,14 @@ export function setupWebSocket(wss: WebSocketServer, services?: RpcServices): Ws
         }
 
         // RPC parse failed but has an id — send error response
-        ws.send(JSON.stringify(createRpcResponse(raw.id as string, undefined, {
-          code: 400,
-          message: "Invalid RPC request format",
-        })));
+        ws.send(
+          JSON.stringify(
+            createRpcResponse(raw.id as string, undefined, {
+              code: 400,
+              message: "Invalid RPC request format",
+            }),
+          ),
+        );
         return;
       }
 
@@ -56,7 +60,12 @@ export function setupWebSocket(wss: WebSocketServer, services?: RpcServices): Ws
     });
 
     // Send welcome
-    ws.send(JSON.stringify({ type: "connected", payload: { service: "openoctopus-ink", protocol: "rpc" } }));
+    ws.send(
+      JSON.stringify({
+        type: "connected",
+        payload: { service: "openoctopus-ink", protocol: "rpc" },
+      }),
+    );
   });
 
   return {
@@ -82,6 +91,11 @@ function handleLegacyMessage(ws: WebSocket, msg: Record<string, unknown>): void 
       break;
 
     default:
-      ws.send(JSON.stringify({ type: "error", payload: { message: `Unknown message type: ${String(msg.type)}` } }));
+      ws.send(
+        JSON.stringify({
+          type: "error",
+          payload: { message: `Unknown message type: ${String(msg.type)}` },
+        }),
+      );
   }
 }

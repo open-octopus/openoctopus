@@ -1,6 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { ChannelManager } from "./channel-manager.js";
-import type { Channel, MessageHandler, StreamingMessageHandler, OutgoingMessage } from "./channel.js";
+import type {
+  Channel,
+  MessageHandler,
+  StreamingMessageHandler,
+  OutgoingMessage,
+} from "./channel.js";
 
 function createMockChannel(overrides: Partial<Channel> = {}): Channel {
   return {
@@ -10,7 +15,9 @@ function createMockChannel(overrides: Partial<Channel> = {}): Channel {
     stop: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     onMessage: vi.fn(),
     onStreamingMessage: vi.fn(),
-    send: vi.fn<(chatId: string, msg: OutgoingMessage) => Promise<void>>().mockResolvedValue(undefined),
+    send: vi
+      .fn<(chatId: string, msg: OutgoingMessage) => Promise<void>>()
+      .mockResolvedValue(undefined),
     isRunning: vi.fn<() => boolean>().mockReturnValue(false),
     ...overrides,
   };
@@ -114,22 +121,56 @@ describe("ChannelManager", () => {
   describe("loadFromConfig", () => {
     it("skips disabled channels", () => {
       manager.loadFromConfig({
-        tg: { type: "telegram", enabled: false, allowedUsers: [], dmPolicy: "pairing", groupPolicy: "allowlist", streaming: "partial", options: {} },
+        tg: {
+          type: "telegram",
+          enabled: false,
+          allowedUsers: [],
+          dmPolicy: "pairing",
+          groupPolicy: "allowlist",
+          streaming: "partial",
+          options: {},
+        },
       });
       expect(manager.list()).toEqual([]);
     });
 
     it("skips telegram without token", () => {
       manager.loadFromConfig({
-        tg: { type: "telegram", enabled: true, allowedUsers: [], dmPolicy: "pairing", groupPolicy: "allowlist", streaming: "partial", options: {} },
+        tg: {
+          type: "telegram",
+          enabled: true,
+          allowedUsers: [],
+          dmPolicy: "pairing",
+          groupPolicy: "allowlist",
+          streaming: "partial",
+          options: {},
+        },
       });
       expect(manager.list()).toEqual([]);
     });
 
     it("logs coming-soon for discord and slack", () => {
       manager.loadFromConfig({
-        dc: { type: "discord", enabled: true, token: "tok", allowedUsers: [], dmPolicy: "pairing", groupPolicy: "allowlist", streaming: "partial", options: {} },
-        sl: { type: "slack", enabled: true, token: "tok", allowedUsers: [], dmPolicy: "pairing", groupPolicy: "allowlist", streaming: "partial", options: {} },
+        dc: {
+          type: "discord",
+          enabled: true,
+          token: "tok",
+          allowedUsers: [],
+          dmPolicy: "pairing",
+          groupPolicy: "allowlist",
+          streaming: "partial",
+          options: {},
+        },
+        sl: {
+          type: "slack",
+          enabled: true,
+          token: "tok",
+          allowedUsers: [],
+          dmPolicy: "pairing",
+          groupPolicy: "allowlist",
+          streaming: "partial",
+          options: {},
+        },
       });
       // Neither should be added since adapters are not yet implemented
       expect(manager.list()).toEqual([]);
@@ -137,7 +178,15 @@ describe("ChannelManager", () => {
 
     it("skips unknown channel type", () => {
       manager.loadFromConfig({
-        x: { type: "unknown-type" as "telegram", enabled: true, allowedUsers: [], dmPolicy: "pairing", groupPolicy: "allowlist", streaming: "partial", options: {} },
+        x: {
+          type: "unknown-type" as "telegram",
+          enabled: true,
+          allowedUsers: [],
+          dmPolicy: "pairing",
+          groupPolicy: "allowlist",
+          streaming: "partial",
+          options: {},
+        },
       });
       expect(manager.list()).toEqual([]);
     });

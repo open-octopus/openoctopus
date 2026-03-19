@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import Database from "better-sqlite3";
 import { EntityNotFoundError } from "@openoctopus/shared";
+import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runMigrations } from "../migrations.js";
-import { RealmRepo } from "./realm-repo.js";
 import { EntityRepo } from "./entity-repo.js";
+import { RealmRepo } from "./realm-repo.js";
 
 let db: Database.Database;
 let realmRepo: RealmRepo;

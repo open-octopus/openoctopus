@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import type { AgentConfig, RealmFile } from "@openoctopus/shared";
 import { createLogger, REALM_CONFIG_FILE } from "@openoctopus/shared";
-import type { RealmManager } from "./realm-manager.js";
 import type { EntityManager } from "./entity-manager.js";
+import type { RealmManager } from "./realm-manager.js";
 import { parseRealmFileWithBody } from "./realm-parser.js";
 
 const log = createLogger("realm-loader");
@@ -34,10 +34,14 @@ export class RealmLoader {
     let count = 0;
 
     for (const entry of entries) {
-      if (!entry.isDirectory()) { continue; }
+      if (!entry.isDirectory()) {
+        continue;
+      }
 
       const realmMdPath = path.join(realmsDir, entry.name, REALM_CONFIG_FILE);
-      if (!fs.existsSync(realmMdPath)) { continue; }
+      if (!fs.existsSync(realmMdPath)) {
+        continue;
+      }
 
       try {
         const content = fs.readFileSync(realmMdPath, "utf-8");
@@ -63,7 +67,9 @@ export class RealmLoader {
         // Seed default entities
         for (const entityDef of realm.defaultEntities) {
           const existing = this.entityManager.findByNameInRealm(realmState.id, entityDef.name);
-          if (existing) { continue; }
+          if (existing) {
+            continue;
+          }
 
           const soulPath = entityDef.soulFile
             ? path.join(realmsDir, entry.name, entityDef.soulFile)
@@ -84,7 +90,9 @@ export class RealmLoader {
         this.cache.set(realmState.id, meta);
         count++;
       } catch (err) {
-        log.error(`Failed to load realm from ${realmMdPath}: ${err instanceof Error ? err.message : String(err)}`);
+        log.error(
+          `Failed to load realm from ${realmMdPath}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
@@ -96,7 +104,11 @@ export class RealmLoader {
     return this.cache.get(realmId);
   }
 
-  private buildRealmAgentMeta(realmId: string, realm: RealmFile, markdownBody: string): RealmAgentMeta {
+  private buildRealmAgentMeta(
+    realmId: string,
+    realm: RealmFile,
+    markdownBody: string,
+  ): RealmAgentMeta {
     const primaryAgent = realm.agents[0];
 
     const agentConfig: AgentConfig = {

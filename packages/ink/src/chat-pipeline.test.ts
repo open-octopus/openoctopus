@@ -26,7 +26,11 @@ function createMockServices(overrides: Partial<RpcServices> = {}): RpcServices {
     } as unknown as RpcServices["entityManager"],
     agentRunner: {
       run: vi.fn(async () => ({
-        response: { role: "assistant" as const, content: "Hello!", timestamp: new Date().toISOString() },
+        response: {
+          role: "assistant" as const,
+          content: "Hello!",
+          timestamp: new Date().toISOString(),
+        },
         tokensUsed: { input: 10, output: 5 },
       })),
     } as unknown as RpcServices["agentRunner"],
@@ -54,7 +58,13 @@ describe("processChatMessage", () => {
         summonEngine: {
           getSummoned: vi.fn(() => ({
             entity: { id: "entity_1", name: "Buddy" },
-            agent: { id: "agent_1", name: "Buddy Agent", model: "claude-sonnet-4-6", skills: [], proactive: false },
+            agent: {
+              id: "agent_1",
+              name: "Buddy Agent",
+              model: "claude-sonnet-4-6",
+              skills: [],
+              proactive: false,
+            },
             systemPrompt: "You are Buddy the dog",
           })),
           summon: vi.fn(),
@@ -138,9 +148,7 @@ describe("processChatMessage", () => {
       const services = createMockServices();
       const onToken = vi.fn();
       await processChatMessage({ message: "hi", services, onToken });
-      expect(services.agentRunner.run).toHaveBeenCalledWith(
-        expect.objectContaining({ onToken }),
-      );
+      expect(services.agentRunner.run).toHaveBeenCalledWith(expect.objectContaining({ onToken }));
     });
   });
 
@@ -148,7 +156,7 @@ describe("processChatMessage", () => {
     it("should call memoryExtractor.extractAndPersist when realm exists", async () => {
       const extractAndPersist = vi.fn().mockResolvedValue({ memories: [], attributeUpdates: [] });
       const services = createMockServices({
-        memoryExtractor: { extractAndPersist } as any,
+        memoryExtractor: { extractAndPersist } as unknown as RpcServices["memoryExtractor"],
       });
 
       await processChatMessage({
@@ -158,18 +166,20 @@ describe("processChatMessage", () => {
       });
 
       // Allow fire-and-forget to execute
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(extractAndPersist).toHaveBeenCalledWith(expect.objectContaining({
-        realmId: "realm_pet",
-        userMessage: "my cat is sick",
-      }));
+      expect(extractAndPersist).toHaveBeenCalledWith(
+        expect.objectContaining({
+          realmId: "realm_pet",
+          userMessage: "my cat is sick",
+        }),
+      );
     });
 
     it("should not block response if extractAndPersist rejects", async () => {
       const extractAndPersist = vi.fn().mockRejectedValue(new Error("extraction failed"));
       const services = createMockServices({
-        memoryExtractor: { extractAndPersist } as any,
+        memoryExtractor: { extractAndPersist } as unknown as RpcServices["memoryExtractor"],
       });
 
       const result = await processChatMessage({
@@ -186,7 +196,7 @@ describe("processChatMessage", () => {
     it("should call maturityScanner.checkAndNotify when realm exists", async () => {
       const checkAndNotify = vi.fn().mockResolvedValue(undefined);
       const services = createMockServices({
-        maturityScanner: { checkAndNotify } as any,
+        maturityScanner: { checkAndNotify } as unknown as RpcServices["maturityScanner"],
       });
 
       await processChatMessage({
@@ -195,9 +205,13 @@ describe("processChatMessage", () => {
         services,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(checkAndNotify).toHaveBeenCalledWith("realm_pet", expect.any(Function), expect.any(Function));
+      expect(checkAndNotify).toHaveBeenCalledWith(
+        "realm_pet",
+        expect.any(Function),
+        expect.any(Function),
+      );
     });
   });
 
@@ -205,13 +219,13 @@ describe("processChatMessage", () => {
     it("should call checkReactions when realm exists and active agents > 0", async () => {
       const checkReactions = vi.fn().mockResolvedValue(undefined);
       const services = createMockServices({
-        crossRealmReactor: { checkReactions } as any,
+        crossRealmReactor: { checkReactions } as unknown as RpcServices["crossRealmReactor"],
         summonEngine: {
           getSummoned: vi.fn(() => undefined),
           summon: vi.fn(),
           unsummon: vi.fn(),
           listActive: vi.fn(() => [{ entity: { id: "e1" }, agent: { name: "A" } }]),
-        } as any,
+        } as unknown as RpcServices["summonEngine"],
       });
 
       await processChatMessage({
@@ -220,18 +234,20 @@ describe("processChatMessage", () => {
         services,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(checkReactions).toHaveBeenCalledWith(expect.objectContaining({
-        sourceRealmId: "realm_pet",
-        userMessage: "discuss finance",
-      }));
+      expect(checkReactions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sourceRealmId: "realm_pet",
+          userMessage: "discuss finance",
+        }),
+      );
     });
 
     it("should call checkReactions even when no active agents (reactor handles it internally)", async () => {
       const checkReactions = vi.fn().mockResolvedValue(undefined);
       const services = createMockServices({
-        crossRealmReactor: { checkReactions } as any,
+        crossRealmReactor: { checkReactions } as unknown as RpcServices["crossRealmReactor"],
         // Default summonEngine.listActive returns []
       });
 
@@ -241,12 +257,14 @@ describe("processChatMessage", () => {
         services,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(checkReactions).toHaveBeenCalledWith(expect.objectContaining({
-        sourceRealmId: "realm_pet",
-        userMessage: "discuss finance",
-      }));
+      expect(checkReactions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sourceRealmId: "realm_pet",
+          userMessage: "discuss finance",
+        }),
+      );
     });
   });
 
@@ -266,7 +284,7 @@ describe("processChatMessage", () => {
       const update = vi.fn();
 
       const services = createMockServices({
-        memoryExtractor: { extractAndPersist } as any,
+        memoryExtractor: { extractAndPersist } as unknown as RpcServices["memoryExtractor"],
         entityManager: {
           get: vi.fn(),
           listByRealm: vi.fn(() => []),
@@ -275,7 +293,7 @@ describe("processChatMessage", () => {
           delete: vi.fn(),
           countByRealm: vi.fn(() => 0),
           findByNameInRealm,
-        } as any,
+        } as unknown as RpcServices["entityManager"],
       });
 
       await processChatMessage({
@@ -285,7 +303,7 @@ describe("processChatMessage", () => {
       });
 
       // Allow fire-and-forget to execute
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(extractAndPersist).toHaveBeenCalled();
       expect(findByNameInRealm).toHaveBeenCalledWith("realm_pet", "Luna");
@@ -301,7 +319,7 @@ describe("processChatMessage", () => {
       });
 
       const services = createMockServices({
-        memoryExtractor: { extractAndPersist } as any,
+        memoryExtractor: { extractAndPersist } as unknown as RpcServices["memoryExtractor"],
         entityManager: {
           get: vi.fn(),
           listByRealm: vi.fn(() => []),
@@ -310,7 +328,7 @@ describe("processChatMessage", () => {
           delete: vi.fn(),
           countByRealm: vi.fn(() => 0),
           findByNameInRealm: vi.fn().mockReturnValue(null),
-        } as any,
+        } as unknown as RpcServices["entityManager"],
       });
 
       const result = await processChatMessage({
@@ -332,7 +350,7 @@ describe("processChatMessage", () => {
             { id: "m1", content: "Cat is 3 years old" },
             { id: "m2", content: "Cat likes fish" },
           ]),
-        } as any,
+        } as unknown as RpcServices["memoryRepo"],
       });
 
       await processChatMessage({
@@ -362,13 +380,21 @@ describe("processChatMessage", () => {
       const mockMemoryRepo = {
         listByRealm: vi.fn(() => []),
         searchSemantic: vi.fn().mockReturnValue([
-          { id: "m1", realmId: "realm_pet", content: "Luna likes fish", tier: "archival", metadata: {}, createdAt: "", updatedAt: "" },
+          {
+            id: "m1",
+            realmId: "realm_pet",
+            content: "Luna likes fish",
+            tier: "archival",
+            metadata: {},
+            createdAt: "",
+            updatedAt: "",
+          },
         ]),
       };
 
       const services = createMockServices({
-        memoryRepo: mockMemoryRepo as any,
-        embeddingRegistry: mockEmbeddingRegistry as any,
+        memoryRepo: mockMemoryRepo as unknown as RpcServices["memoryRepo"],
+        embeddingRegistry: mockEmbeddingRegistry as unknown as RpcServices["embeddingRegistry"],
       });
 
       const result = await processChatMessage({
@@ -383,14 +409,12 @@ describe("processChatMessage", () => {
 
     it("falls back to listByRealm when embedding provider is not available", async () => {
       const mockMemoryRepo = {
-        listByRealm: vi.fn(() => [
-          { id: "m1", content: "Cat is 3 years old" },
-        ]),
+        listByRealm: vi.fn(() => [{ id: "m1", content: "Cat is 3 years old" }]),
         searchSemantic: vi.fn(),
       };
 
       const services = createMockServices({
-        memoryRepo: mockMemoryRepo as any,
+        memoryRepo: mockMemoryRepo as unknown as RpcServices["memoryRepo"],
       });
 
       await processChatMessage({
@@ -415,15 +439,13 @@ describe("processChatMessage", () => {
       };
 
       const mockMemoryRepo = {
-        listByRealm: vi.fn(() => [
-          { id: "m1", content: "Fallback memory" },
-        ]),
+        listByRealm: vi.fn(() => [{ id: "m1", content: "Fallback memory" }]),
         searchSemantic: vi.fn(),
       };
 
       const services = createMockServices({
-        memoryRepo: mockMemoryRepo as any,
-        embeddingRegistry: mockEmbeddingRegistry as any,
+        memoryRepo: mockMemoryRepo as unknown as RpcServices["memoryRepo"],
+        embeddingRegistry: mockEmbeddingRegistry as unknown as RpcServices["embeddingRegistry"],
       });
 
       await processChatMessage({

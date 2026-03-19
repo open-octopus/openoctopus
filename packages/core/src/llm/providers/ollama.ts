@@ -75,14 +75,18 @@ export class OllamaProvider implements LlmProvider {
       while (true) {
         // eslint-disable-next-line no-await-in-loop
         const { done, value } = await reader.read();
-        if (done) { break; }
+        if (done) {
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
 
         for (const line of lines) {
-          if (!line.trim()) { continue; }
+          if (!line.trim()) {
+            continue;
+          }
           try {
             const event = JSON.parse(line) as {
               message?: { content?: string };

@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runMigrations } from "../migrations.js";
 import { ScannedFileRepo } from "./scanned-file-repo.js";
 
@@ -49,14 +49,16 @@ describe("ScannedFileRepo", () => {
   it("upsert overwrites on conflict", () => {
     repo.upsert({ path: "/dup.md", fileHash: "h1", factsExtracted: 1 });
     repo.upsert({ path: "/dup.md", fileHash: "h2", factsExtracted: 2 });
-    const all = repo.listByRealm("realm_any");
+    const _all = repo.listByRealm("realm_any");
     // Both entries have no realmId matching "realm_any", so this returns 0
     // Instead verify by findByPath that there is only one record
     const file = repo.findByPath("/dup.md");
     expect(file).not.toBeNull();
     expect(file!.fileHash).toBe("h2");
     // Verify there's only 1 row total
-    const count = db.prepare("SELECT COUNT(*) as cnt FROM scanned_files WHERE path = ?").get("/dup.md") as { cnt: number };
+    const count = db
+      .prepare("SELECT COUNT(*) as cnt FROM scanned_files WHERE path = ?")
+      .get("/dup.md") as { cnt: number };
     expect(count.cnt).toBe(1);
   });
 

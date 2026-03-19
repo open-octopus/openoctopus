@@ -1,6 +1,6 @@
-import YAML from "yaml";
 import type { SoulFile } from "@openoctopus/shared";
 import { SoulFileSchema, ValidationError } from "@openoctopus/shared";
+import YAML from "yaml";
 
 /**
  * Parses a SOUL.md file. The format is YAML front matter (between --- delimiters)
@@ -53,12 +53,18 @@ export function parseSoulFile(content: string): SoulFile {
   try {
     parsed = YAML.parse(yamlContent);
   } catch (err) {
-    throw new ValidationError(`Failed to parse SOUL.md YAML: ${err instanceof Error ? err.message : String(err)}`);
+    throw new ValidationError(
+      `Failed to parse SOUL.md YAML: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   const result = SoulFileSchema.safeParse(parsed);
   if (!result.success) {
-    const issues = result.error.issues.map((i: { path: (string | number)[]; message: string }) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const issues = result.error.issues
+      .map(
+        (i: { path: (string | number)[]; message: string }) => `${i.path.join(".")}: ${i.message}`,
+      )
+      .join("; ");
     throw new ValidationError(`Invalid SOUL.md: ${issues}`);
   }
 

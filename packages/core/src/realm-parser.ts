@@ -1,6 +1,6 @@
-import YAML from "yaml";
 import type { RealmFile } from "@openoctopus/shared";
 import { RealmFileSchema, ValidationError } from "@openoctopus/shared";
+import YAML from "yaml";
 
 export interface RealmFileWithBody {
   realm: RealmFile;
@@ -37,12 +37,18 @@ export function parseRealmFileWithBody(content: string): RealmFileWithBody {
   try {
     parsed = YAML.parse(yamlContent);
   } catch (err) {
-    throw new ValidationError(`Failed to parse REALM.md YAML: ${err instanceof Error ? err.message : String(err)}`);
+    throw new ValidationError(
+      `Failed to parse REALM.md YAML: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 
   const result = RealmFileSchema.safeParse(parsed);
   if (!result.success) {
-    const issues = result.error.issues.map((i: { path: (string | number)[]; message: string }) => `${i.path.join(".")}: ${i.message}`).join("; ");
+    const issues = result.error.issues
+      .map(
+        (i: { path: (string | number)[]; message: string }) => `${i.path.join(".")}: ${i.message}`,
+      )
+      .join("; ");
     throw new ValidationError(`Invalid REALM.md: ${issues}`);
   }
 

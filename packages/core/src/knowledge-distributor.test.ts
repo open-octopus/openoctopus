@@ -28,10 +28,10 @@ describe("KnowledgeDistributor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     distributor = new KnowledgeDistributor(
-      mockMemoryRepo as any,
-      mockRealmManager as any,
-      mockEntityManager as any,
-      mockLlmRegistry as any,
+      mockMemoryRepo as unknown as ConstructorParameters<typeof KnowledgeDistributor>[0],
+      mockRealmManager as unknown as ConstructorParameters<typeof KnowledgeDistributor>[1],
+      mockEntityManager as unknown as ConstructorParameters<typeof KnowledgeDistributor>[2],
+      mockLlmRegistry as unknown as ConstructorParameters<typeof KnowledgeDistributor>[3],
     );
   });
 
@@ -61,9 +61,7 @@ describe("KnowledgeDistributor", () => {
     });
 
     it("should return empty for unrecognized text", async () => {
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
       const result = await distributor.distributeFromText("hello world");
 
@@ -86,9 +84,7 @@ describe("KnowledgeDistributor", () => {
     });
 
     it("should skip facts belonging to source realm", async () => {
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
       const facts = ["猫咪很健康"];
       const result = await distributor.classifyAndDistribute(facts, "r1");
@@ -99,14 +95,12 @@ describe("KnowledgeDistributor", () => {
 
   describe("processOnboardingInput", () => {
     it("should process first step", async () => {
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
-      const result = await distributor.processOnboardingInput(
-        "我有一只猫叫肉肉",
-        { step: 0, collectedFacts: [] },
-      );
+      const result = await distributor.processOnboardingInput("我有一只猫叫肉肉", {
+        step: 0,
+        collectedFacts: [],
+      });
 
       expect(result.done).toBe(false);
       expect(result.message).toContain("captured");
@@ -125,9 +119,7 @@ describe("KnowledgeDistributor", () => {
         }),
       });
       mockLlmRegistry.resolveModel.mockReturnValue("test-model");
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
       const result = await distributor.distributeFromText("我的猫Luna今年3岁了");
       expect(result.memoriesCreated).toBe(1);
@@ -140,9 +132,7 @@ describe("KnowledgeDistributor", () => {
         chat: vi.fn().mockResolvedValue({ content: "not json" }),
       });
       mockLlmRegistry.resolveModel.mockReturnValue("test-model");
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
       // Should fall back to keyword extraction — "猫" is a pet keyword
       const result = await distributor.distributeFromText("我的猫很可爱");
@@ -156,9 +146,7 @@ describe("KnowledgeDistributor", () => {
         chat: vi.fn().mockRejectedValue(new Error("API error")),
       });
       mockLlmRegistry.resolveModel.mockReturnValue("test-model");
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
       const result = await distributor.distributeFromText("我家的猫咪");
       // Keyword fallback picks up "猫咪"
@@ -172,7 +160,12 @@ describe("KnowledgeDistributor", () => {
       mockLlmRegistry.getProvider.mockReturnValue({
         chat: vi.fn().mockResolvedValue({
           content: JSON.stringify([
-            { realm: "pet", entityName: "Buddy", entityType: "living", fact: "Buddy is a golden retriever" },
+            {
+              realm: "pet",
+              entityName: "Buddy",
+              entityType: "living",
+              fact: "Buddy is a golden retriever",
+            },
           ]),
         }),
       });
@@ -181,11 +174,13 @@ describe("KnowledgeDistributor", () => {
       mockEntityManager.findByNameInRealm.mockReturnValue(null);
 
       await distributor.distributeFromText("Buddy is a golden retriever");
-      expect(mockEntityManager.create).toHaveBeenCalledWith(expect.objectContaining({
-        realmId: "r1",
-        name: "Buddy",
-        type: "living",
-      }));
+      expect(mockEntityManager.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          realmId: "r1",
+          name: "Buddy",
+          type: "living",
+        }),
+      );
     });
 
     it("should not recreate existing entity", async () => {
@@ -219,18 +214,18 @@ describe("KnowledgeDistributor", () => {
       mockEntityManager.findByNameInRealm.mockReturnValue(null);
 
       await distributor.distributeFromText("A goal");
-      expect(mockEntityManager.create).toHaveBeenCalledWith(expect.objectContaining({
-        type: "abstract",
-      }));
+      expect(mockEntityManager.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "abstract",
+        }),
+      );
     });
   });
 
   describe("sentence splitting", () => {
     it("should split multi-sentence text into multiple facts", async () => {
       mockLlmRegistry.hasRealProvider.mockReturnValue(false);
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
       const result = await distributor.distributeFromText("我家有一只猫。猫咪叫Luna。Luna很可爱");
       expect(result.memoriesCreated).toBeGreaterThanOrEqual(2);
@@ -269,21 +264,21 @@ describe("KnowledgeDistributor", () => {
         { id: "r2", name: "finance", description: "Finance" },
       ]);
 
-      const result = await distributor.distributeFromText("I need to budget my monthly salary for expenses");
+      const result = await distributor.distributeFromText(
+        "I need to budget my monthly salary for expenses",
+      );
       expect(result.realmsAffected).toContain("finance");
     });
   });
 
   describe("onboarding — step > 0", () => {
     it("should return different message for subsequent steps", async () => {
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet", description: "Pets" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet", description: "Pets" }]);
 
-      const result = await distributor.processOnboardingInput(
-        "我还有一只猫叫花花",
-        { step: 1, collectedFacts: [] },
-      );
+      const result = await distributor.processOnboardingInput("我还有一只猫叫花花", {
+        step: 1,
+        collectedFacts: [],
+      });
 
       expect(result.done).toBe(false);
       // Step > 0 message says "Added X more facts" or "Nothing new"
@@ -295,10 +290,10 @@ describe("KnowledgeDistributor", () => {
       mockLlmRegistry.hasRealProvider.mockReturnValue(false);
       mockRealmManager.list.mockReturnValue([]);
 
-      const result = await distributor.processOnboardingInput(
-        "hello world",
-        { step: 1, collectedFacts: [] },
-      );
+      const result = await distributor.processOnboardingInput("hello world", {
+        step: 1,
+        collectedFacts: [],
+      });
 
       expect(result.message).toContain("Nothing new");
     });
@@ -312,17 +307,19 @@ describe("KnowledgeDistributor", () => {
       ]);
 
       await distributor.classifyAndDistribute(
-        ["月工资预算投资理财"],  // multiple finance keywords, no pet keywords
-        "r1",  // source is pet
+        ["月工资预算投资理财"], // multiple finance keywords, no pet keywords
+        "r1", // source is pet
       );
 
-      expect(mockMemoryRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-        realmId: "r2",
-        metadata: expect.objectContaining({
-          source: "cross-realm-distribution",
-          sourceRealmId: "r1",
+      expect(mockMemoryRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          realmId: "r2",
+          metadata: expect.objectContaining({
+            source: "cross-realm-distribution",
+            sourceRealmId: "r1",
+          }),
         }),
-      }));
+      );
     });
   });
 });

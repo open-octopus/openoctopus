@@ -1,6 +1,6 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
 import type { ScanResult } from "@openoctopus/shared";
 import { createLogger } from "@openoctopus/shared";
 import type { ScannedFileRepo } from "@openoctopus/storage";
@@ -100,7 +100,9 @@ export class DirectoryScanner {
       factsExtracted += result.factsExtracted;
     }
 
-    log.info(`Scanned ${filesScanned} files, extracted ${factsExtracted} facts, skipped ${filesSkipped}`);
+    log.info(
+      `Scanned ${filesScanned} files, extracted ${factsExtracted} facts, skipped ${filesSkipped}`,
+    );
 
     return {
       filesScanned,
@@ -120,7 +122,12 @@ export class DirectoryScanner {
     try {
       const stat = fs.statSync(filePath);
       if (stat.size > opts.maxFileSize) {
-        return { path: filePath, factsExtracted: 0, skipped: true, error: `File too large: ${stat.size} bytes` };
+        return {
+          path: filePath,
+          factsExtracted: 0,
+          skipped: true,
+          error: `File too large: ${stat.size} bytes`,
+        };
       }
 
       // Check if file has been scanned before and hasn't changed
@@ -178,26 +185,36 @@ export class DirectoryScanner {
         resolvedPath,
         { recursive: true, persistent: false },
         (eventType, filename) => {
-          if (!filename || closed) return;
+          if (!filename || closed) {
+            return;
+          }
 
           // Check extension
           const ext = path.extname(filename).toLowerCase();
-          if (!extensions.includes(ext)) return;
+          if (!extensions.includes(ext)) {
+            return;
+          }
 
           const filePath = path.join(resolvedPath, filename);
 
           // Debounce: clear any pending scan for this file
           const existing = pendingScans.get(filePath);
-          if (existing) clearTimeout(existing);
+          if (existing) {
+            clearTimeout(existing);
+          }
 
           // Schedule new scan
           const timer = setTimeout(() => {
             pendingScans.delete(filePath);
-            if (closed) return;
+            if (closed) {
+              return;
+            }
 
             // Scan the file (fire-and-forget)
             this.scanFile(filePath).catch((err) => {
-              log.warn(`Watch scan failed for ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+              log.warn(
+                `Watch scan failed for ${filePath}: ${err instanceof Error ? err.message : String(err)}`,
+              );
             });
           }, debounceMs);
 
@@ -211,7 +228,9 @@ export class DirectoryScanner {
 
       log.info(`Watching directory: ${resolvedPath}`);
     } catch (err) {
-      log.warn(`Failed to watch directory ${resolvedPath}: ${err instanceof Error ? err.message : String(err)}`);
+      log.warn(
+        `Failed to watch directory ${resolvedPath}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     return {
@@ -231,7 +250,10 @@ export class DirectoryScanner {
     };
   }
 
-  private collectFiles(dirPath: string, opts: { extensions: string[]; recursive: boolean; maxFileSize: number }): string[] {
+  private collectFiles(
+    dirPath: string,
+    opts: { extensions: string[]; recursive: boolean; maxFileSize: number },
+  ): string[] {
     const files: string[] = [];
 
     try {
@@ -239,9 +261,13 @@ export class DirectoryScanner {
 
       for (const entry of entries) {
         // Skip hidden files/dirs
-        if (entry.name.startsWith(".")) continue;
+        if (entry.name.startsWith(".")) {
+          continue;
+        }
         // Skip node_modules, etc.
-        if (entry.name === "node_modules" || entry.name === "__pycache__") continue;
+        if (entry.name === "node_modules" || entry.name === "__pycache__") {
+          continue;
+        }
 
         const fullPath = path.join(dirPath, entry.name);
 
@@ -255,7 +281,9 @@ export class DirectoryScanner {
         }
       }
     } catch (err) {
-      log.warn(`Failed to read directory ${dirPath}: ${err instanceof Error ? err.message : String(err)}`);
+      log.warn(
+        `Failed to read directory ${dirPath}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     return files;

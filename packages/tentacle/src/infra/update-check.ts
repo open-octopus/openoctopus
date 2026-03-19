@@ -16,7 +16,9 @@ export function detectInstallKind(): InstallKind {
       return "git";
     }
     const parent = path.dirname(dir);
-    if (parent === dir) { break; }
+    if (parent === dir) {
+      break;
+    }
     dir = parent;
   }
   return "npm";
@@ -29,8 +31,12 @@ export function detectInstallKind(): InstallKind {
 export function detectPackageManager(): PackageManager {
   const execPath = process.argv[1] || "";
 
-  if (execPath.includes(".bun")) { return "bun"; }
-  if (execPath.includes("/pnpm-global/") || execPath.includes("pnpm/global")) { return "pnpm"; }
+  if (execPath.includes(".bun")) {
+    return "bun";
+  }
+  if (execPath.includes("/pnpm-global/") || execPath.includes("pnpm/global")) {
+    return "pnpm";
+  }
 
   // Default to npm
   return "npm";
@@ -55,7 +61,9 @@ export async function fetchLatestVersion(
     });
     clearTimeout(timeout);
 
-    if (!res.ok) { return null; }
+    if (!res.ok) {
+      return null;
+    }
     const data = (await res.json()) as { version?: string };
     return data.version ?? null;
   } catch {
@@ -73,7 +81,10 @@ export function getCurrentVersion(): string {
     const pkgPath = path.join(dir, "package.json");
     if (fs.existsSync(pkgPath)) {
       try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as { name?: string; version?: string };
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
+          name?: string;
+          version?: string;
+        };
         if (pkg.name === "openoctopus" || pkg.name === "@openoctopus/tentacle") {
           return pkg.version ?? "0.0.0";
         }
@@ -82,7 +93,9 @@ export function getCurrentVersion(): string {
       }
     }
     const parent = path.dirname(dir);
-    if (parent === dir) { break; }
+    if (parent === dir) {
+      break;
+    }
     dir = parent;
   }
   return "0.0.0";

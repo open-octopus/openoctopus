@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import type { AgentConfig } from "@openoctopus/shared";
 import { generateId, AgentNotFoundError } from "@openoctopus/shared";
+import type Database from "better-sqlite3";
 
 interface AgentRow {
   id: string;
@@ -34,23 +34,33 @@ export class AgentRepo {
   constructor(private db: Database.Database) {}
 
   listByRealm(realmId: string): AgentConfig[] {
-    const rows = this.db.prepare("SELECT * FROM agents WHERE realm_id = ? ORDER BY name").all(realmId) as AgentRow[];
+    const rows = this.db
+      .prepare("SELECT * FROM agents WHERE realm_id = ? ORDER BY name")
+      .all(realmId) as AgentRow[];
     return rows.map(rowToAgent);
   }
 
   listCentral(): AgentConfig[] {
-    const rows = this.db.prepare("SELECT * FROM agents WHERE tier = 'central' ORDER BY name").all() as AgentRow[];
+    const rows = this.db
+      .prepare("SELECT * FROM agents WHERE tier = 'central' ORDER BY name")
+      .all() as AgentRow[];
     return rows.map(rowToAgent);
   }
 
   getById(id: string): AgentConfig {
-    const row = this.db.prepare("SELECT * FROM agents WHERE id = ?").get(id) as AgentRow | undefined;
-    if (!row) { throw new AgentNotFoundError(id); }
+    const row = this.db.prepare("SELECT * FROM agents WHERE id = ?").get(id) as
+      | AgentRow
+      | undefined;
+    if (!row) {
+      throw new AgentNotFoundError(id);
+    }
     return rowToAgent(row);
   }
 
   findByEntityId(entityId: string): AgentConfig | null {
-    const row = this.db.prepare("SELECT * FROM agents WHERE entity_id = ?").get(entityId) as AgentRow | undefined;
+    const row = this.db.prepare("SELECT * FROM agents WHERE entity_id = ?").get(entityId) as
+      | AgentRow
+      | undefined;
     return row ? rowToAgent(row) : null;
   }
 

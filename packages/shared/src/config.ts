@@ -1,7 +1,7 @@
-import { z } from "zod";
 import fs from "node:fs";
-import path from "node:path";
 import os from "node:os";
+import path from "node:path";
+import { z } from "zod";
 import { createLogger } from "./logger.js";
 
 const log = createLogger("config");
@@ -124,11 +124,13 @@ export const OpenOctopusConfigSchema = z.object({
       providers: z.record(z.string(), LlmProviderConfigSchema).default({}),
     })
     .default({}),
-  embeddings: z.object({
-    defaultProvider: z.string().default("openai"),
-    defaultModel: z.string().default("text-embedding-3-small"),
-    providers: z.record(z.string(), EmbeddingProviderConfigSchema).default({}),
-  }).default({}),
+  embeddings: z
+    .object({
+      defaultProvider: z.string().default("openai"),
+      defaultModel: z.string().default("text-embedding-3-small"),
+      providers: z.record(z.string(), EmbeddingProviderConfigSchema).default({}),
+    })
+    .default({}),
   channels: z.record(z.string(), ChannelConfigSchema).default({}),
   storage: StorageConfigSchema.default({}),
   logging: LoggingConfigSchema.default({}),
@@ -142,13 +144,17 @@ const CONFIG_FILE = "config.json5";
 
 export function resolveConfigDir(): string {
   const envDir = process.env.OPENOCTOPUS_CONFIG_DIR;
-  if (envDir) { return envDir; }
+  if (envDir) {
+    return envDir;
+  }
   return path.join(os.homedir(), CONFIG_DIR);
 }
 
 export function resolveConfigPath(): string {
   const envPath = process.env.OPENOCTOPUS_CONFIG;
-  if (envPath) { return envPath; }
+  if (envPath) {
+    return envPath;
+  }
   return path.join(resolveConfigDir(), CONFIG_FILE);
 }
 
@@ -265,7 +271,9 @@ function applyEnvOverrides(config: Record<string, unknown>): void {
 let cachedConfig: OpenOctopusConfig | undefined;
 
 export function loadConfig(configPath?: string): OpenOctopusConfig {
-  if (cachedConfig) { return cachedConfig; }
+  if (cachedConfig) {
+    return cachedConfig;
+  }
 
   const filePath = configPath ?? resolveConfigPath();
   let raw: Record<string, unknown> = {};
@@ -279,7 +287,9 @@ export function loadConfig(configPath?: string): OpenOctopusConfig {
       raw = JSON.parse(stripped) as Record<string, unknown>;
       log.info(`Loaded config from ${filePath}`);
     } catch (err) {
-      log.warn(`Failed to parse config at ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+      log.warn(
+        `Failed to parse config at ${filePath}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   } else {
     log.debug(`No config file at ${filePath}, using defaults`);
@@ -413,7 +423,10 @@ function stripJsonComments(content: string): string {
     // Block comment
     if (content[i] === "/" && i + 1 < content.length && content[i + 1] === "*") {
       i += 2;
-      while (i < content.length && !(content[i] === "*" && i + 1 < content.length && content[i + 1] === "/")) {
+      while (
+        i < content.length &&
+        !(content[i] === "*" && i + 1 < content.length && content[i + 1] === "/")
+      ) {
         i++;
       }
       i += 2;

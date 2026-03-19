@@ -1,9 +1,9 @@
 import { createLogger, type OpenOctopusConfig, type LlmProviderConfig } from "@openoctopus/shared";
 import type { LlmProvider } from "./provider.js";
-import { StubProvider } from "./providers/stub.js";
 import { AnthropicProvider } from "./providers/anthropic.js";
-import { OpenAIProvider } from "./providers/openai.js";
 import { OllamaProvider } from "./providers/ollama.js";
+import { OpenAIProvider } from "./providers/openai.js";
+import { StubProvider } from "./providers/stub.js";
 
 const log = createLogger("llm:registry");
 
@@ -116,12 +116,16 @@ export class LlmProviderRegistry {
 
     // Try exact match
     const provider = this.providers.get(providerName);
-    if (provider) { return provider; }
+    if (provider) {
+      return provider;
+    }
 
     // Try first configured provider
     if (this.providerOrder.length > 0) {
       const first = this.providers.get(this.providerOrder[0]);
-      if (first) { return first; }
+      if (first) {
+        return first;
+      }
     }
 
     // Fallback to stub
@@ -142,7 +146,9 @@ export class LlmProviderRegistry {
 
   /** Resolve the model ID for a given provider */
   resolveModel(providerName?: string, modelOverride?: string): string {
-    if (modelOverride) { return modelOverride; }
+    if (modelOverride) {
+      return modelOverride;
+    }
     const name = providerName ?? this.defaultProvider;
     return DEFAULT_MODELS[name] ?? this.defaultModel;
   }

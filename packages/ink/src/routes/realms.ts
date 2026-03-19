@@ -1,6 +1,6 @@
-import { Router } from "express";
 import type { RealmManager } from "@openoctopus/core";
 import { toErrorResponse } from "@openoctopus/shared";
+import { Router } from "express";
 
 export function createRealmRoutes(realmManager: RealmManager): Router {
   const router = Router();
@@ -30,7 +30,11 @@ export function createRealmRoutes(realmManager: RealmManager): Router {
   // Create realm
   router.post("/", (req, res) => {
     try {
-      const { name, description, icon } = req.body as { name: string; description?: string; icon?: string };
+      const { name, description, icon } = req.body as {
+        name: string;
+        description?: string;
+        icon?: string;
+      };
       const realm = realmManager.create({ name, description, icon });
       res.status(201).json({ data: realm });
     } catch (err) {

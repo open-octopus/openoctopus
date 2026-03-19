@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { ValidationError } from "@openoctopus/shared";
+import { describe, expect, it } from "vitest";
 import { parseSoulFile, serializeSoulFile } from "./soul-parser.js";
 
 const VALID_SOUL = `---

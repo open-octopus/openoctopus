@@ -1,13 +1,15 @@
 import type { CrossRealmReaction, AgentConfig, Entity } from "@openoctopus/shared";
 import { createLogger } from "@openoctopus/shared";
-import type { RealmManager } from "./realm-manager.js";
 import type { AgentRunner } from "./agent-runner.js";
 import type { LlmProviderRegistry } from "./llm/provider-registry.js";
+import type { RealmManager } from "./realm-manager.js";
 
 /** Minimal interface for SummonEngine — avoids circular dependency with @openoctopus/summon */
 export interface SummonEnginePort {
   listActive(): Array<{ entity: Entity; agent: AgentConfig; systemPrompt: string }>;
-  getSummoned(entityId: string): { entity: Entity; agent: AgentConfig; systemPrompt: string } | undefined;
+  getSummoned(
+    entityId: string,
+  ): { entity: Entity; agent: AgentConfig; systemPrompt: string } | undefined;
 }
 
 const log = createLogger("cross-realm-reactor");
@@ -15,8 +17,21 @@ const log = createLogger("cross-realm-reactor");
 // Keyword mapping for relevance detection
 const REALM_KEYWORDS: Record<string, string[]> = {
   pet: ["pet", "cat", "dog", "animal", "vet", "宠物", "猫", "狗", "猫咪", "兽医"],
-  finance: ["money", "budget", "invest", "cost", "price", "expense", "payment",
-    "钱", "预算", "花费", "费用", "支出", "报销"],
+  finance: [
+    "money",
+    "budget",
+    "invest",
+    "cost",
+    "price",
+    "expense",
+    "payment",
+    "钱",
+    "预算",
+    "花费",
+    "费用",
+    "支出",
+    "报销",
+  ],
   health: ["health", "doctor", "medicine", "symptom", "健康", "医生", "药", "症状", "病"],
   fitness: ["workout", "gym", "running", "健身", "锻炼", "运动"],
   home: ["house", "apartment", "rent", "家", "房子", "租房", "装修"],
@@ -46,20 +61,27 @@ export class CrossRealmReactor {
     const { sourceRealmId, userMessage, assistantResponse, onReaction } = params;
 
     const activeSummoned = this.summonEngine.listActive();
-    if (activeSummoned.length === 0) return;
+    if (activeSummoned.length === 0) {
+      return;
+    }
 
     const realms = this.realmManager.list();
     const combinedText = `${userMessage} ${assistantResponse}`;
 
     // Find relevant agents from other realms (keyword-first, max 1 reaction)
-    let bestMatch: { realmId: string; realmName: string; agentName: string; score: number } | null = null;
+    let bestMatch: { realmId: string; realmName: string; agentName: string; score: number } | null =
+      null;
 
     for (const summoned of activeSummoned) {
       // Skip agents in the source realm
-      if (summoned.entity.realmId === sourceRealmId) continue;
+      if (summoned.entity.realmId === sourceRealmId) {
+        continue;
+      }
 
-      const targetRealm = realms.find(r => r.id === summoned.entity.realmId);
-      if (!targetRealm) continue;
+      const targetRealm = realms.find((r) => r.id === summoned.entity.realmId);
+      if (!targetRealm) {
+        continue;
+      }
 
       const score = this.computeRelevanceScore(combinedText, targetRealm);
       if (score > 0 && (!bestMatch || score > bestMatch.score)) {
@@ -72,7 +94,9 @@ export class CrossRealmReactor {
       }
     }
 
-    if (!bestMatch) return;
+    if (!bestMatch) {
+      return;
+    }
 
     // Generate reaction from the best-matching agent
     try {
@@ -85,7 +109,7 @@ export class CrossRealmReactor {
       );
 
       if (reaction) {
-        const sourceRealm = realms.find(r => r.id === sourceRealmId);
+        const sourceRealm = realms.find((r) => r.id === sourceRealmId);
         onReaction({
           sourceRealmId,
           targetRealmId: bestMatch.realmId,
@@ -94,10 +118,14 @@ export class CrossRealmReactor {
           content: reaction,
           triggeredAt: new Date().toISOString(),
         });
-        log.info(`Cross-realm reaction: ${bestMatch.agentName} (${bestMatch.realmName}) → ${sourceRealm?.name ?? sourceRealmId}`);
+        log.info(
+          `Cross-realm reaction: ${bestMatch.agentName} (${bestMatch.realmName}) → ${sourceRealm?.name ?? sourceRealmId}`,
+        );
       }
     } catch (err) {
-      log.warn(`Cross-realm reaction generation failed: ${err instanceof Error ? err.message : String(err)}`);
+      log.warn(
+        `Cross-realm reaction generation failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 
@@ -108,7 +136,9 @@ export class CrossRealmReactor {
 
     let score = 0;
     for (const kw of keywords) {
-      if (lowered.includes(kw)) score++;
+      if (lowered.includes(kw)) {
+        score++;
+      }
     }
 
     return score;
@@ -121,7 +151,9 @@ export class CrossRealmReactor {
     sourceRealmId: string,
     conversationSummary: string,
   ): Promise<string | null> {
-    if (!this.llmRegistry.hasRealProvider()) return null;
+    if (!this.llmRegistry.hasRealProvider()) {
+      return null;
+    }
 
     try {
       const provider = this.llmRegistry.getProvider();
@@ -131,10 +163,12 @@ export class CrossRealmReactor {
 
       const result = await provider.chat({
         model,
-        messages: [{
-          role: "user",
-          content: `The user is chatting in the "${sourceRealm.name}" realm. Here's the conversation:\n${conversationSummary}`,
-        }],
+        messages: [
+          {
+            role: "user",
+            content: `The user is chatting in the "${sourceRealm.name}" realm. Here's the conversation:\n${conversationSummary}`,
+          },
+        ],
         systemPrompt: `You are ${agentName}, an AI agent managing the "${targetRealmName}" realm. You noticed something relevant to your domain in a conversation happening in another realm.
 Generate a brief, helpful one-line reaction (max 50 words) from your domain's perspective. Be concise and useful.
 If nothing truly relevant from your domain's perspective, respond with exactly "SKIP".`,
@@ -143,7 +177,9 @@ If nothing truly relevant from your domain's perspective, respond with exactly "
       });
 
       const content = result.content.trim();
-      if (content === "SKIP" || content.length < 5) return null;
+      if (content === "SKIP" || content.length < 5) {
+        return null;
+      }
 
       return content;
     } catch (err) {

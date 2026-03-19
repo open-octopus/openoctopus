@@ -21,12 +21,16 @@ function vPad(str: string, width: number): string {
 
 /** Truncate to fit visual width */
 function vTruncate(str: string, maxW: number): string {
-  if (visWidth(str) <= maxW) { return str; }
+  if (visWidth(str) <= maxW) {
+    return str;
+  }
   // Build up character-by-character until we'd exceed maxW - 1 (room for ellipsis)
   let result = "";
   for (const ch of str) {
     const next = result + ch;
-    if (stringWidth(next) > maxW - 1) { break; }
+    if (stringWidth(next) > maxW - 1) {
+      break;
+    }
     result = next;
   }
   return result + "\u2026";
@@ -50,7 +54,9 @@ function renderSingleCard(r: RealmSummary): string[] {
 
   // Top border — icon sits outside the box on the border line
   // This avoids emoji width issues: icon is decorative, not part of alignment
-  lines.push(pc.dim("\u256D\u2500") + ` ${icon} ` + pc.dim("\u2500".repeat(Math.max(0, iw - 4)) + "\u256E"));
+  lines.push(
+    pc.dim("\u256D\u2500") + ` ${icon} ` + pc.dim("\u2500".repeat(Math.max(0, iw - 4)) + "\u256E"),
+  );
 
   // Name row (bold, no emoji — pure ASCII alignment)
   lines.push(pc.dim("\u2502") + " " + vPad(pc.bold(name), iw - 1) + pc.dim("\u2502"));
@@ -74,7 +80,9 @@ function renderSingleCard(r: RealmSummary): string[] {
 }
 
 function mergeCardRows(cards: string[][]): string[] {
-  if (cards.length === 0) { return []; }
+  if (cards.length === 0) {
+    return [];
+  }
   const height = cards[0].length;
   const merged: string[] = [];
   const gap = " ".repeat(CARD_GAP);
@@ -103,7 +111,13 @@ function buildCardGrid(realms: RealmSummary[]): string[] {
 export function renderStatusBar(state: TuiState): string {
   const parts: string[] = [];
 
-  parts.push(state.connectionMode === "ws" ? pc.green("ws") : state.connectionMode === "http" ? pc.yellow("http") : pc.red("disconnected"));
+  parts.push(
+    state.connectionMode === "ws"
+      ? pc.green("ws")
+      : state.connectionMode === "http"
+        ? pc.yellow("http")
+        : pc.red("disconnected"),
+  );
 
   if (state.currentEntity) {
     parts.push(pc.magenta(`entity:${state.currentEntity.name}`));
@@ -123,7 +137,10 @@ export function renderStatusBar(state: TuiState): string {
 
 // ── Messages ──
 
-export function renderMessage(role: "user" | "assistant" | "error" | "system", content: string): string {
+export function renderMessage(
+  role: "user" | "assistant" | "error" | "system",
+  content: string,
+): string {
   switch (role) {
     case "user":
       return pc.dim("you> ") + content;
@@ -138,13 +155,26 @@ export function renderMessage(role: "user" | "assistant" | "error" | "system", c
 
 // ── Thinking spinner ──
 
-const thinkingFrames = ["\u280B", "\u2819", "\u2839", "\u2838", "\u283C", "\u2834", "\u2826", "\u2827", "\u2807", "\u280F"];
+const thinkingFrames = [
+  "\u280B",
+  "\u2819",
+  "\u2839",
+  "\u2838",
+  "\u283C",
+  "\u2834",
+  "\u2826",
+  "\u2827",
+  "\u2807",
+  "\u280F",
+];
 let thinkingInterval: ReturnType<typeof setInterval> | undefined;
 
 export function showThinking(): void {
   let i = 0;
   thinkingInterval = setInterval(() => {
-    process.stdout.write(`\r${pc.cyan(thinkingFrames[i % thinkingFrames.length])} ${pc.dim("thinking...")}`);
+    process.stdout.write(
+      `\r${pc.cyan(thinkingFrames[i % thinkingFrames.length])} ${pc.dim("thinking...")}`,
+    );
     i++;
   }, 80);
 }
@@ -239,14 +269,23 @@ export function renderRealmDetail(detail: RealmDetail): string {
   const lines: string[] = [];
 
   // Top — icon on border line to avoid width issues
-  lines.push(pc.dim("  \u256D\u2500") + ` ${icon} ` + pc.dim("\u2500".repeat(Math.max(0, tw - 4)) + "\u256E"));
+  lines.push(
+    pc.dim("  \u256D\u2500") +
+      ` ${icon} ` +
+      pc.dim("\u2500".repeat(Math.max(0, tw - 4)) + "\u256E"),
+  );
 
   // Title (no emoji — pure text alignment)
   lines.push(pc.dim("  \u2502") + " " + vPad(pc.bold(detail.name), tw - 1) + pc.dim("\u2502"));
 
   // Description
   if (detail.description) {
-    lines.push(pc.dim("  \u2502") + " " + vPad(pc.dim(vTruncate(detail.description, tw - 2)), tw - 1) + pc.dim("\u2502"));
+    lines.push(
+      pc.dim("  \u2502") +
+        " " +
+        vPad(pc.dim(vTruncate(detail.description, tw - 2)), tw - 1) +
+        pc.dim("\u2502"),
+    );
   }
 
   // Separator
@@ -254,13 +293,23 @@ export function renderRealmDetail(detail: RealmDetail): string {
 
   // Agent
   if (detail.agentName) {
-    lines.push(pc.dim("  \u2502") + " " + vPad(`${pc.dim("\u25B8")} ${pc.cyan(detail.agentName)}`, tw - 1) + pc.dim("\u2502"));
+    lines.push(
+      pc.dim("  \u2502") +
+        " " +
+        vPad(`${pc.dim("\u25B8")} ${pc.cyan(detail.agentName)}`, tw - 1) +
+        pc.dim("\u2502"),
+    );
   }
 
   // Skills
   if (detail.skills.length > 0) {
     const skillStr = vTruncate(detail.skills.join(", "), tw - 6);
-    lines.push(pc.dim("  \u2502") + " " + vPad(`${pc.dim("\u25B8")} ${pc.dim(skillStr)}`, tw - 1) + pc.dim("\u2502"));
+    lines.push(
+      pc.dim("  \u2502") +
+        " " +
+        vPad(`${pc.dim("\u25B8")} ${pc.dim(skillStr)}`, tw - 1) +
+        pc.dim("\u2502"),
+    );
   }
 
   // Entities
@@ -268,7 +317,15 @@ export function renderRealmDetail(detail: RealmDetail): string {
     lines.push(pc.dim("  \u2502") + " ".repeat(tw) + " " + pc.dim("\u2502"));
     lines.push(pc.dim("  \u2502") + " " + vPad(pc.bold("Entities:"), tw - 1) + pc.dim("\u2502"));
     for (const e of detail.entities) {
-      const typeMarker = ({ living: pc.green("\u25CF"), asset: pc.yellow("\u25CF"), organization: pc.blue("\u25CF"), abstract: pc.dim("\u25CF") } as Record<string, string>)[e.type] ?? pc.dim("\u25CB");
+      const typeMarker =
+        (
+          {
+            living: pc.green("\u25CF"),
+            asset: pc.yellow("\u25CF"),
+            organization: pc.blue("\u25CF"),
+            abstract: pc.dim("\u25CF"),
+          } as Record<string, string>
+        )[e.type] ?? pc.dim("\u25CB");
       const summon = e.summonStatus === "active" ? pc.green(" *") : "";
       const entityStr = `  ${typeMarker} ${e.name} ${pc.dim(`[${e.type}]`)}${summon}`;
       lines.push(pc.dim("  \u2502") + " " + vPad(entityStr, tw - 1) + pc.dim("\u2502"));
@@ -297,9 +354,15 @@ export interface HealthReportData {
 }
 
 function healthIcon(score: number): string {
-  if (score >= 80) return pc.green("\u2705");
-  if (score >= 50) return pc.yellow("\u26A0\uFE0F");
-  if (score >= 20) return pc.red("\u274C");
+  if (score >= 80) {
+    return pc.green("\u2705");
+  }
+  if (score >= 50) {
+    return pc.yellow("\u26A0\uFE0F");
+  }
+  if (score >= 20) {
+    return pc.red("\u274C");
+  }
   return "\u{1F4A4}";
 }
 
@@ -326,26 +389,35 @@ export function renderHealthReport(report: HealthReportData): string {
 }
 
 export function renderHealthDashboard(reports: HealthReportData[]): string {
-  if (reports.length === 0) return pc.dim("No realms to report on.");
+  if (reports.length === 0) {
+    return pc.dim("No realms to report on.");
+  }
 
   const lines: string[] = [];
   lines.push(pc.bold("  Knowledge Health Report"));
 
-  const overall = reports.length > 0
-    ? Math.round(reports.reduce((s, r) => s + r.healthScore, 0) / reports.length)
-    : 0;
+  const overall =
+    reports.length > 0
+      ? Math.round(reports.reduce((s, r) => s + r.healthScore, 0) / reports.length)
+      : 0;
 
   for (const r of reports) {
     const bar = healthIcon(r.healthScore);
     const score = String(r.healthScore).padStart(3);
-    lines.push(`  ${bar} ${pc.bold(r.realmName.padEnd(14))} ${score}/100  ${pc.dim(`${r.memoryCount} memories`)}`);
+    lines.push(
+      `  ${bar} ${pc.bold(r.realmName.padEnd(14))} ${score}/100  ${pc.dim(`${r.memoryCount} memories`)}`,
+    );
   }
 
   lines.push(`  ${pc.dim("Overall:")} ${pc.bold(String(overall))}/100`);
   return lines.join("\n");
 }
 
-export function renderCleanupResult(result: { deduplicatedCount: number; archivedCount: number; issuesResolved: number }): string {
+export function renderCleanupResult(result: {
+  deduplicatedCount: number;
+  archivedCount: number;
+  issuesResolved: number;
+}): string {
   const lines: string[] = [];
   lines.push(pc.bold("Cleanup Result:"));
   lines.push(`  Deduplicated: ${result.deduplicatedCount}`);
@@ -366,7 +438,11 @@ export function renderDistributionResult(result: {
   }
 
   const lines: string[] = [];
-  lines.push(pc.bold(`Injected ${result.memoriesCreated} facts into ${result.realmsAffected.length} realm(s):`));
+  lines.push(
+    pc.bold(
+      `Injected ${result.memoriesCreated} facts into ${result.realmsAffected.length} realm(s):`,
+    ),
+  );
 
   for (const fact of result.facts) {
     const entity = fact.entityName ? pc.magenta(` [${fact.entityName}]`) : "";
@@ -378,14 +454,17 @@ export function renderDistributionResult(result: {
 
 // ── Maturity Scores ──
 
-export function renderMaturityScores(scores: Array<{
-  entityName: string;
-  overall: number;
-  attributeCompleteness: number;
-  memoryDepth: number;
-  interactionFrequency: number;
-  readyToSummon: boolean;
-}>, realmName?: string): string {
+export function renderMaturityScores(
+  scores: Array<{
+    entityName: string;
+    overall: number;
+    attributeCompleteness: number;
+    memoryDepth: number;
+    interactionFrequency: number;
+    readyToSummon: boolean;
+  }>,
+  realmName?: string,
+): string {
   if (scores.length === 0) {
     return pc.dim("No entities found to evaluate.");
   }
@@ -395,8 +474,12 @@ export function renderMaturityScores(scores: Array<{
 
   for (const s of scores) {
     const ready = s.readyToSummon ? pc.green(" \u2713 ready") : "";
-    lines.push(`  ${pc.magenta(s.entityName.padEnd(16))} ${String(s.overall).padStart(3)}/100${ready}`);
-    lines.push(`    ${pc.dim(`attrs: ${s.attributeCompleteness}%  memory: ${s.memoryDepth}%  interaction: ${s.interactionFrequency}%`)}`);
+    lines.push(
+      `  ${pc.magenta(s.entityName.padEnd(16))} ${String(s.overall).padStart(3)}/100${ready}`,
+    );
+    lines.push(
+      `    ${pc.dim(`attrs: ${s.attributeCompleteness}%  memory: ${s.memoryDepth}%  interaction: ${s.interactionFrequency}%`)}`,
+    );
   }
 
   return lines.join("\n");
@@ -408,7 +491,9 @@ export function renderSummonSuggestion(suggestion: {
   maturityScore: number;
   entityId: string;
 }): string {
-  return pc.cyan(`  \u{1F4A1} ${suggestion.entityName} (${suggestion.realmName}) is ready to be summoned! Score: ${suggestion.maturityScore}/100\n     Use /summon ${suggestion.entityId} to activate.`);
+  return pc.cyan(
+    `  \u{1F4A1} ${suggestion.entityName} (${suggestion.realmName}) is ready to be summoned! Score: ${suggestion.maturityScore}/100\n     Use /summon ${suggestion.entityId} to activate.`,
+  );
 }
 
 // ── Scan Result ──
@@ -465,7 +550,9 @@ export function renderEntityList(
   for (const e of entities) {
     const marker = typeMarkers[e.type] ?? pc.dim("\u25CB");
     const summon = e.summonStatus === "active" ? pc.green(" * summoned") : "";
-    lines.push(`  ${marker} ${pc.magenta(e.name)} ${pc.dim(`[${e.type}]`)}${summon} ${pc.dim(`(${e.id.slice(0, 12)}...)`)}`);
+    lines.push(
+      `  ${marker} ${pc.magenta(e.name)} ${pc.dim(`[${e.type}]`)}${summon} ${pc.dim(`(${e.id.slice(0, 12)}...)`)}`,
+    );
   }
   return lines.join("\n");
 }
@@ -523,5 +610,7 @@ export function renderMaturityReady(params: {
   realmName: string;
   maturityScore: number;
 }): string {
-  return pc.cyan(`\u{1F4A1} ${pc.bold(params.entityName)} (${params.realmName}) is ready to be summoned! Score: ${params.maturityScore}/100\n   Use /summon ${params.entityId} to activate.`);
+  return pc.cyan(
+    `\u{1F4A1} ${pc.bold(params.entityName)} (${params.realmName}) is ready to be summoned! Score: ${params.maturityScore}/100\n   Use /summon ${params.entityId} to activate.`,
+  );
 }

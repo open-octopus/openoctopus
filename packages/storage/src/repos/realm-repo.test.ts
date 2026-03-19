@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import Database from "better-sqlite3";
 import { RealmNotFoundError } from "@openoctopus/shared";
+import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runMigrations } from "../migrations.js";
 import { RealmRepo } from "./realm-repo.js";
 

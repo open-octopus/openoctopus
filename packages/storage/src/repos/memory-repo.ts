@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import type { MemoryEntry, MemoryTier } from "@openoctopus/shared";
 import { generateId } from "@openoctopus/shared";
+import type Database from "better-sqlite3";
 
 interface MemoryRow {
   id: string;
@@ -91,7 +91,16 @@ export class MemoryRepo {
         `INSERT INTO memories (id, realm_id, entity_id, tier, content, metadata, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(id, data.realmId, data.entityId ?? null, data.tier, data.content, JSON.stringify(data.metadata ?? {}), now, now);
+      .run(
+        id,
+        data.realmId,
+        data.entityId ?? null,
+        data.tier,
+        data.content,
+        JSON.stringify(data.metadata ?? {}),
+        now,
+        now,
+      );
 
     return {
       id,
@@ -137,7 +146,9 @@ export class MemoryRepo {
 
   searchByContent(realmId: string, query: string, limit = 20): MemoryEntry[] {
     const rows = this.db
-      .prepare("SELECT * FROM memories WHERE realm_id = ? AND content LIKE ? ORDER BY updated_at DESC LIMIT ?")
+      .prepare(
+        "SELECT * FROM memories WHERE realm_id = ? AND content LIKE ? ORDER BY updated_at DESC LIMIT ?",
+      )
       .all(realmId, `%${query}%`, limit) as MemoryRow[];
     return rows.map(rowToMemory);
   }
@@ -145,7 +156,9 @@ export class MemoryRepo {
   listStale(realmId: string, olderThanDays: number): MemoryEntry[] {
     const cutoff = new Date(Date.now() - olderThanDays * 86400000).toISOString();
     const rows = this.db
-      .prepare("SELECT * FROM memories WHERE realm_id = ? AND updated_at < ? ORDER BY updated_at ASC")
+      .prepare(
+        "SELECT * FROM memories WHERE realm_id = ? AND updated_at < ? ORDER BY updated_at ASC",
+      )
       .all(realmId, cutoff) as MemoryRow[];
     return rows.map(rowToMemory);
   }
@@ -157,29 +170,42 @@ export class MemoryRepo {
 
   updateContent(id: string, content: string): void {
     const now = new Date().toISOString();
-    this.db.prepare("UPDATE memories SET content = ?, updated_at = ? WHERE id = ?").run(content, now, id);
+    this.db
+      .prepare("UPDATE memories SET content = ?, updated_at = ? WHERE id = ?")
+      .run(content, now, id);
   }
 
   deleteMany(ids: string[]): number {
-    if (ids.length === 0) return 0;
+    if (ids.length === 0) {
+      return 0;
+    }
     const placeholders = ids.map(() => "?").join(",");
-    const result = this.db.prepare(`DELETE FROM memories WHERE id IN (${placeholders})`).run(...ids);
+    const result = this.db
+      .prepare(`DELETE FROM memories WHERE id IN (${placeholders})`)
+      .run(...ids);
     return result.changes;
   }
 
   updateEmbedding(id: string, embedding: number[]): void {
     const blob = Buffer.from(new Float64Array(embedding).buffer);
     // Store embedding BLOB + dimension count in metadata
-    const row = this.db.prepare("SELECT metadata FROM memories WHERE id = ?").get(id) as { metadata: string } | undefined;
+    const row = this.db.prepare("SELECT metadata FROM memories WHERE id = ?").get(id) as
+      | { metadata: string }
+      | undefined;
     const metadata = row?.metadata ? JSON.parse(row.metadata) : {};
     metadata.embeddingDim = embedding.length;
-    this.db.prepare("UPDATE memories SET embedding = ?, metadata = ? WHERE id = ?")
+    this.db
+      .prepare("UPDATE memories SET embedding = ?, metadata = ? WHERE id = ?")
       .run(blob, JSON.stringify(metadata), id);
   }
 
   getById(id: string): MemoryEntry {
-    const row = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as MemoryRow | undefined;
-    if (!row) throw new Error(`Memory ${id} not found`);
+    const row = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as
+      | MemoryRow
+      | undefined;
+    if (!row) {
+      throw new Error(`Memory ${id} not found`);
+    }
     return rowToMemory(row);
   }
 
@@ -193,20 +219,28 @@ export class MemoryRepo {
 
     for (const row of rows) {
       const entry = rowToMemory(row);
-      if (!entry.embedding) continue;
+      if (!entry.embedding) {
+        continue;
+      }
       // Filter by matching dimension count
-      const embeddingDim = (entry.metadata as Record<string, unknown>).embeddingDim as number | undefined;
-      if (embeddingDim !== undefined && embeddingDim !== queryDim) continue;
-      if (entry.embedding.length !== queryDim) continue;
+      const embeddingDim = (entry.metadata as Record<string, unknown>).embeddingDim as
+        | number
+        | undefined;
+      if (embeddingDim !== undefined && embeddingDim !== queryDim) {
+        continue;
+      }
+      if (entry.embedding.length !== queryDim) {
+        continue;
+      }
 
       const score = cosineSimilarity(queryVector, entry.embedding);
       scored.push({ entry, score });
     }
 
     return scored
-      .sort((a, b) => b.score - a.score)
+      .toSorted((a, b) => b.score - a.score)
       .slice(0, topK)
-      .map(s => s.entry);
+      .map((s) => s.entry);
   }
 
   async backfillEmbeddings(
@@ -216,13 +250,23 @@ export class MemoryRepo {
     const query = realmId
       ? "SELECT * FROM memories WHERE embedding IS NULL AND realm_id = ?"
       : "SELECT * FROM memories WHERE embedding IS NULL";
-    const rows = (realmId
-      ? this.db.prepare(query).all(realmId)
-      : this.db.prepare(query).all()) as MemoryRow[];
+    const rows = (
+      realmId ? this.db.prepare(query).all(realmId) : this.db.prepare(query).all()
+    ) as MemoryRow[];
 
     const withEmbedding = realmId
-      ? (this.db.prepare("SELECT COUNT(*) as cnt FROM memories WHERE embedding IS NOT NULL AND realm_id = ?").get(realmId) as { cnt: number }).cnt
-      : (this.db.prepare("SELECT COUNT(*) as cnt FROM memories WHERE embedding IS NOT NULL").get() as { cnt: number }).cnt;
+      ? (
+          this.db
+            .prepare(
+              "SELECT COUNT(*) as cnt FROM memories WHERE embedding IS NOT NULL AND realm_id = ?",
+            )
+            .get(realmId) as { cnt: number }
+        ).cnt
+      : (
+          this.db
+            .prepare("SELECT COUNT(*) as cnt FROM memories WHERE embedding IS NOT NULL")
+            .get() as { cnt: number }
+        ).cnt;
 
     if (rows.length === 0) {
       return { processed: 0, skipped: withEmbedding };
@@ -233,7 +277,7 @@ export class MemoryRepo {
     let processed = 0;
     for (let i = 0; i < rows.length; i += batchSize) {
       const batch = rows.slice(i, i + batchSize);
-      const texts = batch.map(r => r.content);
+      const texts = batch.map((r) => r.content);
       const vectors = await embedFn(texts);
       for (let j = 0; j < batch.length; j++) {
         this.updateEmbedding(batch[j].id, vectors[j]);

@@ -21,9 +21,9 @@ describe("MaturityScanner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     scanner = new MaturityScanner(
-      mockMemoryRepo as any,
-      mockEntityManager as any,
-      mockRealmManager as any,
+      mockMemoryRepo as unknown as ConstructorParameters<typeof MaturityScanner>[0],
+      mockEntityManager as unknown as ConstructorParameters<typeof MaturityScanner>[1],
+      mockRealmManager as unknown as ConstructorParameters<typeof MaturityScanner>[2],
     );
   });
 
@@ -89,12 +89,30 @@ describe("MaturityScanner", () => {
     it("should scan all entities in realm", () => {
       mockEntityManager.listByRealm.mockReturnValue([
         { id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant" },
-        { id: "e2", name: "Max", realmId: "r1", attributes: { breed: "golden" }, summonStatus: "dormant" },
+        {
+          id: "e2",
+          name: "Max",
+          realmId: "r1",
+          attributes: { breed: "golden" },
+          summonStatus: "dormant",
+        },
       ]);
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockEntityManager.get
-        .mockReturnValueOnce({ id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant" })
-        .mockReturnValueOnce({ id: "e2", name: "Max", realmId: "r1", attributes: { breed: "golden" }, summonStatus: "dormant" });
+        .mockReturnValueOnce({
+          id: "e1",
+          name: "Luna",
+          realmId: "r1",
+          attributes: {},
+          summonStatus: "dormant",
+        })
+        .mockReturnValueOnce({
+          id: "e2",
+          name: "Max",
+          realmId: "r1",
+          attributes: { breed: "golden" },
+          summonStatus: "dormant",
+        });
       mockMemoryRepo.countByEntity.mockReturnValue(0);
 
       const scores = scanner.scanRealm("r1");
@@ -107,11 +125,15 @@ describe("MaturityScanner", () => {
 
   describe("scanAll", () => {
     it("should return suggestions for ready entities", () => {
-      mockRealmManager.list.mockReturnValue([
-        { id: "r1", name: "pet" },
-      ]);
+      mockRealmManager.list.mockReturnValue([{ id: "r1", name: "pet" }]);
       mockEntityManager.listByRealm.mockReturnValue([
-        { id: "e1", name: "Luna", realmId: "r1", attributes: { breed: "tabby", age: 3, color: "orange" }, summonStatus: "dormant" },
+        {
+          id: "e1",
+          name: "Luna",
+          realmId: "r1",
+          attributes: { breed: "tabby", age: 3, color: "orange" },
+          summonStatus: "dormant",
+        },
       ]);
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockMemoryRepo.countByEntity.mockReturnValue(20);
@@ -128,10 +150,20 @@ describe("MaturityScanner", () => {
 
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockEntityManager.listByRealm.mockReturnValue([
-        { id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" },
+        {
+          id: "e1",
+          name: "Luna",
+          realmId: "r1",
+          attributes: { a: 1, b: 2, c: 3 },
+          summonStatus: "dormant",
+        },
       ]);
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
+        attributes: { a: 1, b: 2, c: 3 },
+        summonStatus: "dormant",
       });
       mockMemoryRepo.countByEntity.mockReturnValue(20);
 
@@ -151,7 +183,9 @@ describe("MaturityScanner", () => {
       // interFreq: 0 → allCount = 0
       // overall = round(100*0.3 + 75*0.4 + 0*0.3) = round(30+30+0) = 60
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Test", realmId: "r1",
+        id: "e1",
+        name: "Test",
+        realmId: "r1",
         attributes: { a: "1", b: "2" },
         summonStatus: "dormant",
       });
@@ -162,8 +196,8 @@ describe("MaturityScanner", () => {
       // overall = round(100*0.3 + 70*0.4 + 0*0.3) = round(30+28) = 58 → not 60
       // archivalCount = 8 → 80 → 30+32=62 ✓ (>=60)
       mockMemoryRepo.countByEntity
-        .mockReturnValueOnce(8)   // archival
-        .mockReturnValueOnce(0);  // all
+        .mockReturnValueOnce(8) // archival
+        .mockReturnValueOnce(0); // all
 
       const score = scanner.computeEntityMaturity("e1");
       expect(score.overall).toBe(62);
@@ -172,7 +206,9 @@ describe("MaturityScanner", () => {
 
     it("should return readyToSummon=false at 59", () => {
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Test", realmId: "r1",
+        id: "e1",
+        name: "Test",
+        realmId: "r1",
         attributes: { a: "1", b: "2" },
         summonStatus: "dormant",
       });
@@ -180,8 +216,8 @@ describe("MaturityScanner", () => {
       // archivalCount = 7 → memDepth = 70
       // overall = round(100*0.3 + 70*0.4 + 0*0.3) = round(30+28) = 58
       mockMemoryRepo.countByEntity
-        .mockReturnValueOnce(7)   // archival
-        .mockReturnValueOnce(0);  // all
+        .mockReturnValueOnce(7) // archival
+        .mockReturnValueOnce(0); // all
 
       const score = scanner.computeEntityMaturity("e1");
       expect(score.overall).toBe(58);
@@ -192,7 +228,9 @@ describe("MaturityScanner", () => {
   describe("exact formula", () => {
     it("should compute precise weighted score", () => {
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
         attributes: { breed: "tabby", age: 3, color: "", weight: null },
         summonStatus: "dormant",
       });
@@ -201,7 +239,7 @@ describe("MaturityScanner", () => {
       // archivalCount=5 → memDepth = round(min(5/10,1)*100) = 50
       // allCount=8 → interFreq = round(min(8/15,1)*100) = round(53.33) = 53
       mockMemoryRepo.countByEntity
-        .mockReturnValueOnce(5)  // archival
+        .mockReturnValueOnce(5) // archival
         .mockReturnValueOnce(8); // all
 
       const score = scanner.computeEntityMaturity("e1");
@@ -216,14 +254,16 @@ describe("MaturityScanner", () => {
   describe("memoryDepth cap", () => {
     it("should cap memoryDepth at 100", () => {
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
         attributes: { a: "1" },
         summonStatus: "dormant",
       });
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockMemoryRepo.countByEntity
-        .mockReturnValueOnce(15)  // archival: min(15/10,1)=1 → 100
-        .mockReturnValueOnce(5);  // all
+        .mockReturnValueOnce(15) // archival: min(15/10,1)=1 → 100
+        .mockReturnValueOnce(5); // all
 
       const score = scanner.computeEntityMaturity("e1");
       expect(score.memoryDepth).toBe(100);
@@ -233,14 +273,16 @@ describe("MaturityScanner", () => {
   describe("interactionFrequency cap", () => {
     it("should cap interactionFrequency at 100", () => {
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
         attributes: {},
         summonStatus: "dormant",
       });
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockMemoryRepo.countByEntity
-        .mockReturnValueOnce(0)    // archival
-        .mockReturnValueOnce(20);  // all: min(20/15,1)=1 → 100
+        .mockReturnValueOnce(0) // archival
+        .mockReturnValueOnce(20); // all: min(20/15,1)=1 → 100
 
       const score = scanner.computeEntityMaturity("e1");
       expect(score.interactionFrequency).toBe(100);
@@ -254,7 +296,11 @@ describe("MaturityScanner", () => {
         { id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant" },
       ]);
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
+        attributes: {},
+        summonStatus: "dormant",
       });
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockMemoryRepo.countByEntity.mockReturnValue(0);
@@ -269,14 +315,49 @@ describe("MaturityScanner", () => {
         { id: "r2", name: "finance" },
       ]);
       mockEntityManager.listByRealm.mockImplementation((realmId: string) => {
-        if (realmId === "r1") return [{ id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" }];
-        return [{ id: "e2", name: "Account", realmId: "r2", attributes: { x: 1 }, summonStatus: "dormant" }];
+        if (realmId === "r1") {
+          return [
+            {
+              id: "e1",
+              name: "Luna",
+              realmId: "r1",
+              attributes: { a: 1, b: 2, c: 3 },
+              summonStatus: "dormant",
+            },
+          ];
+        }
+        return [
+          {
+            id: "e2",
+            name: "Account",
+            realmId: "r2",
+            attributes: { x: 1 },
+            summonStatus: "dormant",
+          },
+        ];
       });
       mockEntityManager.get.mockImplementation((id: string) => {
-        if (id === "e1") return { id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" };
-        return { id: "e2", name: "Account", realmId: "r2", attributes: { x: 1 }, summonStatus: "dormant" };
+        if (id === "e1") {
+          return {
+            id: "e1",
+            name: "Luna",
+            realmId: "r1",
+            attributes: { a: 1, b: 2, c: 3 },
+            summonStatus: "dormant",
+          };
+        }
+        return {
+          id: "e2",
+          name: "Account",
+          realmId: "r2",
+          attributes: { x: 1 },
+          summonStatus: "dormant",
+        };
       });
-      mockRealmManager.get.mockImplementation((id: string) => ({ id, name: id === "r1" ? "pet" : "finance" }));
+      mockRealmManager.get.mockImplementation((id: string) => ({
+        id,
+        name: id === "r1" ? "pet" : "finance",
+      }));
       mockMemoryRepo.countByEntity.mockReturnValue(20);
 
       const suggestions = scanner.scanAll();
@@ -287,7 +368,9 @@ describe("MaturityScanner", () => {
   describe("zero attributes", () => {
     it("should return attributeCompleteness=0 for empty attributes", () => {
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
         attributes: {},
         summonStatus: "dormant",
       });
@@ -306,10 +389,20 @@ describe("MaturityScanner", () => {
 
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockEntityManager.listByRealm.mockReturnValue([
-        { id: "e1", name: "Luna", realmId: "r1", attributes: { breed: "tabby", age: null, color: "" }, summonStatus: "dormant" },
+        {
+          id: "e1",
+          name: "Luna",
+          realmId: "r1",
+          attributes: { breed: "tabby", age: null, color: "" },
+          summonStatus: "dormant",
+        },
       ]);
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1", attributes: { breed: "tabby", age: null, color: "" }, summonStatus: "dormant",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
+        attributes: { breed: "tabby", age: null, color: "" },
+        summonStatus: "dormant",
       });
       // Need overall score in 40-59 range
       // attrs: 3 keys, 1 non-empty (breed) -> attrComp = round(1/3*100) = 33
@@ -317,18 +410,20 @@ describe("MaturityScanner", () => {
       // allCount = 5 -> interFreq = round(5/15*100) = round(33.33) = 33
       // overall = round(33*0.3 + 60*0.4 + 33*0.3) = round(9.9+24+9.9) = round(43.8) = 44
       mockMemoryRepo.countByEntity
-        .mockReturnValueOnce(6)   // archival
-        .mockReturnValueOnce(5);  // all
+        .mockReturnValueOnce(6) // archival
+        .mockReturnValueOnce(5); // all
 
       await scanner.checkAndNotify("r1", onSuggestion, onProgress);
 
       expect(onSuggestion).not.toHaveBeenCalled();
-      expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({
-        entityName: "Luna",
-        realmName: "pet",
-        score: 44,
-        missing: expect.arrayContaining(["age", "color"]),
-      }));
+      expect(onProgress).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityName: "Luna",
+          realmName: "pet",
+          score: 44,
+          missing: expect.arrayContaining(["age", "color"]),
+        }),
+      );
     });
 
     it("should not call onProgress for score below 40", async () => {
@@ -340,7 +435,11 @@ describe("MaturityScanner", () => {
         { id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant" },
       ]);
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1", attributes: {}, summonStatus: "dormant",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
+        attributes: {},
+        summonStatus: "dormant",
       });
       mockMemoryRepo.countByEntity.mockReturnValue(0);
 
@@ -355,10 +454,20 @@ describe("MaturityScanner", () => {
 
       mockRealmManager.get.mockReturnValue({ id: "r1", name: "pet" });
       mockEntityManager.listByRealm.mockReturnValue([
-        { id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant" },
+        {
+          id: "e1",
+          name: "Luna",
+          realmId: "r1",
+          attributes: { a: 1, b: 2, c: 3 },
+          summonStatus: "dormant",
+        },
       ]);
       mockEntityManager.get.mockReturnValue({
-        id: "e1", name: "Luna", realmId: "r1", attributes: { a: 1, b: 2, c: 3 }, summonStatus: "dormant",
+        id: "e1",
+        name: "Luna",
+        realmId: "r1",
+        attributes: { a: 1, b: 2, c: 3 },
+        summonStatus: "dormant",
       });
       mockMemoryRepo.countByEntity.mockReturnValue(20);
 

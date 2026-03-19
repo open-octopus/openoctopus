@@ -1,7 +1,13 @@
+import { createLogger, type ChannelConfig } from "@openoctopus/shared";
 import { Bot, type Context } from "grammy";
 import type { Message } from "grammy/types";
-import { createLogger, type ChannelConfig } from "@openoctopus/shared";
-import type { Channel, IncomingMessage, OutgoingMessage, MessageHandler, StreamingMessageHandler } from "../channel.js";
+import type {
+  Channel,
+  IncomingMessage,
+  OutgoingMessage,
+  MessageHandler,
+  StreamingMessageHandler,
+} from "../channel.js";
 import {
   markdownToTelegramHtml,
   splitMessage,
@@ -53,10 +59,14 @@ export class TelegramChannel implements Channel {
 
     // Wire text message handler
     this.bot.on("message:text", async (ctx) => {
-      if (!this.handler && !this.streamingHandler) { return; }
+      if (!this.handler && !this.streamingHandler) {
+        return;
+      }
 
       // Access control
-      if (!this.checkAccess(ctx)) { return; }
+      if (!this.checkAccess(ctx)) {
+        return;
+      }
 
       // Sequentialize: one handler per chat at a time
       const chatId = String(ctx.chat.id);
@@ -78,7 +88,9 @@ export class TelegramChannel implements Channel {
   }
 
   async start(): Promise<void> {
-    if (this.running) { return; }
+    if (this.running) {
+      return;
+    }
 
     const webhookConfig = this.config.webhook;
     if (webhookConfig?.url) {
@@ -98,7 +110,9 @@ export class TelegramChannel implements Channel {
   }
 
   async stop(): Promise<void> {
-    if (!this.running) { return; }
+    if (!this.running) {
+      return;
+    }
     await this.bot.stop();
     this.running = false;
     log.info("Telegram bot stopped");
@@ -159,7 +173,9 @@ export class TelegramChannel implements Channel {
       const isReplyToBot = ctx.message?.reply_to_message?.from?.id === this.bot.botInfo?.id;
       const isMention = botUsername ? text.includes(`@${botUsername}`) : false;
 
-      if (!isReplyToBot && !isMention) { return false; }
+      if (!isReplyToBot && !isMention) {
+        return false;
+      }
     }
 
     return true;
@@ -220,9 +236,15 @@ export class TelegramChannel implements Channel {
 
     // Periodic edit interval for streaming updates
     const intervalId = setInterval(async () => {
-      if (editing) { return; }
-      if (accumulated.length === lastSentLength) { return; }
-      if (accumulated.length < MIN_INITIAL_CHARS && !messageId) { return; }
+      if (editing) {
+        return;
+      }
+      if (accumulated.length === lastSentLength) {
+        return;
+      }
+      if (accumulated.length < MIN_INITIAL_CHARS && !messageId) {
+        return;
+      }
 
       editing = true;
       const text = accumulated + " ▌";
@@ -411,8 +433,16 @@ export class TelegramChannel implements Channel {
 
     // Clean up after completion to prevent memory leak
     current.then(
-      () => { if (this.chatLocks.get(chatId) === current) { this.chatLocks.delete(chatId); } },
-      () => { if (this.chatLocks.get(chatId) === current) { this.chatLocks.delete(chatId); } },
+      () => {
+        if (this.chatLocks.get(chatId) === current) {
+          this.chatLocks.delete(chatId);
+        }
+      },
+      () => {
+        if (this.chatLocks.get(chatId) === current) {
+          this.chatLocks.delete(chatId);
+        }
+      },
     );
 
     return current;

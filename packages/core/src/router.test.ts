@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { RealmState } from "@openoctopus/shared";
+import { describe, expect, it } from "vitest";
 import { Router } from "./router.js";
 
 const makeRealm = (name: string, id?: string): RealmState => ({

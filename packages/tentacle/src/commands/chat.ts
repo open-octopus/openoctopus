@@ -1,10 +1,20 @@
+import readline from "node:readline";
 import { defineCommand } from "citty";
 import consola from "consola";
-import readline from "node:readline";
 import { WsRpcClient, ApiClient } from "../api-client.js";
-import { createInitialState } from "../tui/state.js";
-import { renderStatusBar, renderMessage, renderWelcomeDashboard, showThinking, clearThinking, renderSummonSuggestion, renderProactiveMessage, renderHealthAlert, renderMaturityReady } from "../tui/renderer.js";
 import { handleSlashCommand } from "../tui/commands.js";
+import {
+  renderStatusBar,
+  renderMessage,
+  renderWelcomeDashboard,
+  showThinking,
+  clearThinking,
+  renderSummonSuggestion,
+  renderProactiveMessage,
+  renderHealthAlert,
+  renderMaturityReady,
+} from "../tui/renderer.js";
+import { createInitialState } from "../tui/state.js";
 
 export const chatCommand = defineCommand({
   meta: {
@@ -72,12 +82,24 @@ async function runWsChat(
   // Listen for broadcast events (maturity suggestions, cross-realm reactions)
   client.onEvent((event, data) => {
     if (event === "maturity.suggestion" && data) {
-      const s = data as { entityName: string; realmName: string; maturityScore: number; entityId: string };
+      const s = data as {
+        entityName: string;
+        realmName: string;
+        maturityScore: number;
+        entityId: string;
+      };
       process.stdout.write(`\n${renderSummonSuggestion(s)}\n`);
     }
     if (event === "maturity.progress" && data) {
-      const p = data as { entityName: string; realmName: string; score: number; missing: string[]; message: string };
-      const bar = "\u2588".repeat(Math.floor(p.score / 5)) + "\u2591".repeat(20 - Math.floor(p.score / 5));
+      const p = data as {
+        entityName: string;
+        realmName: string;
+        score: number;
+        missing: string[];
+        message: string;
+      };
+      const bar =
+        "\u2588".repeat(Math.floor(p.score / 5)) + "\u2591".repeat(20 - Math.floor(p.score / 5));
       process.stdout.write(`\n  ${p.entityName} (${p.realmName}): [${bar}] ${p.score}/100\n`);
       if (p.missing.length > 0) {
         process.stdout.write(`     Missing: ${p.missing.join(", ")}\n`);
@@ -86,18 +108,33 @@ async function runWsChat(
     }
     if (event === "crossrealm.reaction" && data) {
       const r = data as { targetRealmName: string; agentName: string; content: string };
-      process.stdout.write(`\n  ${renderMessage("system", `${r.agentName} (${r.targetRealmName}): ${r.content}`)}\n`);
+      process.stdout.write(
+        `\n  ${renderMessage("system", `${r.agentName} (${r.targetRealmName}): ${r.content}`)}\n`,
+      );
     }
     if (event === "proactive" && data) {
       const p = data as { ruleId: string; realmId?: string; content: string };
       process.stdout.write(`\n${renderProactiveMessage(p)}\n`);
     }
     if (event === "health.alert" && data) {
-      const h = data as { realmId: string; realmName: string; previousScore: number; currentScore: number; delta: number; issues: Array<{ kind: string; description: string }> };
+      const h = data as {
+        realmId: string;
+        realmName: string;
+        previousScore: number;
+        currentScore: number;
+        delta: number;
+        issues: Array<{ kind: string; description: string }>;
+      };
       process.stdout.write(`\n${renderHealthAlert(h)}\n`);
     }
     if (event === "maturity.ready" && data) {
-      const m = data as { entityId: string; entityName: string; realmId: string; realmName: string; maturityScore: number };
+      const m = data as {
+        entityId: string;
+        entityName: string;
+        realmId: string;
+        realmName: string;
+        maturityScore: number;
+      };
       process.stdout.write(`\n${renderMaturityReady(m)}\n`);
     }
   });
@@ -105,12 +142,32 @@ async function runWsChat(
   // Fetch realms for welcome dashboard
   try {
     const realmResponse = await client.call("realm.list");
-    const { realms } = realmResponse.result as { realms: Array<{ id: string; name: string; icon?: string; entityCount: number; status: string; description?: string; agentName?: string }> };
-    state.realms = realms.map((r) => ({ id: r.id, name: r.name, icon: r.icon, description: r.description, entityCount: r.entityCount, status: r.status, agentName: r.agentName }));
+    const { realms } = realmResponse.result as {
+      realms: Array<{
+        id: string;
+        name: string;
+        icon?: string;
+        entityCount: number;
+        status: string;
+        description?: string;
+        agentName?: string;
+      }>;
+    };
+    state.realms = realms.map((r) => ({
+      id: r.id,
+      name: r.name,
+      icon: r.icon,
+      description: r.description,
+      entityCount: r.entityCount,
+      status: r.status,
+      agentName: r.agentName,
+    }));
     console.log(renderWelcomeDashboard(state.realms));
   } catch {
     console.log(renderStatusBar(state));
-    console.log(renderMessage("system", 'Chat session started. Type /help for commands, /exit to quit.\n'));
+    console.log(
+      renderMessage("system", "Chat session started. Type /help for commands, /exit to quit.\n"),
+    );
   }
 
   const rl = readline.createInterface({
@@ -189,24 +246,23 @@ async function runWsChat(
           chatOptions.realmId = state.currentRealm.id;
         }
 
-        const response = await client.chat(
-          message,
-          chatOptions,
-          (token) => {
-            if (!hasTokens) {
-              clearThinking();
-              process.stdout.write(renderMessage("assistant", ""));
-              hasTokens = true;
-            }
-            process.stdout.write(token);
-          },
-        );
+        const response = await client.chat(message, chatOptions, (token) => {
+          if (!hasTokens) {
+            clearThinking();
+            process.stdout.write(renderMessage("assistant", ""));
+            hasTokens = true;
+          }
+          process.stdout.write(token);
+        });
 
         if (!hasTokens) {
           clearThinking();
           // For non-streaming responses (e.g., system actions), display the message content
           if (response.result) {
-            const result = response.result as { sessionId?: string; message?: { content?: string } };
+            const result = response.result as {
+              sessionId?: string;
+              message?: { content?: string };
+            };
             state.sessionId = result.sessionId;
             if (result.message?.content) {
               console.log(renderMessage("assistant", result.message.content));

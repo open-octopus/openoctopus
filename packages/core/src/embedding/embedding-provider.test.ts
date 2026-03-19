@@ -18,7 +18,7 @@ describe("StubEmbeddingProvider", () => {
   it("embeds batch of texts", async () => {
     const results = await provider.embedBatch(["a", "b", "c"]);
     expect(results.length).toBe(3);
-    results.forEach(v => expect(v.length).toBe(4));
+    results.forEach((v) => expect(v.length).toBe(4));
   });
 
   it("reports correct dimensions", () => {

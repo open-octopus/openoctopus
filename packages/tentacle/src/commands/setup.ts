@@ -1,4 +1,4 @@
-import { defineCommand } from "citty";
+import fs from "node:fs";
 import {
   intro,
   outro,
@@ -11,8 +11,6 @@ import {
   spinner,
   multiselect,
 } from "@clack/prompts";
-import pc from "picocolors";
-import fs from "node:fs";
 import {
   resolveConfigPath,
   resolveConfigDir,
@@ -20,6 +18,8 @@ import {
   resetConfig,
   type OpenOctopusConfig,
 } from "@openoctopus/shared";
+import { defineCommand } from "citty";
+import pc from "picocolors";
 import { ApiClient, WsRpcClient } from "../api-client.js";
 
 // ── Helpers ──
@@ -86,7 +86,10 @@ async function setupLlm(existing: OpenOctopusConfig["llm"]): Promise<LlmSetupRes
     };
   }
 
-  const providerConfigs: Record<string, { api: string; models: Array<{ value: string; label: string }> }> = {
+  const providerConfigs: Record<
+    string,
+    { api: string; models: Array<{ value: string; label: string }> }
+  > = {
     anthropic: {
       api: "anthropic-messages",
       models: [
@@ -208,7 +211,9 @@ async function setupLlm(existing: OpenOctopusConfig["llm"]): Promise<LlmSetupRes
       const apiKey = guard(
         await text({
           message: `${provider} API key`,
-          placeholder: existingKey ? "(press Enter to keep current)" : `paste key or set ${envVarName} env var`,
+          placeholder: existingKey
+            ? "(press Enter to keep current)"
+            : `paste key or set ${envVarName} env var`,
           defaultValue: existingKey,
           validate: (v) => {
             if (!v && !existingKey) {
@@ -224,7 +229,9 @@ async function setupLlm(existing: OpenOctopusConfig["llm"]): Promise<LlmSetupRes
     const baseUrl = guard(
       await text({
         message: "Ollama base URL",
-        initialValue: (existing.providers.ollama as { baseUrl?: string } | undefined)?.baseUrl ?? "http://localhost:11434",
+        initialValue:
+          (existing.providers.ollama as { baseUrl?: string } | undefined)?.baseUrl ??
+          "http://localhost:11434",
       }),
     );
     providers.ollama = { api: "ollama", baseUrl };
@@ -255,16 +262,28 @@ async function setupChannels(existing: OpenOctopusConfig["channels"]): Promise<C
     await multiselect({
       message: "Messaging channels to enable (Space to select, Enter to confirm)",
       options: [
-        { value: "telegram", label: "Telegram", hint: existing.telegram?.enabled ? pc.green("configured") : undefined },
-        { value: "discord", label: "Discord", hint: existing.discord?.enabled ? pc.green("configured") : undefined },
-        { value: "slack", label: "Slack", hint: existing.slack?.enabled ? pc.green("configured") : undefined },
+        {
+          value: "telegram",
+          label: "Telegram",
+          hint: existing.telegram?.enabled ? pc.green("configured") : undefined,
+        },
+        {
+          value: "discord",
+          label: "Discord",
+          hint: existing.discord?.enabled ? pc.green("configured") : undefined,
+        },
+        {
+          value: "slack",
+          label: "Slack",
+          hint: existing.slack?.enabled ? pc.green("configured") : undefined,
+        },
         { value: "none", label: "None / Skip" },
       ],
       required: false,
     }),
   );
 
-  const actualChannels = (selected as string[]).filter(s => s !== "none");
+  const actualChannels = (selected as string[]).filter((s) => s !== "none");
 
   // Sequential prompts — each channel requires interactive user input
   const promptChannel = async (name: string) => {
@@ -461,7 +480,11 @@ export const setupCommand = defineCommand({
         [
           `Config file: ${pc.dim(configPath)}`,
           `Providers: ${Object.keys(existingConfig.llm.providers).join(", ") || pc.dim("none")}`,
-          `Channels: ${Object.keys(existingConfig.channels).filter(k => (existingConfig!.channels[k] as { enabled?: boolean })?.enabled).join(", ") || pc.dim("none")}`,
+          `Channels: ${
+            Object.keys(existingConfig.channels)
+              .filter((k) => (existingConfig!.channels[k] as { enabled?: boolean })?.enabled)
+              .join(", ") || pc.dim("none")
+          }`,
           `Gateway: ws://${existingConfig.gateway.host}:${existingConfig.gateway.wsPort} + http://${existingConfig.gateway.host}:${existingConfig.gateway.httpPort}`,
         ].join("\n"),
         "Existing Configuration",
@@ -570,7 +593,12 @@ export const setupCommand = defineCommand({
     const summaryLines = [
       `Config: ${pc.dim(configPath)}`,
       `LLM: ${pc.cyan(llmResult.defaultProvider)} / ${pc.cyan(llmResult.defaultModel)}`,
-      `Channels: ${Object.entries(channelResult.channels).filter(([, v]) => (v as { enabled?: boolean })?.enabled).map(([k]) => pc.green(k)).join(", ") || pc.dim("none")}`,
+      `Channels: ${
+        Object.entries(channelResult.channels)
+          .filter(([, v]) => (v as { enabled?: boolean })?.enabled)
+          .map(([k]) => pc.green(k))
+          .join(", ") || pc.dim("none")
+      }`,
       `Gateway: ws://${gatewayResult.host}:${gatewayResult.wsPort} + http://${gatewayResult.host}:${gatewayResult.httpPort}`,
       "",
       pc.dim("Next steps:"),

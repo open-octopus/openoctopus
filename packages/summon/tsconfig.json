@@ -5,11 +5,7 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "references": [
-    { "path": "../shared" },
-    { "path": "../core" },
-    { "path": "../storage" }
-  ],
+  "references": [{ "path": "../shared" }, { "path": "../core" }, { "path": "../storage" }],
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

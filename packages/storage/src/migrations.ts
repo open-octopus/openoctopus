@@ -272,12 +272,17 @@ export function runMigrations(db: Database.Database): void {
       .map((row) => (row as { version: number }).version),
   );
 
-  const pending = migrations.filter((m) => !applied.has(m.version)).toSorted((a, b) => a.version - b.version);
+  const pending = migrations
+    .filter((m) => !applied.has(m.version))
+    .toSorted((a, b) => a.version - b.version);
 
   for (const migration of pending) {
     db.transaction(() => {
       migration.up(db);
-      db.prepare("INSERT INTO schema_migrations (version, name) VALUES (?, ?)").run(migration.version, migration.name);
+      db.prepare("INSERT INTO schema_migrations (version, name) VALUES (?, ?)").run(
+        migration.version,
+        migration.name,
+      );
     })();
   }
 }
