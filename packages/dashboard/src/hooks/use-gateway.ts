@@ -4,7 +4,7 @@ import { useGatewayStore } from "../stores/gateway";
 
 export function useGateway() {
   const clientRef = useRef<GatewayClient | null>(null);
-  const { url, setStatus, setError } = useGatewayStore();
+  const { url, setStatus } = useGatewayStore();
 
   useEffect(() => {
     // Read gateway URL from query params or store
@@ -24,7 +24,7 @@ export function useGateway() {
       client.disconnect();
       setStatus("disconnected");
     };
-  }, [url, setStatus, setError]);
+  }, [url, setStatus]);
 
   return clientRef;
 }
