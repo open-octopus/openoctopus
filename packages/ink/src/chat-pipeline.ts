@@ -277,7 +277,7 @@ async function handleSystemAction(
       }
 
       // Try fuzzy/case-insensitive matching
-      const allEntities: Array<{ entity: Entity; realm: Realm }> = [];
+      const allEntities: Array<{ entity: Entity; realm: RealmState }> = [];
       for (const realm of realms) {
         const entities = services.entityManager.listByRealm(realm.id);
         for (const entity of entities) {
