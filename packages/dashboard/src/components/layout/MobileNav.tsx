@@ -1,12 +1,5 @@
 import { NavLink } from "react-router";
-
-const NAV_ITEMS = [
-  { path: "/", icon: "🏠", label: "总览" },
-  { path: "/route", icon: "🔀", label: "路由" },
-  { path: "/members", icon: "👥", label: "成员" },
-  { path: "/entities", icon: "🎯", label: "实体" },
-  { path: "/settings", icon: "⚙️", label: "设置" },
-];
+import { NAV_ITEMS } from "./nav-items";
 
 export function MobileNav() {
   return (
@@ -23,7 +16,7 @@ export function MobileNav() {
           }
         >
           <span className="text-xl">{item.icon}</span>
-          {item.label}
+          {item.shortLabel}
         </NavLink>
       ))}
     </nav>

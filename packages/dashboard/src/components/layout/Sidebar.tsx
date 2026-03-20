@@ -1,12 +1,5 @@
 import { NavLink } from "react-router";
-
-const NAV_ITEMS = [
-  { path: "/", icon: "🏠", label: "家庭总览" },
-  { path: "/route", icon: "🔀", label: "路由视图" },
-  { path: "/members", icon: "👥", label: "家庭成员" },
-  { path: "/entities", icon: "🎯", label: "实体管理" },
-  { path: "/settings", icon: "⚙️", label: "设置" },
-];
+import { NAV_ITEMS } from "./nav-items";
 
 export function Sidebar() {
   return (
