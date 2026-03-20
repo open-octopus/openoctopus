@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import { ErrorBoundary } from "./components/layout/ErrorBoundary";
 import { Shell } from "./components/layout/Shell";
 import { Entities } from "./pages/Entities";
@@ -7,20 +7,26 @@ import { Members } from "./pages/Members";
 import { RouteView } from "./pages/RouteView";
 import { Settings } from "./pages/Settings";
 
+const router = createBrowserRouter(
+  [
+    {
+      element: <Shell />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: "route", element: <RouteView /> },
+        { path: "members", element: <Members /> },
+        { path: "entities", element: <Entities /> },
+        { path: "settings", element: <Settings /> },
+      ],
+    },
+  ],
+  { basename: "/dashboard" },
+);
+
 export function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter basename="/dashboard">
-        <Routes>
-          <Route element={<Shell />}>
-            <Route index element={<Home />} />
-            <Route path="route" element={<RouteView />} />
-            <Route path="members" element={<Members />} />
-            <Route path="entities" element={<Entities />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </ErrorBoundary>
   );
 }
