@@ -10,6 +10,9 @@ packages/dashboard/vite.config.d.ts
 
 # Test & coverage
 coverage/
+test-results/
+playwright-report/
+blob-report/
 
 # Environment & secrets
 .env

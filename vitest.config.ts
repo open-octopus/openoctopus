@@ -36,7 +36,23 @@ export default defineConfig({
         test: {
           name: "unit",
           include: ["packages/*/src/**/*.test.ts"],
-          exclude: ["**/*.integration.test.ts", "**/*.e2e.test.ts"],
+          exclude: [
+            "**/*.integration.test.ts",
+            "**/*.e2e.test.ts",
+            "packages/dashboard/**",
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "dashboard",
+          include: [
+            "packages/dashboard/src/**/*.test.ts",
+            "packages/dashboard/src/**/*.test.tsx",
+          ],
+          environment: "jsdom",
+          setupFiles: ["test/setup.ts", "packages/dashboard/test/setup.ts"],
         },
       },
       {
