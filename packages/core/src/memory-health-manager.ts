@@ -127,6 +127,7 @@ export class MemoryHealthManager {
       const dups = await this.detectDuplicates(realmId);
       for (const issue of dups) {
         if (issue.memoryIds.length >= 2) {
+          // Keep first, delete rest
           deduplicatedCount += await this.deduplicate(realmId, [issue.memoryIds]);
         }
       }

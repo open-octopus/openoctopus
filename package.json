@@ -53,6 +53,9 @@
     "test": "vitest",
     "test:integration": "vitest --project integration",
     "test:unit": "vitest --project unit",
+    "test:e2e": "playwright test",
+    "dashboard:dev": "pnpm --filter @openoctopus/dashboard dev",
+    "dashboard:build": "pnpm --filter @openoctopus/dashboard build",
     "typecheck": "tsc --build"
   },
   "dependencies": {
@@ -68,6 +71,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/better-sqlite3": "^7.6.12",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.0",

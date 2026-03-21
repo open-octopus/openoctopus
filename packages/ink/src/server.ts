@@ -191,6 +191,23 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   const publicDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "public");
   app.use(express.static(publicDir));
 
+  // ── Dashboard static files (built SPA) ──
+  const dashboardPaths = [
+    path.resolve(import.meta.dirname, "../public/dashboard"),
+    path.resolve(process.cwd(), "packages/ink/public/dashboard"),
+  ];
+  const fs = await import("node:fs");
+  for (const dashboardDir of dashboardPaths) {
+    if (fs.existsSync(path.join(dashboardDir, "index.html"))) {
+      app.use("/dashboard", express.static(dashboardDir));
+      app.get("/dashboard/*", (_req, res) => {
+        res.sendFile(path.join(dashboardDir, "index.html"));
+      });
+      log.info(`Dashboard serving from ${dashboardDir}`);
+      break;
+    }
+  }
+
   app.use(
     (err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
       const response = toErrorResponse(err);

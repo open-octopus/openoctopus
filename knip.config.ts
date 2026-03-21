@@ -48,6 +48,10 @@ const config: KnipConfig = {
       entry: ["src/index.ts"],
       ignoreDependencies: ["@openoctopus/shared", "@openoctopus/core"],
     },
+    "packages/dashboard": {
+      entry: ["src/main.tsx"],
+      ignoreDependencies: ["@openoctopus/shared", "autoprefixer", "postcss"],
+    },
   },
   ignore: ["**/*.test.ts", "**/*.integration.test.ts", "**/*.e2e.test.ts", "test/**"],
 };

@@ -4,9 +4,15 @@ node_modules/
 # Build output
 dist/
 *.tsbuildinfo
+packages/ink/public/dashboard/
+packages/dashboard/vite.config.js
+packages/dashboard/vite.config.d.ts
 
 # Test & coverage
 coverage/
+test-results/
+playwright-report/
+blob-report/
 
 # Environment & secrets
 .env
