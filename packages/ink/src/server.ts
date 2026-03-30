@@ -44,7 +44,7 @@ import { createEntityRoutes } from "./routes/entities.js";
 import { createHealthRoutes } from "./routes/health.js";
 import { createRealmRoutes } from "./routes/realms.js";
 import type { RpcServices } from "./rpc-handlers.js";
-import { setupWebSocket } from "./ws.js";
+import { setupWebSocket, type WsBroadcaster } from "./ws.js";
 
 const log = createLogger("ink");
 
@@ -223,30 +223,38 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
 
   const httpServer = http.createServer(app);
 
-  // ── WebSocket RPC Server (port 18789 — primary gateway) ──
-  const wsServer = http.createServer((_req, res) => {
-    // Minimal HTTP on WS port: health probe only
-    if (_req.url === "/healthz" || _req.url === "/health") {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "ok", service: "openoctopus-ink-ws" }));
-      return;
-    }
-    res.writeHead(426, { "Content-Type": "text/plain" });
-    res.end("WebSocket upgrade required");
-  });
+  // ── WebSocket RPC ──
+  // Single-port mode: when WS port equals HTTP port (both non-zero), e.g. Railway.
+  // In this mode, skip the dedicated WS server; the /ws path on HTTP handles all WS traffic.
+  // Port 0 means "let OS assign" — not single-port mode.
+  const singlePortMode = wsPort > 0 && wsPort === httpPort;
 
-  const wss = new WebSocketServer({ server: wsServer });
-  const wsBroadcasterPrimary = setupWebSocket(wss, rpcServices);
+  let wsServer: http.Server | undefined;
+  let wsBroadcasterPrimary: WsBroadcaster | undefined;
 
-  // Also mount WebSocket on HTTP server at /ws for backward compat
-  const wssLegacy = new WebSocketServer({ server: httpServer, path: "/ws" });
-  const wsBroadcasterLegacy = setupWebSocket(wssLegacy, rpcServices);
+  if (!singlePortMode) {
+    wsServer = http.createServer((_req, res) => {
+      if (_req.url === "/healthz" || _req.url === "/health") {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ status: "ok", service: "openoctopus-ink-ws" }));
+        return;
+      }
+      res.writeHead(426, { "Content-Type": "text/plain" });
+      res.end("WebSocket upgrade required");
+    });
 
-  // Compose broadcasters to send to all connected clients
+    const wss = new WebSocketServer({ server: wsServer });
+    wsBroadcasterPrimary = setupWebSocket(wss, rpcServices);
+  }
+
+  // WebSocket on HTTP server at /ws (always available)
+  const wssHttp = new WebSocketServer({ server: httpServer, path: "/ws" });
+  const wsBroadcasterHttp = setupWebSocket(wssHttp, rpcServices);
+
   rpcServices.wsBroadcaster = {
     broadcast: (data) => {
-      wsBroadcasterPrimary.broadcast(data);
-      wsBroadcasterLegacy.broadcast(data);
+      wsBroadcasterPrimary?.broadcast(data);
+      wsBroadcasterHttp.broadcast(data);
     },
   };
 
@@ -370,16 +378,23 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   // ── Start both servers ──
   const host = config.gateway.host;
 
-  await Promise.all([
+  const startPromises: Promise<void>[] = [
     new Promise<void>((resolve, reject) => {
       httpServer.listen(httpPort, host, () => resolve());
       httpServer.once("error", reject);
     }),
-    new Promise<void>((resolve, reject) => {
-      wsServer.listen(wsPort, host, () => resolve());
-      wsServer.once("error", reject);
-    }),
-  ]);
+  ];
+
+  if (wsServer) {
+    startPromises.push(
+      new Promise<void>((resolve, reject) => {
+        wsServer.listen(wsPort, host, () => resolve());
+        wsServer.once("error", reject);
+      }),
+    );
+  }
+
+  await Promise.all(startPromises);
 
   // Start channels after servers are ready
   await channelManager.startAll();
@@ -389,7 +404,11 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   log.info("Scheduler started");
 
   log.info(`Ink HTTP bridge listening on http://${host}:${httpPort}`);
-  log.info(`Ink WebSocket RPC listening on ws://${host}:${wsPort}`);
+  if (singlePortMode) {
+    log.info(`Ink WebSocket RPC on ws://${host}:${httpPort}/ws (single-port mode)`);
+  } else {
+    log.info(`Ink WebSocket RPC listening on ws://${host}:${wsPort}`);
+  }
   const realmCount = realmManager.list().length;
   log.info(`Realms: ${realmCount} loaded`);
   log.info(`LLM providers: ${llmRegistry.listProviders().join(", ")}`);
@@ -413,42 +432,39 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   return {
     app,
     httpServer,
-    wsServer,
+    wsServer: wsServer ?? httpServer,
     server: httpServer,
     db,
     httpPort,
-    wsPort,
+    wsPort: singlePortMode ? httpPort : wsPort,
     close: async () => {
       log.info("Shutting down...");
 
-      // 1. Stop scheduler
       scheduler.stop();
-      log.info("Scheduler stopped");
-
-      // 2. Stop channels
       await channelManager.stopAll();
 
-      // 2. Close WS connections with 1001 (Going Away)
-      for (const client of wss.clients) {
+      // Close WS connections
+      for (const client of wssHttp.clients) {
         client.close(1001, "Server shutting down");
       }
-      for (const client of wssLegacy.clients) {
-        client.close(1001, "Server shutting down");
+      wssHttp.close();
+
+      if (!singlePortMode && wsServer) {
+        const wss = wsServer as http.Server & { clients?: Set<import("ws").WebSocket> };
+        if (wss.clients) {
+          for (const client of wss.clients) {
+            client.close(1001, "Server shutting down");
+          }
+        }
       }
 
-      // 3. Close WebSocket servers
-      wss.close();
-      wssLegacy.close();
+      const closePromises = [new Promise<void>((r) => httpServer.close(() => r()))];
+      if (wsServer) {
+        closePromises.push(new Promise<void>((r) => wsServer.close(() => r())));
+      }
+      await Promise.all(closePromises);
 
-      // 4. Close HTTP servers
-      await Promise.all([
-        new Promise<void>((r) => httpServer.close(() => r())),
-        new Promise<void>((r) => wsServer.close(() => r())),
-      ]);
-
-      // 5. Close database
       db.close();
-
       log.info("Ink gateway shut down");
     },
   };

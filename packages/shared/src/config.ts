@@ -191,10 +191,11 @@ function resolveEnvVars(obj: unknown): unknown {
 
 /** Apply environment variable overrides (OPENOCTOPUS_* pattern) */
 function applyEnvOverrides(config: Record<string, unknown>): void {
-  // Gateway overrides
-  if (process.env.OPENOCTOPUS_PORT) {
+  // Gateway overrides — Railway sets PORT; we also support OPENOCTOPUS_PORT
+  const httpPortEnv = process.env.PORT || process.env.OPENOCTOPUS_PORT;
+  if (httpPortEnv) {
     const gateway = (config.gateway ?? {}) as Record<string, unknown>;
-    gateway.httpPort = Number(process.env.OPENOCTOPUS_PORT);
+    gateway.httpPort = Number(httpPortEnv);
     config.gateway = gateway;
   }
   if (process.env.OPENOCTOPUS_WS_PORT) {

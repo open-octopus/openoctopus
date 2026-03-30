@@ -27,6 +27,8 @@ export async function startTestServer(): Promise<TestServer> {
     wsPort: 0, // OS picks free port
     database: { inMemory: true },
     config: {
+      // Both ports set to 0 → OS assigns random ports. wsPort must differ
+      // from httpPort to avoid single-port mode (which skips dedicated WS server).
       gateway: { wsPort: 0, httpPort: 0, host: "127.0.0.1", bind: "loopback" },
       llm: {}, // No providers → stub mode
       embeddings: {},

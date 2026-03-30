@@ -36,7 +36,7 @@ LABEL org.opencontainers.image.title="OpenOctopus" \
       org.opencontainers.image.source="https://github.com/openoctopus/openoctopus"
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl procps && \
+    apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable
@@ -51,12 +51,13 @@ COPY --from=build --chown=node:node /app/pnpm-workspace.yaml ./
 COPY --from=build --chown=node:node /app/realms ./realms
 
 ENV NODE_ENV=production
+
+# Railway sets PORT env var. Our server reads OPENOCTOPUS_PORT.
+# Default to 19790 for local Docker; Railway overrides via env vars.
 ENV OPENOCTOPUS_PORT=19790
 ENV OPENOCTOPUS_WS_PORT=19789
+ENV OPENOCTOPUS_HOST=0.0.0.0
 
-EXPOSE 19789 19790
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://127.0.0.1:19790/healthz || exit 1
+EXPOSE 19790
 
 CMD ["node", "packages/ink/dist/index.js", "serve"]
