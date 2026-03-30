@@ -60,4 +60,4 @@ ENV OPENOCTOPUS_HOST=0.0.0.0
 
 EXPOSE 19790
 
-CMD ["node", "packages/ink/dist/index.js", "serve"]
+CMD ["node", "packages/ink/dist/index.mjs", "serve"]
