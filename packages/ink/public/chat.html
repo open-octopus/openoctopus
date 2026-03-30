@@ -110,6 +110,45 @@
         border: none;
       }
 
+      .message.family-action {
+        align-self: flex-start;
+        background: #1a1a2e;
+        border: 1px solid #f59e0b33;
+        max-width: 720px;
+      }
+
+      .message.family-action .action-header {
+        font-size: 11px;
+        color: #f59e0b;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .message.family-action .action-item {
+        font-size: 13px;
+        padding: 4px 0;
+        border-bottom: 1px solid #ffffff0a;
+      }
+
+      .message.family-action .action-item:last-child {
+        border-bottom: none;
+      }
+
+      .message.family-action .action-role {
+        display: inline-block;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: #f59e0b33;
+        color: #f59e0b;
+        margin-right: 6px;
+      }
+
+      .message.family-action .action-member {
+        font-weight: 600;
+        color: var(--text);
+      }
+
       .message .meta {
         font-size: 11px;
         color: var(--muted);
@@ -337,6 +376,11 @@
             addSystem("[" + (r.realmName || "cross-realm") + "] " + r.reaction);
           }
 
+          // Family action notifications
+          if (data.event === "family.actions" && data.data && data.data.actions) {
+            addFamilyActions(data.data.actions);
+          }
+
           // Maturity suggestion
           if (data.event === "maturity.suggestion" && data.data) {
             addSystem("Summon suggestion: " + data.data.entityName + " is ready to summon!");
@@ -421,6 +465,44 @@
         if (el) {
           el.remove();
         }
+      }
+
+      function addFamilyActions(actions) {
+        if (!actions || actions.length === 0) {
+          return;
+        }
+
+        const el = document.createElement("div");
+        el.className = "message family-action";
+
+        const header = document.createElement("div");
+        header.className = "action-header";
+        header.textContent = "Family Actions Assigned";
+        el.appendChild(header);
+
+        for (const action of actions) {
+          const item = document.createElement("div");
+          item.className = "action-item";
+
+          const role = document.createElement("span");
+          role.className = "action-role";
+          role.textContent = action.role || "task";
+          item.appendChild(role);
+
+          const member = document.createElement("span");
+          member.className = "action-member";
+          member.textContent = action.memberName || "Unknown";
+          item.appendChild(member);
+
+          const text = document.createElement("span");
+          text.textContent = " — " + (action.action || "");
+          item.appendChild(text);
+
+          el.appendChild(item);
+        }
+
+        chat.appendChild(el);
+        chat.scrollTop = chat.scrollHeight;
       }
 
       msgInput.addEventListener("keydown", (e) => {

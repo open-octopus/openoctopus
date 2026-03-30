@@ -13,7 +13,9 @@ export type IdPrefix =
   | "audit"
   | "health"
   | "scan"
-  | "onboard";
+  | "onboard"
+  | "fmember"
+  | "faction";
 
 export function generateId(prefix: IdPrefix): string {
   const uuid = crypto.randomUUID();

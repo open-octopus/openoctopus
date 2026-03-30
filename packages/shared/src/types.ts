@@ -394,6 +394,41 @@ export const EmbeddingEntrySchema = z.object({
 });
 export type EmbeddingEntry = z.infer<typeof EmbeddingEntrySchema>;
 
+// ── Family Member & Role ──
+
+export const FamilyRoleSchema = z.enum([
+  "scheduler",
+  "caretaker",
+  "executor",
+  "observer",
+  "coordinator",
+]);
+export type FamilyRole = z.infer<typeof FamilyRoleSchema>;
+
+export const FamilyMemberSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  nickname: z.string().optional(),
+  roles: z.array(FamilyRoleSchema).default([]),
+  realmIds: z.array(z.string()).default([]),
+  notifyChannels: z.array(z.string()).default([]),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type FamilyMember = z.infer<typeof FamilyMemberSchema>;
+
+export const FamilyActionSchema = z.object({
+  memberId: z.string(),
+  memberName: z.string(),
+  role: FamilyRoleSchema,
+  action: z.string(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+  sourceRealmId: z.string(),
+  sourceMessage: z.string().optional(),
+  createdAt: z.string().datetime(),
+});
+export type FamilyAction = z.infer<typeof FamilyActionSchema>;
+
 // ── Directory Scan Result ──
 
 export const ScanResultSchema = z.object({

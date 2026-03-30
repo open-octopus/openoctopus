@@ -54,6 +54,9 @@ docker-compose.extra.yml
 # OS
 Thumbs.db
 
+# Claude Code
+.claude/
+
 # Misc
 .build/
 __pycache__/

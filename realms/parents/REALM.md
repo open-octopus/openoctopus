@@ -5,11 +5,13 @@ icon: "\U0001F46A"
 defaultEntities:
   - name: Dad
     type: living
+    soulFile: souls/dad.soul.md
     attributes:
       relationship: father
       birthday: ""
   - name: Mom
     type: living
+    soulFile: souls/mom.soul.md
     attributes:
       relationship: mother
       birthday: ""

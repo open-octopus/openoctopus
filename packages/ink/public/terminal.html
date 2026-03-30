@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenOctopus — Web Terminal</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #0c0c0c;
+        --surface: #1a1a1a;
+        --border: #333;
+        --text: #d4d4d4;
+        --muted: #666;
+        --accent: #06b6d4;
+        --green: #22c55e;
+        --yellow: #eab308;
+        --red: #ef4444;
+        --blue: #3b82f6;
+        --magenta: #a855f7;
+        --prompt-color: #06b6d4;
+        --font:
+          "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", Menlo, Consolas, monospace;
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      header {
+        padding: 8px 16px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+
+      header .title {
+        font-weight: 700;
+        color: var(--accent);
+      }
+      header .sep {
+        color: var(--muted);
+      }
+      header .info {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      header .status {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      header .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--red);
+      }
+      header .dot.ok {
+        background: var(--green);
+      }
+
+      #output {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 16px;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .line {
+        margin-bottom: 2px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      #input-line {
+        padding: 8px 16px;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0;
+        flex-shrink: 0;
+      }
+
+      #input-line .prompt-prefix {
+        color: var(--prompt-color);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        font-family: var(--font);
+      }
+
+      #input-line input {
+        flex: 1;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 13px;
+        font-family: var(--font);
+        outline: none;
+        padding: 6px 8px;
+      }
+
+      #input-line input::placeholder {
+        color: var(--muted);
+      }
+      #input-line input:disabled {
+        opacity: 0.4;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="title">OpenOctopus</span>
+      <span class="sep">|</span>
+      <span class="info">Web Terminal</span>
+      <div class="status">
+        <span class="dot" id="dot"></span>
+        <span id="statusText">connecting</span>
+      </div>
+    </header>
+
+    <div id="output"></div>
+
+    <div id="input-line">
+      <span class="prompt-prefix" id="promptPrefix">octopus &gt; </span>
+      <input
+        type="text"
+        id="cmdInput"
+        placeholder="Type a command or message..."
+        autocomplete="off"
+        spellcheck="false"
+        disabled
+      />
+    </div>
+
+    <script>
+      // ── Config ──
+      // In production (Railway etc), WS is on same port at /ws path.
+      // Locally, dedicated WS port is HTTP port - 1 (e.g. 19790 → 19789).
+      var wsProto = location.protocol === "https:" ? "wss:" : "ws:";
+      var httpPort = parseInt(location.port || "19790", 10);
+      var isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      var WS_URL = isLocal
+        ? "ws://" + location.hostname + ":" + (httpPort - 1)
+        : wsProto + "//" + location.host + "/ws";
+      const out = document.getElementById("output");
+      const input = document.getElementById("cmdInput");
+      const dot = document.getElementById("dot");
+      const statusText = document.getElementById("statusText");
+      const promptPrefix = document.getElementById("promptPrefix");
+
+      let ws = null;
+      let sessionId = null;
+      let pendingRpc = null;
+      let streamEl = null;
+      let history = [];
+      let historyIdx = -1;
+      let currentRealm = null;
+
+      // ── Slash Commands ──
+      const COMMANDS = {
+        help: { desc: "Show available commands" },
+        realms: { desc: "List all realms", method: "realm.list" },
+        entities: {
+          desc: "List entities in a realm",
+          method: "entity.list",
+          usage: "/entities <realmId>",
+        },
+        health: { desc: "Run health report", method: "health.report", usage: "/health [realmId]" },
+        maturity: {
+          desc: "Scan maturity scores",
+          method: "maturity.scan",
+          usage: "/maturity [realmId]",
+        },
+        summon: { desc: "Summon an entity", method: "summon.invoke", usage: "/summon <entityId>" },
+        unsummon: {
+          desc: "Release a summoned entity",
+          method: "summon.release",
+          usage: "/unsummon <entityId>",
+        },
+        summoned: { desc: "List active summoned agents", method: "summon.list" },
+        family: { desc: "List family members", method: "family.list" },
+        actions: { desc: "List pending family actions", method: "family.actions" },
+        inject: {
+          desc: "Inject knowledge text",
+          method: "knowledge.inject",
+          usage: "/inject <text...>",
+        },
+        status: { desc: "Gateway status info", method: "status.info" },
+        clean: {
+          desc: "Clean up realm memories",
+          method: "health.clean",
+          usage: "/clean <realmId>",
+        },
+        realm: { desc: "Set active realm for chat", usage: "/realm <name|id>" },
+        clear: { desc: "Clear terminal output" },
+      };
+
+      // ── Safe DOM helpers (no innerHTML to avoid XSS) ──
+      function createSpan(text, className) {
+        const el = document.createElement("span");
+        if (className) el.className = className;
+        el.textContent = text;
+        return el;
+      }
+
+      function lineEl() {
+        const el = document.createElement("div");
+        el.className = "line";
+        out.appendChild(el);
+        out.scrollTop = out.scrollHeight;
+        return el;
+      }
+
+      function line(text, color) {
+        const el = lineEl();
+        const span = createSpan(text);
+        if (color) span.style.color = color;
+        el.appendChild(span);
+        return el;
+      }
+
+      function printPrompt(cmd) {
+        const el = lineEl();
+        const p = createSpan("octopus > ");
+        p.style.color = "var(--prompt-color)";
+        p.style.fontWeight = "600";
+        el.appendChild(p);
+        const c = createSpan(cmd);
+        c.style.color = "#fff";
+        el.appendChild(c);
+      }
+
+      function ok(text) {
+        line("✓ " + text, "var(--green)");
+      }
+      function err(text) {
+        line("✗ " + text, "var(--red)");
+      }
+      function info(text) {
+        line(text, "var(--blue)");
+      }
+      function dim(text) {
+        line(text, "var(--muted)");
+      }
+      function accent(text) {
+        line(text, "var(--accent)");
+      }
+
+      function printTable(headers, rows) {
+        const widths = headers.map(function (h, i) {
+          return Math.max(
+            h.length,
+            Math.max.apply(
+              null,
+              rows
+                .map(function (r) {
+                  return String(r[i] || "").length;
+                })
+                .concat([0]),
+            ),
+          );
+        });
+        function pad(s, w) {
+          return (String(s) + " ".repeat(w)).slice(0, w);
+        }
+
+        // Header
+        const headerEl = lineEl();
+        const headerText = headers
+          .map(function (h, i) {
+            return pad(h, widths[i]);
+          })
+          .join("  ");
+        const hs = createSpan(headerText);
+        hs.style.color = "var(--accent)";
+        hs.style.fontWeight = "600";
+        headerEl.appendChild(hs);
+
+        // Separator
+        const sepEl = lineEl();
+        const sepText = widths
+          .map(function (w) {
+            return "\u2500".repeat(w);
+          })
+          .join("\u2500\u2500");
+        const ss = createSpan(sepText);
+        ss.style.color = "var(--muted)";
+        sepEl.appendChild(ss);
+
+        // Rows
+        for (var ri = 0; ri < rows.length; ri++) {
+          var row = rows[ri];
+          var rowText = row
+            .map(function (c, i) {
+              return pad(String(c || ""), widths[i]);
+            })
+            .join("  ");
+          line(rowText);
+        }
+      }
+
+      function printJson(data) {
+        line(JSON.stringify(data, null, 2), "var(--muted)");
+      }
+
+      // ── WebSocket ──
+      function connect() {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = function () {
+          dot.classList.add("ok");
+          statusText.textContent = "connected";
+          input.disabled = false;
+          input.focus();
+        };
+        ws.onclose = function () {
+          dot.classList.remove("ok");
+          statusText.textContent = "disconnected";
+          input.disabled = true;
+          setTimeout(connect, 3000);
+        };
+        ws.onerror = function () {
+          statusText.textContent = "error";
+        };
+        ws.onmessage = handleMessage;
+      }
+
+      function rpcSend(method, params) {
+        params = params || {};
+        var id = "rpc_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+        pendingRpc = id;
+        input.disabled = true;
+        ws.send(JSON.stringify({ id: id, method: method, params: params }));
+        return id;
+      }
+
+      function handleMessage(event) {
+        var data;
+        try {
+          data = JSON.parse(event.data);
+        } catch (e) {
+          return;
+        }
+
+        if (data.type === "connected") {
+          ok("Connected to OpenOctopus gateway");
+          dim("Type /help for commands, or just chat naturally.");
+          line("");
+          return;
+        }
+
+        // Streaming token
+        if (data.event === "chat.token" && data.data) {
+          if (!streamEl) {
+            streamEl = lineEl();
+          }
+          streamEl.textContent = (streamEl.textContent || "") + data.data.token;
+          out.scrollTop = out.scrollHeight;
+          return;
+        }
+
+        // Family actions event
+        if (data.event === "family.actions" && data.data && data.data.actions) {
+          line("");
+          accent("Family Actions Assigned:");
+          for (var i = 0; i < data.data.actions.length; i++) {
+            var a = data.data.actions[i];
+            line("  [" + a.role + "] " + a.memberName + " \u2014 " + a.action, "var(--yellow)");
+          }
+          return;
+        }
+
+        // Cross-realm reaction
+        if (data.event === "crossrealm.reaction" && data.data) {
+          info("[" + (data.data.targetRealmName || "cross-realm") + "] " + data.data.content);
+          return;
+        }
+
+        // Maturity suggestion
+        if (data.event === "maturity.suggestion" && data.data) {
+          accent(
+            data.data.entityName + " is ready to summon! (maturity: " + data.data.overall + ")",
+          );
+          return;
+        }
+
+        // RPC response
+        if (data.id && data.id === pendingRpc) {
+          pendingRpc = null;
+          input.disabled = false;
+          input.focus();
+
+          if (data.error) {
+            err(data.error.message);
+          } else if (data.result) {
+            renderResult(data.result);
+          }
+
+          streamEl = null;
+          line("");
+          return;
+        }
+      }
+
+      // ── Result Renderers ──
+      function renderResult(result) {
+        // Chat response
+        if (result.message) {
+          if (result.sessionId) sessionId = result.sessionId;
+          if (!streamEl) {
+            line(result.message.content || "");
+          }
+          if (result.realm) {
+            dim("  [realm: " + result.realm.name + "]");
+          }
+          return;
+        }
+
+        // Realm list
+        if (result.realms) {
+          if (result.realms.length === 0) {
+            dim("No realms found.");
+            return;
+          }
+          printTable(
+            ["Name", "Status", "Entities", "Health", "ID"],
+            result.realms.map(function (r) {
+              return [
+                (r.icon ? r.icon + " " : "") + r.name,
+                r.status || "active",
+                r.entityCount != null ? r.entityCount : "?",
+                r.healthScore != null ? r.healthScore : "?",
+                r.id,
+              ];
+            }),
+          );
+          return;
+        }
+
+        // Realm detail
+        if (result.realm) {
+          var r = result.realm;
+          accent((r.icon || "") + " " + r.name);
+          dim("  ID: " + r.id);
+          dim(
+            "  Status: " +
+              r.status +
+              "  Health: " +
+              r.healthScore +
+              "  Entities: " +
+              (r.entities || []).length,
+          );
+          if (r.entities && r.entities.length > 0) {
+            line("");
+            printTable(
+              ["Entity", "Type", "Summon Status", "ID"],
+              r.entities.map(function (e) {
+                return [e.name, e.type, e.summonStatus, e.id];
+              }),
+            );
+          }
+          return;
+        }
+
+        // Entity list
+        if (result.entities) {
+          if (result.entities.length === 0) {
+            dim("No entities in this realm.");
+            return;
+          }
+          printTable(
+            ["Name", "Type", "Summon", "ID"],
+            result.entities.map(function (e) {
+              return [e.name, e.type, e.summonStatus || "dormant", e.id];
+            }),
+          );
+          return;
+        }
+
+        // Summoned list
+        if (result.summoned) {
+          if (result.summoned.length === 0) {
+            dim("No active summoned agents.");
+            return;
+          }
+          printTable(
+            ["Entity", "Agent", "Entity ID"],
+            result.summoned.map(function (s) {
+              return [s.entity.name, s.agent.name, s.entity.id];
+            }),
+          );
+          return;
+        }
+
+        // Family members
+        if (result.members) {
+          if (result.members.length === 0) {
+            dim("No family members configured.");
+            return;
+          }
+          printTable(
+            ["Name", "Nickname", "Roles", "ID"],
+            result.members.map(function (m) {
+              return [m.name, m.nickname || "-", (m.roles || []).join(", "), m.id];
+            }),
+          );
+          return;
+        }
+
+        // Family actions
+        if (result.actions) {
+          if (result.actions.length === 0) {
+            dim("No pending actions.");
+            return;
+          }
+          printTable(
+            ["Member", "Role", "Action", "Priority", "Status"],
+            result.actions.map(function (a) {
+              return [a.memberName, a.role, a.action.slice(0, 50), a.priority, a.status];
+            }),
+          );
+          return;
+        }
+
+        // Health report
+        if (result.report) {
+          var rp = result.report;
+          accent("Health Report: " + (rp.realmName || rp.realmId));
+          var scoreColor =
+            rp.healthScore >= 80
+              ? "var(--green)"
+              : rp.healthScore >= 50
+                ? "var(--yellow)"
+                : "var(--red)";
+          line("  Score: " + rp.healthScore + "/100", scoreColor);
+          dim(
+            "  Memories: " +
+              rp.memoryCount +
+              "  Duplicates: " +
+              rp.duplicateCount +
+              "  Stale: " +
+              rp.staleCount,
+          );
+          if (rp.issues && rp.issues.length > 0) {
+            line("  Issues:");
+            for (var ii = 0; ii < Math.min(rp.issues.length, 5); ii++) {
+              line(
+                "    [" + rp.issues[ii].kind + "] " + rp.issues[ii].description,
+                "var(--yellow)",
+              );
+            }
+          }
+          return;
+        }
+
+        // Health reports (all)
+        if (result.reports) {
+          for (var ri = 0; ri < result.reports.length; ri++) {
+            var rep = result.reports[ri];
+            var c =
+              rep.healthScore >= 80
+                ? "var(--green)"
+                : rep.healthScore >= 50
+                  ? "var(--yellow)"
+                  : "var(--red)";
+            line(
+              "  " +
+                (rep.realmName || rep.realmId) +
+                " \u2014 " +
+                rep.healthScore +
+                "/100 (" +
+                rep.memoryCount +
+                " memories)",
+              c,
+            );
+          }
+          return;
+        }
+
+        // Maturity scores
+        if (result.scores) {
+          if (result.scores.length === 0) {
+            dim("No entities to scan.");
+            return;
+          }
+          printTable(
+            ["Entity", "Overall", "Attrs", "Memory", "Activity", "Ready?"],
+            result.scores.map(function (s) {
+              return [
+                s.entityName,
+                s.overall,
+                s.attributeCompleteness,
+                s.memoryDepth,
+                s.interactionFrequency,
+                s.readyToSummon ? "YES" : "no",
+              ];
+            }),
+          );
+          return;
+        }
+
+        // Maturity suggestions
+        if (result.suggestions) {
+          if (result.suggestions.length === 0) {
+            dim("No entities ready to summon yet.");
+            return;
+          }
+          for (var si = 0; si < result.suggestions.length; si++) {
+            accent(
+              "  " +
+                result.suggestions[si].entityName +
+                " \u2014 ready to summon (score: " +
+                result.suggestions[si].overall +
+                ")",
+            );
+          }
+          return;
+        }
+
+        // Knowledge inject result
+        if (result.result && result.result.memoriesCreated !== undefined) {
+          ok("Injected: " + result.result.memoriesCreated + " memories created");
+          if (result.result.realmsAffected && result.result.realmsAffected.length > 0) {
+            dim("  Realms: " + result.result.realmsAffected.join(", "));
+          }
+          return;
+        }
+
+        // Status info
+        if (result.uptime !== undefined) {
+          accent("Gateway Status");
+          dim(
+            "  Realms: " +
+              result.realms +
+              "  Summoned: " +
+              result.summoned +
+              "  Uptime: " +
+              result.uptime +
+              "s",
+          );
+          if (result.providers && result.providers.length > 0) {
+            dim("  LLM Providers: " + result.providers.join(", "));
+          }
+          return;
+        }
+
+        // Generic success
+        if (result.success) {
+          ok("Done.");
+          return;
+        }
+
+        // Fallback
+        printJson(result);
+      }
+
+      // ── Command Dispatch ──
+      function dispatch(raw) {
+        var trimmed = raw.trim();
+        if (!trimmed) return;
+
+        history.unshift(trimmed);
+        if (history.length > 100) history.pop();
+        historyIdx = -1;
+
+        printPrompt(trimmed);
+
+        // Slash commands
+        if (trimmed.charAt(0) === "/") {
+          var parts = trimmed.slice(1).split(/\s+/);
+          var cmd = parts[0].toLowerCase();
+          var args = parts.slice(1);
+
+          if (cmd === "help") {
+            accent("Available Commands:");
+            line("");
+            var names = Object.keys(COMMANDS);
+            var maxLen = Math.max.apply(
+              null,
+              names.map(function (k) {
+                return k.length;
+              }),
+            );
+            for (var i = 0; i < names.length; i++) {
+              var n = names[i];
+              var c = COMMANDS[n];
+              line(
+                "  /" + (n + " ".repeat(maxLen)).slice(0, maxLen) + "  " + c.desc,
+                "var(--accent)",
+              );
+            }
+            line("");
+            dim("Or just type a message to chat with OpenOctopus.");
+            if (currentRealm) dim("Active realm: " + currentRealm);
+            line("");
+            return;
+          }
+
+          if (cmd === "clear") {
+            out.textContent = "";
+            return;
+          }
+
+          if (cmd === "realm" && args.length > 0) {
+            currentRealm = args.join(" ");
+            promptPrefix.textContent = currentRealm + " > ";
+            promptPrefix.style.color = "var(--magenta)";
+            ok("Active realm set to: " + currentRealm);
+            line("");
+            return;
+          }
+
+          var cmdDef = COMMANDS[cmd];
+          if (!cmdDef || !cmdDef.method) {
+            err("Unknown command: /" + cmd + ". Type /help for available commands.");
+            line("");
+            return;
+          }
+
+          // Build params
+          var params = {};
+          if (cmd === "entities") {
+            if (args[0]) params.realmId = args[0];
+            else if (currentRealm) params.realmId = currentRealm;
+            else {
+              err("Usage: /entities <realmId> (or set realm with /realm <id>)");
+              line("");
+              return;
+            }
+          } else if (cmd === "health" || cmd === "maturity" || cmd === "clean") {
+            if (args[0]) params.realmId = args[0];
+            else if (currentRealm) params.realmId = currentRealm;
+          } else if (cmd === "summon" || cmd === "unsummon") {
+            if (!args[0]) {
+              err("Usage: /" + cmd + " <entityId>");
+              line("");
+              return;
+            }
+            params.entityId = args[0];
+          } else if (cmd === "inject") {
+            if (args.length === 0) {
+              err("Usage: /inject <text...>");
+              line("");
+              return;
+            }
+            params.text = args.join(" ");
+          } else if (cmd === "actions") {
+            if (args[0]) params.memberId = args[0];
+          }
+
+          rpcSend(cmdDef.method, params);
+          return;
+        }
+
+        // Natural language chat
+        var chatParams = { message: trimmed };
+        if (sessionId) chatParams.sessionId = sessionId;
+        if (currentRealm && currentRealm.indexOf("realm_") === 0) {
+          chatParams.realmId = currentRealm;
+        }
+        rpcSend("chat.send", chatParams);
+      }
+
+      // ── Input Handling ──
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          dispatch(input.value);
+          input.value = "";
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (historyIdx < history.length - 1) {
+            historyIdx++;
+            input.value = history[historyIdx];
+          }
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          if (historyIdx > 0) {
+            historyIdx--;
+            input.value = history[historyIdx];
+          } else {
+            historyIdx = -1;
+            input.value = "";
+          }
+        }
+      });
+
+      out.addEventListener("click", function () {
+        input.focus();
+      });
+
+      // ── Boot ──
+      accent("OpenOctopus Web Terminal v1.0");
+      dim("Connecting to gateway...");
+      line("");
+      connect();
+    </script>
+  </body>
+</html>

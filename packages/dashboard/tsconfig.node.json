@@ -6,7 +6,8 @@
     "strict": true,
     "composite": true,
     "isolatedModules": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": []
   },
   "include": ["vite.config.ts"]
 }

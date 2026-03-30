@@ -17,6 +17,7 @@ import {
   CrossRealmReactor,
   DirectoryScanner,
   EmbeddingProviderRegistry,
+  FamilyRoleRouter,
   Scheduler,
 } from "@openoctopus/core";
 import {
@@ -30,6 +31,7 @@ import {
   MemoryRepo,
   HealthReportRepo,
   ScannedFileRepo,
+  FamilyMemberRepo,
   type DatabaseOptions,
 } from "@openoctopus/storage";
 import { SummonEngine } from "@openoctopus/summon";
@@ -118,6 +120,8 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     llmRegistry,
   );
   const directoryScanner = new DirectoryScanner(knowledgeDistributor, scannedFileRepo, llmRegistry);
+  const familyMemberRepo = new FamilyMemberRepo(db);
+  const familyRoleRouter = new FamilyRoleRouter(familyMemberRepo, realmManager, llmRegistry);
 
   // Load realms from REALM.md files (also seeds default entities)
   const realmLoader = new RealmLoader(realmManager, entityManager);
@@ -166,6 +170,8 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
     crossRealmReactor,
     directoryScanner,
     embeddingRegistry,
+    familyRoleRouter,
+    familyMemberRepo,
     scheduler,
     startTime,
   };
@@ -200,7 +206,7 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   for (const dashboardDir of dashboardPaths) {
     if (fs.existsSync(path.join(dashboardDir, "index.html"))) {
       app.use("/dashboard", express.static(dashboardDir));
-      app.get("/dashboard/*", (_req, res) => {
+      app.get("/dashboard/{*splat}", (_req, res) => {
         res.sendFile(path.join(dashboardDir, "index.html"));
       });
       log.info(`Dashboard serving from ${dashboardDir}`);

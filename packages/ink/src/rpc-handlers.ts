@@ -13,6 +13,7 @@ import type {
   CrossRealmReactor,
   DirectoryScanner,
   EmbeddingProviderRegistry,
+  FamilyRoleRouter,
   Scheduler,
 } from "@openoctopus/core";
 import {
@@ -23,7 +24,7 @@ import {
   RPC_EVENTS,
   toErrorResponse,
 } from "@openoctopus/shared";
-import type { MemoryRepo } from "@openoctopus/storage";
+import type { MemoryRepo, FamilyMemberRepo } from "@openoctopus/storage";
 import type { SummonEngine } from "@openoctopus/summon";
 import type { WebSocket } from "ws";
 import { processChatMessage } from "./chat-pipeline.js";
@@ -46,6 +47,8 @@ export interface RpcServices {
   crossRealmReactor?: CrossRealmReactor;
   directoryScanner?: DirectoryScanner;
   embeddingRegistry?: EmbeddingProviderRegistry;
+  familyRoleRouter?: FamilyRoleRouter;
+  familyMemberRepo?: FamilyMemberRepo;
   scheduler?: Scheduler;
   wsBroadcaster?: WsBroadcaster;
   startTime?: number;
@@ -490,6 +493,156 @@ handlers.set(RPC_METHODS.DIRECTORY_SCAN, async (ws, req, services) => {
       | undefined,
   );
   ws.send(JSON.stringify(createRpcResponse(req.id, { result })));
+});
+
+// ── Family Member handlers ──
+
+handlers.set(RPC_METHODS.FAMILY_LIST, async (ws, req, services) => {
+  if (!services.familyMemberRepo) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Family member system not available",
+        }),
+      ),
+    );
+    return;
+  }
+  const members = services.familyMemberRepo.list();
+  ws.send(JSON.stringify(createRpcResponse(req.id, { members })));
+});
+
+handlers.set(RPC_METHODS.FAMILY_ADD, async (ws, req, services) => {
+  if (!services.familyMemberRepo) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Family member system not available",
+        }),
+      ),
+    );
+    return;
+  }
+  const { name, nickname, roles, realmIds, notifyChannels } = req.params as {
+    name?: string;
+    nickname?: string;
+    roles?: string[];
+    realmIds?: string[];
+    notifyChannels?: string[];
+  };
+  if (!name) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "name is required" }),
+      ),
+    );
+    return;
+  }
+  const member = services.familyMemberRepo.create({
+    name,
+    nickname,
+    roles: roles as import("@openoctopus/shared").FamilyRole[],
+    realmIds,
+    notifyChannels,
+  });
+  ws.send(JSON.stringify(createRpcResponse(req.id, { member })));
+});
+
+handlers.set(RPC_METHODS.FAMILY_UPDATE, async (ws, req, services) => {
+  if (!services.familyMemberRepo) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Family member system not available",
+        }),
+      ),
+    );
+    return;
+  }
+  const { id, ...data } = req.params as { id?: string; [key: string]: unknown };
+  if (!id) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
+    return;
+  }
+  const member = services.familyMemberRepo.update(
+    id,
+    data as Parameters<typeof services.familyMemberRepo.update>[1],
+  );
+  ws.send(JSON.stringify(createRpcResponse(req.id, { member })));
+});
+
+handlers.set(RPC_METHODS.FAMILY_DELETE, async (ws, req, services) => {
+  if (!services.familyMemberRepo) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Family member system not available",
+        }),
+      ),
+    );
+    return;
+  }
+  const { id } = req.params as { id?: string };
+  if (!id) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
+    return;
+  }
+  services.familyMemberRepo.delete(id);
+  ws.send(JSON.stringify(createRpcResponse(req.id, { success: true })));
+});
+
+handlers.set(RPC_METHODS.FAMILY_ACTIONS, async (ws, req, services) => {
+  if (!services.familyMemberRepo) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Family member system not available",
+        }),
+      ),
+    );
+    return;
+  }
+  const { memberId } = req.params as { memberId?: string };
+  const actions = services.familyMemberRepo.listPendingActions(memberId);
+  ws.send(JSON.stringify(createRpcResponse(req.id, { actions })));
+});
+
+handlers.set(RPC_METHODS.FAMILY_ACTION_DONE, async (ws, req, services) => {
+  if (!services.familyMemberRepo) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, {
+          code: 501,
+          message: "Family member system not available",
+        }),
+      ),
+    );
+    return;
+  }
+  const { id, status } = req.params as { id?: string; status?: string };
+  if (!id) {
+    ws.send(
+      JSON.stringify(
+        createRpcResponse(req.id, undefined, { code: 400, message: "id is required" }),
+      ),
+    );
+    return;
+  }
+  services.familyMemberRepo.updateActionStatus(id, (status as "done" | "dismissed") ?? "done");
+  ws.send(JSON.stringify(createRpcResponse(req.id, { success: true })));
 });
 
 // ── Dispatch ──

@@ -259,6 +259,27 @@ export async function processChatMessage(params: ChatPipelineParams): Promise<Ch
       .catch(() => {});
   }
 
+  // Family role routing (fire-and-forget)
+  if (realm && services.familyRoleRouter) {
+    services.familyRoleRouter
+      .routeByRole({
+        sourceRealmId: realm.id,
+        message,
+        assistantResponse: result.response.content,
+      })
+      .then((routingResult: { actions: unknown[]; reasoning: string }) => {
+        if (routingResult.actions.length > 0) {
+          services.wsBroadcaster?.broadcast(
+            createRpcEvent("family.actions", {
+              actions: routingResult.actions,
+              reasoning: routingResult.reasoning,
+            }),
+          );
+        }
+      })
+      .catch(() => {});
+  }
+
   return {
     sessionId,
     response: result.response,

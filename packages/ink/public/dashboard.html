@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenOctopus — Dashboard</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #050a12;
+        --surface: #0b1222;
+        --card: #0f1a2e;
+        --border: #1a2744;
+        --text: #c8d6e5;
+        --text-dim: #5a6e85;
+        --cyan: #06d6a0;
+        --cyan-dim: #06d6a033;
+        --amber: #f7b731;
+        --amber-dim: #f7b73133;
+        --rose: #ee5a6f;
+        --rose-dim: #ee5a6f33;
+        --blue: #4ecdc4;
+        --blue-dim: #4ecdc433;
+        --purple: #a78bfa;
+        --purple-dim: #a78bfa33;
+        --glow: 0 0 20px #06d6a022, 0 0 40px #06d6a011;
+        --font-display: "Outfit", sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+      }
+
+      body {
+        font-family: var(--font-display);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+          radial-gradient(ellipse at 20% 50%, #06d6a008 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, #4ecdc408 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 80%, #a78bfa06 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .shell {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px 40px;
+      }
+
+      /* ── Header ── */
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .header .logo {
+        font-size: 36px;
+        filter: drop-shadow(0 0 12px #06d6a044);
+      }
+
+      .header h1 {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .header h1 span {
+        color: var(--text-dim);
+        font-weight: 300;
+        margin-left: 8px;
+        font-size: 14px;
+      }
+
+      .header .conn {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-family: var(--font-mono);
+        color: var(--text-dim);
+      }
+
+      .header .conn .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--rose);
+        box-shadow: 0 0 8px var(--rose-dim);
+        transition: all 0.3s;
+      }
+
+      .header .conn .dot.ok {
+        background: var(--cyan);
+        box-shadow: 0 0 8px var(--cyan-dim);
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 16px;
+        margin-left: 32px;
+      }
+
+      .nav-links a {
+        color: var(--text-dim);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 400;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--cyan);
+      }
+
+      /* ── Grid ── */
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .grid.two {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .grid.two {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ── Cards ── */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        transition:
+          border-color 0.3s,
+          box-shadow 0.3s;
+      }
+
+      .card:hover {
+        border-color: #2a3a5a;
+        box-shadow: var(--glow);
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .card:hover::before {
+        opacity: 1;
+      }
+
+      .card-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-dim);
+        font-weight: 600;
+        margin-bottom: 16px;
+        font-family: var(--font-mono);
+      }
+
+      .card.full-span {
+        grid-column: 1 / -1;
+      }
+
+      /* ── Realm Cards ── */
+      .realm-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid #ffffff06;
+      }
+
+      .realm-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .realm-item:first-child {
+        padding-top: 0;
+      }
+
+      .realm-icon {
+        font-size: 24px;
+        width: 40px;
+        text-align: center;
+      }
+
+      .realm-info {
+        flex: 1;
+      }
+
+      .realm-name {
+        font-weight: 600;
+        font-size: 15px;
+      }
+
+      .realm-desc {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-top: 2px;
+      }
+
+      .health-bar {
+        width: 80px;
+        height: 6px;
+        background: #ffffff0a;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .health-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.6s ease;
+      }
+
+      .health-score {
+        font-size: 13px;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        width: 36px;
+        text-align: right;
+      }
+
+      /* ── Family Members ── */
+      .member-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid #ffffff06;
+      }
+
+      .member-item:last-child {
+        border-bottom: none;
+      }
+
+      .member-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--cyan);
+        border: 1px solid var(--cyan-dim);
+      }
+
+      .member-name {
+        font-weight: 600;
+        font-size: 14px;
+        flex: 1;
+      }
+
+      .role-tag {
+        display: inline-block;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-weight: 600;
+      }
+
+      .role-tag.scheduler {
+        background: var(--blue-dim);
+        color: var(--blue);
+      }
+      .role-tag.caretaker {
+        background: var(--amber-dim);
+        color: var(--amber);
+      }
+      .role-tag.executor {
+        background: var(--purple-dim);
+        color: var(--purple);
+      }
+      .role-tag.observer {
+        background: #ffffff11;
+        color: var(--text-dim);
+      }
+      .role-tag.coordinator {
+        background: var(--cyan-dim);
+        color: var(--cyan);
+      }
+
+      /* ── Summoned Entities ── */
+      .summoned-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #ffffff06;
+      }
+
+      .summoned-item:last-child {
+        border-bottom: none;
+      }
+
+      .summoned-pulse {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--cyan);
+        box-shadow: 0 0 8px var(--cyan-dim);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      .summoned-name {
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .summoned-agent {
+        font-size: 11px;
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+      }
+
+      /* ── Actions List ── */
+      .action-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid #ffffff06;
+      }
+
+      .action-item:last-child {
+        border-bottom: none;
+      }
+
+      .action-priority {
+        width: 4px;
+        height: 28px;
+        border-radius: 2px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .action-priority.urgent {
+        background: var(--rose);
+        box-shadow: 0 0 6px var(--rose-dim);
+      }
+      .action-priority.high {
+        background: var(--amber);
+      }
+      .action-priority.normal {
+        background: var(--text-dim);
+      }
+      .action-priority.low {
+        background: #ffffff11;
+      }
+
+      .action-body {
+        flex: 1;
+      }
+
+      .action-text {
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .action-meta {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 4px;
+        font-family: var(--font-mono);
+      }
+
+      .action-btn {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        transition: all 0.2s;
+        flex-shrink: 0;
+        align-self: center;
+      }
+
+      .action-btn:hover {
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+
+      /* ── Empty States ── */
+      .empty {
+        text-align: center;
+        padding: 24px 16px;
+        color: var(--text-dim);
+        font-size: 13px;
+      }
+
+      .empty .empty-icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+        opacity: 0.4;
+      }
+
+      /* ── Section Titles ── */
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .section-title .count {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        background: var(--cyan-dim);
+        color: var(--cyan);
+        padding: 2px 8px;
+        border-radius: 10px;
+      }
+
+      /* ── Fade in animation ── */
+      .fade-in {
+        animation: fadeIn 0.4s ease-out both;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="header">
+        <span class="logo">🐙</span>
+        <h1>OpenOctopus <span>Dashboard</span></h1>
+        <div class="nav-links">
+          <a href="/">Chat</a>
+          <a href="/dashboard.html" class="active">Dashboard</a>
+        </div>
+        <div class="conn">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusLabel">connecting</span>
+        </div>
+      </div>
+
+      <div class="section-title">Realms <span class="count" id="realmCount">0</span></div>
+      <div class="grid" id="realmsGrid"></div>
+
+      <div class="grid two">
+        <div>
+          <div class="section-title">
+            Summoned Entities <span class="count" id="summonCount">0</span>
+          </div>
+          <div class="card fade-in" id="summonedCard">
+            <div class="empty" id="summonedEmpty">
+              <div class="empty-icon">🌊</div>
+              No entities summoned yet
+            </div>
+            <div id="summonedList"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title">
+            Family Members <span class="count" id="memberCount">0</span>
+          </div>
+          <div class="card fade-in" id="membersCard">
+            <div class="empty" id="membersEmpty">
+              <div class="empty-icon">👨‍👩‍👧</div>
+              No family members configured
+            </div>
+            <div id="membersList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top: 8px">
+        Pending Actions <span class="count" id="actionCount">0</span>
+      </div>
+      <div class="card full-span fade-in" id="actionsCard">
+        <div class="empty" id="actionsEmpty">
+          <div class="empty-icon">✓</div>
+          No pending actions
+        </div>
+        <div id="actionsList"></div>
+      </div>
+    </div>
+
+    <script>
+      var WS_URL = "ws://" + (location.hostname || "localhost") + ":19789";
+      var ws = null;
+      var rpcId = 0;
+      var pendingRpc = {};
+
+      var statusDot = document.getElementById("statusDot");
+      var statusLabel = document.getElementById("statusLabel");
+
+      function connect() {
+        ws = new WebSocket(WS_URL);
+
+        ws.onopen = function () {
+          statusDot.classList.add("ok");
+          statusLabel.textContent = "connected";
+          fetchAll();
+        };
+
+        ws.onclose = function () {
+          statusDot.classList.remove("ok");
+          statusLabel.textContent = "disconnected";
+          setTimeout(connect, 3000);
+        };
+
+        ws.onerror = function () {
+          statusLabel.textContent = "error";
+        };
+
+        ws.onmessage = function (event) {
+          var data;
+          try {
+            data = JSON.parse(event.data);
+          } catch (e) {
+            return;
+          }
+
+          if (data.id && pendingRpc[data.id]) {
+            pendingRpc[data.id](data.result, data.error);
+            delete pendingRpc[data.id];
+          }
+
+          if (data.event === "family.actions") {
+            fetchActions();
+          }
+        };
+      }
+
+      function rpcCall(method, params) {
+        return new Promise(function (resolve, reject) {
+          var id = "dash_" + ++rpcId;
+          pendingRpc[id] = function (result, error) {
+            if (error) {
+              reject(new Error(error.message));
+            } else {
+              resolve(result);
+            }
+          };
+          ws.send(JSON.stringify({ id: id, method: method, params: params || {} }));
+        });
+      }
+
+      function fetchAll() {
+        fetchRealms();
+        fetchSummoned();
+        fetchMembers();
+        fetchActions();
+      }
+
+      function fetchRealms() {
+        rpcCall("realm.list")
+          .then(function (result) {
+            renderRealms(result.realms || []);
+          })
+          .catch(function () {});
+      }
+
+      function fetchSummoned() {
+        rpcCall("summon.list")
+          .then(function (result) {
+            renderSummoned(result.summoned || []);
+          })
+          .catch(function () {});
+      }
+
+      function fetchMembers() {
+        rpcCall("family.list")
+          .then(function (result) {
+            renderMembers(result.members || []);
+          })
+          .catch(function () {});
+      }
+
+      function fetchActions() {
+        rpcCall("family.actions")
+          .then(function (result) {
+            renderActions(result.actions || []);
+          })
+          .catch(function () {});
+      }
+
+      function healthColor(score) {
+        if (score >= 80) {
+          return "var(--cyan)";
+        }
+        if (score >= 50) {
+          return "var(--amber)";
+        }
+        return "var(--rose)";
+      }
+
+      function renderRealms(realms) {
+        var grid = document.getElementById("realmsGrid");
+        var countEl = document.getElementById("realmCount");
+        countEl.textContent = String(realms.length);
+        grid.textContent = "";
+
+        if (realms.length === 0) {
+          var card = document.createElement("div");
+          card.className = "card full-span fade-in";
+          var empty = document.createElement("div");
+          empty.className = "empty";
+          var icon = document.createElement("div");
+          icon.className = "empty-icon";
+          icon.textContent = "🌐";
+          empty.appendChild(icon);
+          var text = document.createTextNode("No realms loaded");
+          empty.appendChild(text);
+          card.appendChild(empty);
+          grid.appendChild(card);
+          return;
+        }
+
+        for (var i = 0; i < realms.length; i++) {
+          var r = realms[i];
+          var card = document.createElement("div");
+          card.className = "card fade-in";
+          card.style.animationDelay = i * 60 + "ms";
+
+          var item = document.createElement("div");
+          item.className = "realm-item";
+
+          var iconEl = document.createElement("div");
+          iconEl.className = "realm-icon";
+          iconEl.textContent = r.icon || "🌐";
+          item.appendChild(iconEl);
+
+          var info = document.createElement("div");
+          info.className = "realm-info";
+          var nameEl = document.createElement("div");
+          nameEl.className = "realm-name";
+          nameEl.textContent = r.name;
+          info.appendChild(nameEl);
+          var descEl = document.createElement("div");
+          descEl.className = "realm-desc";
+          descEl.textContent = r.description || "";
+          info.appendChild(descEl);
+          item.appendChild(info);
+
+          var score = r.healthScore != null ? r.healthScore : 100;
+          var barWrap = document.createElement("div");
+          barWrap.className = "health-bar";
+          var barFill = document.createElement("div");
+          barFill.className = "health-fill";
+          barFill.style.width = score + "%";
+          barFill.style.background = healthColor(score);
+          barWrap.appendChild(barFill);
+          item.appendChild(barWrap);
+
+          var scoreEl = document.createElement("div");
+          scoreEl.className = "health-score";
+          scoreEl.textContent = String(Math.round(score));
+          scoreEl.style.color = healthColor(score);
+          item.appendChild(scoreEl);
+
+          card.appendChild(item);
+          grid.appendChild(card);
+        }
+      }
+
+      function renderSummoned(summoned) {
+        var list = document.getElementById("summonedList");
+        var empty = document.getElementById("summonedEmpty");
+        var countEl = document.getElementById("summonCount");
+        countEl.textContent = String(summoned.length);
+        list.textContent = "";
+
+        if (summoned.length === 0) {
+          empty.style.display = "";
+          return;
+        }
+        empty.style.display = "none";
+
+        for (var i = 0; i < summoned.length; i++) {
+          var s = summoned[i];
+          var item = document.createElement("div");
+          item.className = "summoned-item";
+
+          var pulse = document.createElement("div");
+          pulse.className = "summoned-pulse";
+          item.appendChild(pulse);
+
+          var nameEl = document.createElement("div");
+          nameEl.className = "summoned-name";
+          nameEl.textContent = s.entity ? s.entity.name : "Unknown";
+          item.appendChild(nameEl);
+
+          var agentEl = document.createElement("div");
+          agentEl.className = "summoned-agent";
+          agentEl.textContent = s.agent ? s.agent.name : "";
+          item.appendChild(agentEl);
+
+          list.appendChild(item);
+        }
+      }
+
+      function renderMembers(members) {
+        var list = document.getElementById("membersList");
+        var empty = document.getElementById("membersEmpty");
+        var countEl = document.getElementById("memberCount");
+        countEl.textContent = String(members.length);
+        list.textContent = "";
+
+        if (members.length === 0) {
+          empty.style.display = "";
+          return;
+        }
+        empty.style.display = "none";
+
+        for (var i = 0; i < members.length; i++) {
+          var m = members[i];
+          var item = document.createElement("div");
+          item.className = "member-item";
+
+          var avatar = document.createElement("div");
+          avatar.className = "member-avatar";
+          avatar.textContent = m.name ? m.name.charAt(0).toUpperCase() : "?";
+          item.appendChild(avatar);
+
+          var nameEl = document.createElement("div");
+          nameEl.className = "member-name";
+          nameEl.textContent = m.name || "Unknown";
+          item.appendChild(nameEl);
+
+          var roles = m.roles || [];
+          for (var j = 0; j < roles.length; j++) {
+            var tag = document.createElement("span");
+            tag.className = "role-tag " + roles[j];
+            tag.textContent = roles[j];
+            item.appendChild(tag);
+          }
+
+          list.appendChild(item);
+        }
+      }
+
+      function renderActions(actions) {
+        var list = document.getElementById("actionsList");
+        var empty = document.getElementById("actionsEmpty");
+        var countEl = document.getElementById("actionCount");
+        countEl.textContent = String(actions.length);
+        list.textContent = "";
+
+        if (actions.length === 0) {
+          empty.style.display = "";
+          return;
+        }
+        empty.style.display = "none";
+
+        for (var i = 0; i < actions.length; i++) {
+          var a = actions[i];
+          var item = document.createElement("div");
+          item.className = "action-item";
+
+          var prio = document.createElement("div");
+          prio.className = "action-priority " + (a.priority || "normal");
+          item.appendChild(prio);
+
+          var body = document.createElement("div");
+          body.className = "action-body";
+          var textEl = document.createElement("div");
+          textEl.className = "action-text";
+          textEl.textContent = a.action || "";
+          body.appendChild(textEl);
+
+          var meta = document.createElement("div");
+          meta.className = "action-meta";
+          meta.textContent = (a.memberName || "") + " · " + (a.role || "");
+          body.appendChild(meta);
+          item.appendChild(body);
+
+          var btn = document.createElement("button");
+          btn.className = "action-btn";
+          btn.textContent = "Done";
+          btn.setAttribute("data-id", a.id);
+          btn.addEventListener("click", function () {
+            var actionId = this.getAttribute("data-id");
+            rpcCall("family.action.done", { id: actionId }).then(function () {
+              fetchActions();
+            });
+          });
+          item.appendChild(btn);
+
+          list.appendChild(item);
+        }
+      }
+
+      connect();
+    </script>
+  </body>
+</html>

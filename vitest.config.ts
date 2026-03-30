@@ -36,21 +36,14 @@ export default defineConfig({
         test: {
           name: "unit",
           include: ["packages/*/src/**/*.test.ts"],
-          exclude: [
-            "**/*.integration.test.ts",
-            "**/*.e2e.test.ts",
-            "packages/dashboard/**",
-          ],
+          exclude: ["**/*.integration.test.ts", "**/*.e2e.test.ts", "packages/dashboard/**"],
         },
       },
       {
         extends: true,
         test: {
           name: "dashboard",
-          include: [
-            "packages/dashboard/src/**/*.test.ts",
-            "packages/dashboard/src/**/*.test.tsx",
-          ],
+          include: ["packages/dashboard/src/**/*.test.ts", "packages/dashboard/src/**/*.test.tsx"],
           environment: "jsdom",
           setupFiles: ["test/setup.ts", "packages/dashboard/test/setup.ts"],
         },
@@ -61,6 +54,17 @@ export default defineConfig({
           name: "integration",
           include: ["packages/*/src/**/*.integration.test.ts"],
           exclude: ["**/*.e2e.test.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "system",
+          include: ["test/system/**/*.test.ts"],
+          testTimeout: 30_000,
+          hookTimeout: 30_000,
+          pool: "forks",
+          maxWorkers: 1, // Sequential — tests share server state
         },
       },
     ],

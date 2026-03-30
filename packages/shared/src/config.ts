@@ -207,6 +207,11 @@ function applyEnvOverrides(config: Record<string, unknown>): void {
     storage.dataDir = process.env.OPENOCTOPUS_DATA_DIR;
     config.storage = storage;
   }
+  if (process.env.OPENOCTOPUS_HOST) {
+    const gateway = (config.gateway ?? {}) as Record<string, unknown>;
+    gateway.host = process.env.OPENOCTOPUS_HOST;
+    config.gateway = gateway;
+  }
   if (process.env.OPENOCTOPUS_LOG_LEVEL) {
     const logging = (config.logging ?? {}) as Record<string, unknown>;
     logging.level = process.env.OPENOCTOPUS_LOG_LEVEL;

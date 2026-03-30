@@ -30,6 +30,7 @@ export {
   type WatchHandle,
   type WatchOptions,
 } from "./directory-scanner.js";
+export { FamilyRoleRouter, type RoleRoutingResult } from "./family-role-router.js";
 export { Scheduler, type SchedulerRule } from "./scheduler.js";
 export * from "./llm/index.js";
 export * from "./embedding/index.js";

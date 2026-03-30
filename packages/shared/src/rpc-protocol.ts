@@ -65,6 +65,14 @@ export const RPC_METHODS = {
   DIRECTORY_SCAN: "directory.scan",
   HEALTH_REPORT: "health.report",
   HEALTH_CLEAN: "health.clean",
+
+  // Family
+  FAMILY_LIST: "family.list",
+  FAMILY_ADD: "family.add",
+  FAMILY_UPDATE: "family.update",
+  FAMILY_DELETE: "family.delete",
+  FAMILY_ACTIONS: "family.actions",
+  FAMILY_ACTION_DONE: "family.action.done",
 } as const;
 
 // ── RPC Event Names ──
@@ -79,6 +87,7 @@ export const RPC_EVENTS = {
   MATURITY_SUGGESTION: "maturity.suggestion",
   CROSS_REALM_REACTION: "crossrealm.reaction",
   MATURITY_PROGRESS: "maturity.progress",
+  FAMILY_ACTIONS: "family.actions",
 } as const;
 
 // ── Helper to create messages ──

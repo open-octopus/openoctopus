@@ -9,11 +9,13 @@ import {
   HealthReportRepo,
   ScannedFileRepo,
   OnboardingRepo,
+  FamilyMemberRepo,
 } from "@openoctopus/storage";
 import Database from "better-sqlite3";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { DirectoryScanner } from "./directory-scanner.js";
 import { EntityManager } from "./entity-manager.js";
+import { FamilyRoleRouter } from "./family-role-router.js";
 import { KnowledgeDistributor } from "./knowledge-distributor.js";
 import { MaturityScanner } from "./maturity-scanner.js";
 import { MemoryHealthManager } from "./memory-health-manager.js";
@@ -34,6 +36,7 @@ describe("Knowledge Lifecycle Integration", () => {
   let healthReportRepo: HealthReportRepo;
   let scannedFileRepo: ScannedFileRepo;
   let onboardingRepo: OnboardingRepo;
+  let familyMemberRepo: FamilyMemberRepo;
   let realmManager: RealmManager;
   let entityManager: EntityManager;
 
@@ -47,6 +50,7 @@ describe("Knowledge Lifecycle Integration", () => {
     healthReportRepo = new HealthReportRepo(db);
     scannedFileRepo = new ScannedFileRepo(db);
     onboardingRepo = new OnboardingRepo(db);
+    familyMemberRepo = new FamilyMemberRepo(db);
     realmManager = new RealmManager(db);
     entityManager = new EntityManager(db);
   });
@@ -284,5 +288,94 @@ describe("Knowledge Lifecycle Integration", () => {
     // Verify realm health_score updated
     const updatedRealm = realmManager.get(realm.id);
     expect(updatedRealm.healthScore).toBeDefined();
+  });
+
+  it("family role routing: grandpa's knee → scheduler gets appointment, caretaker gets buy task", async () => {
+    const realm = realmManager.create({ name: "parents", description: "Parents realm" });
+
+    // Set up family members with roles
+    const dad = familyMemberRepo.create({
+      name: "Dad",
+      roles: ["scheduler", "executor"],
+      realmIds: [realm.id],
+    });
+    const mom = familyMemberRepo.create({
+      name: "Mom",
+      roles: ["caretaker", "coordinator"],
+      realmIds: [realm.id],
+    });
+
+    const router = new FamilyRoleRouter(
+      familyMemberRepo,
+      realmManager,
+      mockLlmRegistry as unknown as ConstructorParameters<typeof FamilyRoleRouter>[2],
+    );
+
+    // Simulate the killer scenario: grandpa's knee hurts
+    const result = await router.routeByRole({
+      sourceRealmId: realm.id,
+      message: "爷爷膝盖疼，需要预约医生，还要买药",
+      assistantResponse: "I recommend scheduling a doctor appointment and getting pain medication.",
+    });
+
+    // Dad (scheduler) should get appointment task, Mom (caretaker) should get buy task
+    expect(result.actions.length).toBeGreaterThanOrEqual(2);
+
+    const dadActions = result.actions.filter((a) => a.memberId === dad.id);
+    const momActions = result.actions.filter((a) => a.memberId === mom.id);
+
+    expect(dadActions.length).toBeGreaterThan(0);
+    expect(dadActions.some((a) => a.role === "scheduler")).toBe(true);
+
+    expect(momActions.length).toBeGreaterThan(0);
+    expect(momActions.some((a) => a.role === "caretaker")).toBe(true);
+
+    // Actions should be persisted
+    const pendingActions = familyMemberRepo.listPendingActions();
+    expect(pendingActions.length).toBe(result.actions.length);
+
+    // Mark dad's action as done
+    familyMemberRepo.updateActionStatus(dadActions[0].id, "done");
+    const remainingDadActions = familyMemberRepo.listPendingActions(dad.id);
+    expect(remainingDadActions.length).toBe(dadActions.length - 1);
+  });
+
+  it("family member CRUD end-to-end", () => {
+    // Create
+    const member = familyMemberRepo.create({
+      name: "Sister",
+      nickname: "Sis",
+      roles: ["observer"],
+    });
+    expect(member.name).toBe("Sister");
+    expect(member.roles).toEqual(["observer"]);
+
+    // Find by name
+    const found = familyMemberRepo.findByName("Sister");
+    expect(found).not.toBeNull();
+    expect(found!.id).toBe(member.id);
+
+    // Find by nickname
+    const foundByNick = familyMemberRepo.findByName("Sis");
+    expect(foundByNick).not.toBeNull();
+    expect(foundByNick!.id).toBe(member.id);
+
+    // Update
+    const updated = familyMemberRepo.update(member.id, {
+      roles: ["observer", "coordinator"],
+    });
+    expect(updated!.roles).toEqual(["observer", "coordinator"]);
+
+    // Find by role
+    const observers = familyMemberRepo.findByRole("observer");
+    expect(observers.length).toBe(1);
+
+    // List
+    const all = familyMemberRepo.list();
+    expect(all.length).toBe(1);
+
+    // Delete
+    familyMemberRepo.delete(member.id);
+    expect(familyMemberRepo.list().length).toBe(0);
   });
 });

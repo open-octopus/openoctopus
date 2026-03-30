@@ -251,6 +251,46 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 4,
+    name: "family_members",
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS family_members (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          nickname TEXT,
+          roles TEXT NOT NULL DEFAULT '[]',
+          realm_ids TEXT NOT NULL DEFAULT '[]',
+          notify_channels TEXT NOT NULL DEFAULT '[]',
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS family_actions (
+          id TEXT PRIMARY KEY,
+          member_id TEXT NOT NULL REFERENCES family_members(id) ON DELETE CASCADE,
+          member_name TEXT NOT NULL,
+          role TEXT NOT NULL,
+          action TEXT NOT NULL,
+          priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
+          source_realm_id TEXT NOT NULL,
+          source_message TEXT,
+          status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'done', 'dismissed')),
+          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_family_actions_member ON family_actions(member_id);
+        CREATE INDEX IF NOT EXISTS idx_family_actions_status ON family_actions(status);
+      `);
+    },
+    down(db) {
+      db.exec(`
+        DROP TABLE IF EXISTS family_actions;
+        DROP TABLE IF EXISTS family_members;
+      `);
+    },
+  },
 ];
 
 export function runMigrations(db: Database.Database): void {

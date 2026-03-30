@@ -16,6 +16,7 @@ COPY packages/channels/package.json packages/channels/package.json
 COPY packages/ink/package.json packages/ink/package.json
 COPY packages/tentacle/package.json packages/tentacle/package.json
 COPY packages/realmhub/package.json packages/realmhub/package.json
+COPY packages/dashboard/package.json packages/dashboard/package.json
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile

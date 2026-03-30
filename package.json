@@ -40,6 +40,8 @@
     "chat": "tsx packages/tentacle/src/cli.ts chat",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check",
     "clean": "pnpm -r exec rm -rf dist",
+    "dashboard:build": "pnpm --filter @openoctopus/dashboard build",
+    "dashboard:dev": "pnpm --filter @openoctopus/dashboard dev",
     "dev": "pnpm --filter @openoctopus/ink dev",
     "doctor": "pnpm check && pnpm test:unit",
     "format": "oxfmt .",
@@ -51,11 +53,10 @@
     "start": "tsx packages/tentacle/src/cli.ts start",
     "tentacle": "tsx packages/tentacle/src/cli.ts",
     "test": "vitest",
-    "test:integration": "vitest --project integration",
-    "test:unit": "vitest --project unit",
     "test:e2e": "playwright test",
-    "dashboard:dev": "pnpm --filter @openoctopus/dashboard dev",
-    "dashboard:build": "pnpm --filter @openoctopus/dashboard build",
+    "test:integration": "vitest --project integration",
+    "test:system": "vitest --project system",
+    "test:unit": "vitest --project unit",
     "typecheck": "tsc --build"
   },
   "dependencies": {

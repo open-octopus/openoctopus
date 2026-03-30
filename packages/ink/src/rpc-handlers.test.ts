@@ -174,7 +174,10 @@ describe("dispatchRpc", () => {
       const computeHealth = vi.fn().mockResolvedValue({ healthScore: 95 });
       const svc = {
         ...services,
-        memoryHealthManager: { computeHealth, computeAllHealth: vi.fn() } as unknown as RpcServices["memoryHealthManager"],
+        memoryHealthManager: {
+          computeHealth,
+          computeAllHealth: vi.fn(),
+        } as unknown as RpcServices["memoryHealthManager"],
       };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(
@@ -190,7 +193,10 @@ describe("dispatchRpc", () => {
       const computeAllHealth = vi.fn().mockResolvedValue([{ healthScore: 90 }]);
       const svc = {
         ...services,
-        memoryHealthManager: { computeHealth: vi.fn(), computeAllHealth } as unknown as RpcServices["memoryHealthManager"],
+        memoryHealthManager: {
+          computeHealth: vi.fn(),
+          computeAllHealth,
+        } as unknown as RpcServices["memoryHealthManager"],
       };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(ws, { id: "1", method: RPC_METHODS.HEALTH_REPORT, params: {} }, svc);
@@ -207,7 +213,10 @@ describe("dispatchRpc", () => {
     });
 
     it("returns 400 when realmId is missing", async () => {
-      const svc = { ...services, memoryHealthManager: { cleanup: vi.fn() } as unknown as RpcServices["memoryHealthManager"] };
+      const svc = {
+        ...services,
+        memoryHealthManager: { cleanup: vi.fn() } as unknown as RpcServices["memoryHealthManager"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(ws, { id: "1", method: RPC_METHODS.HEALTH_CLEAN, params: {} }, svc);
       expect(lastParsed().error.code).toBe(400);
@@ -218,7 +227,10 @@ describe("dispatchRpc", () => {
       const cleanup = vi
         .fn()
         .mockResolvedValue({ deduplicatedCount: 3, archivedCount: 1, issuesResolved: 4 });
-      const svc = { ...services, memoryHealthManager: { cleanup } as unknown as RpcServices["memoryHealthManager"] };
+      const svc = {
+        ...services,
+        memoryHealthManager: { cleanup } as unknown as RpcServices["memoryHealthManager"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(
         ws,
@@ -242,7 +254,12 @@ describe("dispatchRpc", () => {
     });
 
     it("returns 400 when text is missing", async () => {
-      const svc = { ...services, knowledgeDistributor: { distributeFromText: vi.fn() } as unknown as RpcServices["knowledgeDistributor"] };
+      const svc = {
+        ...services,
+        knowledgeDistributor: {
+          distributeFromText: vi.fn(),
+        } as unknown as RpcServices["knowledgeDistributor"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(ws, { id: "1", method: RPC_METHODS.KNOWLEDGE_INJECT, params: {} }, svc);
       expect(lastParsed().error.code).toBe(400);
@@ -253,7 +270,12 @@ describe("dispatchRpc", () => {
       const distributeFromText = vi
         .fn()
         .mockResolvedValue({ facts: [], realmsAffected: [], memoriesCreated: 2 });
-      const svc = { ...services, knowledgeDistributor: { distributeFromText } as unknown as RpcServices["knowledgeDistributor"] };
+      const svc = {
+        ...services,
+        knowledgeDistributor: {
+          distributeFromText,
+        } as unknown as RpcServices["knowledgeDistributor"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(
         ws,
@@ -274,7 +296,13 @@ describe("dispatchRpc", () => {
 
     it("calls scanRealm with realmId", async () => {
       const scanRealm = vi.fn().mockReturnValue([{ entityId: "e1", overall: 75 }]);
-      const svc = { ...services, maturityScanner: { scanRealm, scanAll: vi.fn() } as unknown as RpcServices["maturityScanner"] };
+      const svc = {
+        ...services,
+        maturityScanner: {
+          scanRealm,
+          scanAll: vi.fn(),
+        } as unknown as RpcServices["maturityScanner"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(
         ws,
@@ -287,7 +315,13 @@ describe("dispatchRpc", () => {
 
     it("calls scanAll without realmId", async () => {
       const scanAll = vi.fn().mockReturnValue([{ entityId: "e1", maturityScore: 65 }]);
-      const svc = { ...services, maturityScanner: { scanRealm: vi.fn(), scanAll } as unknown as RpcServices["maturityScanner"] };
+      const svc = {
+        ...services,
+        maturityScanner: {
+          scanRealm: vi.fn(),
+          scanAll,
+        } as unknown as RpcServices["maturityScanner"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(ws, { id: "1", method: RPC_METHODS.MATURITY_SCAN, params: {} }, svc);
       expect(scanAll).toHaveBeenCalled();
@@ -303,7 +337,10 @@ describe("dispatchRpc", () => {
     });
 
     it("returns 400 when path is missing", async () => {
-      const svc = { ...services, directoryScanner: { scanDirectory: vi.fn() } as unknown as RpcServices["directoryScanner"] };
+      const svc = {
+        ...services,
+        directoryScanner: { scanDirectory: vi.fn() } as unknown as RpcServices["directoryScanner"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(ws, { id: "1", method: RPC_METHODS.DIRECTORY_SCAN, params: {} }, svc);
       expect(lastParsed().error.code).toBe(400);
@@ -318,7 +355,10 @@ describe("dispatchRpc", () => {
         realmsAffected: ["pet"],
         errors: [],
       });
-      const svc = { ...services, directoryScanner: { scanDirectory } as unknown as RpcServices["directoryScanner"] };
+      const svc = {
+        ...services,
+        directoryScanner: { scanDirectory } as unknown as RpcServices["directoryScanner"],
+      };
       const { ws, lastParsed } = createMockWs();
       await dispatchRpc(
         ws,
