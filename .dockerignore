@@ -19,3 +19,5 @@ playwright.config.ts
 vitest.config.ts
 .oxlintrc.json
 knip.config.ts
+dashboard-*.png
+*.tsbuildinfo
