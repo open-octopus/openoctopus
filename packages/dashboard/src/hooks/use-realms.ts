@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useGatewayStore } from "../stores/gateway";
-import { useRealmsStore } from "../stores/realms";
 import { GatewayClient } from "../gateway/client";
 import { RPC_METHODS } from "../gateway/types";
+import { useGatewayStore } from "../stores/gateway";
+import { useRealmsStore } from "../stores/realms";
 
 export function useRealms(clientRef: React.RefObject<GatewayClient | null>) {
   const status = useGatewayStore((s) => s.status);

@@ -7,7 +7,12 @@ interface SoulEditorProps {
   onSave?: (data: { tone: string; traits: string[] }) => void;
 }
 
-export function SoulEditor({ name, tone: initialTone, traits: initialTraits, onSave }: SoulEditorProps) {
+export function SoulEditor({
+  name,
+  tone: initialTone,
+  traits: initialTraits,
+  onSave,
+}: SoulEditorProps) {
   const [tone, setTone] = useState(initialTone);
   const [traits, setTraits] = useState(initialTraits.join(", "));
 
@@ -33,7 +38,15 @@ export function SoulEditor({ name, tone: initialTone, traits: initialTraits, onS
         />
       </div>
       <button
-        onClick={() => onSave?.({ tone, traits: traits.split(",").map((t) => t.trim()).filter(Boolean) })}
+        onClick={() =>
+          onSave?.({
+            tone,
+            traits: traits
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean),
+          })
+        }
         className="bg-cyan text-white px-4 py-1.5 rounded-lg text-sm hover:bg-cyan/90"
       >
         保存

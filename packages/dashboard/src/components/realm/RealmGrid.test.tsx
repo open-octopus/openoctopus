@@ -37,9 +37,7 @@ describe("RealmGrid", () => {
 
   it("shows alert indicator for low health score", () => {
     useRealmsStore.setState({
-      realms: [
-        { id: "r1", name: "健康", healthScore: 50 },
-      ],
+      realms: [{ id: "r1", name: "健康", healthScore: 50 }],
       entities: [],
     });
 

@@ -3,7 +3,12 @@ import "@xyflow/react/dist/style.css";
 
 interface TopologyProps {
   members: Array<{ id: string; name: string; icon: string }>;
-  routes?: Array<{ from: string; to: string; relevance: "high" | "medium" | "low"; pushed: boolean }>;
+  routes?: Array<{
+    from: string;
+    to: string;
+    relevance: "high" | "medium" | "low";
+    pushed: boolean;
+  }>;
 }
 
 export function TopologyGraph({ members, routes = [] }: TopologyProps) {

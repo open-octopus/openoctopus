@@ -15,9 +15,7 @@ export function Sidebar() {
           end={item.path === "/"}
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-              isActive
-                ? "bg-cyan/10 text-ocean font-medium"
-                : "text-gray-600 hover:bg-gray-100"
+              isActive ? "bg-cyan/10 text-ocean font-medium" : "text-gray-600 hover:bg-gray-100"
             }`
           }
         >

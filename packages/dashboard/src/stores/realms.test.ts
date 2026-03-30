@@ -22,9 +22,9 @@ describe("useRealmsStore", () => {
   });
 
   it("sets entities", () => {
-    useRealmsStore.getState().setEntities([
-      { id: "e1", name: "橘子", type: "living", realmId: "r1" },
-    ]);
+    useRealmsStore
+      .getState()
+      .setEntities([{ id: "e1", name: "橘子", type: "living", realmId: "r1" }]);
     expect(useRealmsStore.getState().entities).toHaveLength(1);
   });
 
@@ -42,9 +42,7 @@ describe("useRealmsStore", () => {
   });
 
   it("updateRealm does not affect non-matching realms", () => {
-    useRealmsStore.getState().setRealms([
-      { id: "r1", name: "健康" },
-    ]);
+    useRealmsStore.getState().setRealms([{ id: "r1", name: "健康" }]);
 
     useRealmsStore.getState().updateRealm("nonexistent", { name: "changed" });
 

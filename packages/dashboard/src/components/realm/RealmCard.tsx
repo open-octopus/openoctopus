@@ -19,7 +19,9 @@ export function RealmCard({ name, icon, lines, alert }: RealmCardProps) {
       </div>
       <div className="space-y-1">
         {lines.map((line, i) => (
-          <p key={i} className="text-xs text-gray-600 truncate">{line}</p>
+          <p key={i} className="text-xs text-gray-600 truncate">
+            {line}
+          </p>
         ))}
       </div>
     </div>

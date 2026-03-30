@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, beforeEach } from "vitest";
+import { useFamilyStore } from "../stores/family";
 import { useGatewayStore } from "../stores/gateway";
 import { useRealmsStore } from "../stores/realms";
-import { useFamilyStore } from "../stores/family";
 import { Settings } from "./Settings";
 
 describe("Settings page", () => {
@@ -45,7 +45,10 @@ describe("Settings page", () => {
 
   it("shows live data counts", () => {
     useRealmsStore.setState({
-      realms: [{ id: "r1", name: "a" }, { id: "r2", name: "b" }],
+      realms: [
+        { id: "r1", name: "a" },
+        { id: "r2", name: "b" },
+      ],
       entities: [{ id: "e1", name: "x", type: "living", realmId: "r1" }],
     });
     useFamilyStore.setState({

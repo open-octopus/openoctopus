@@ -27,7 +27,10 @@ export function MemberCard({ name, icon, role, channels, watchedRealms }: Member
         <div>
           <span className="text-gray-400">通道：</span>
           {channels.map((c) => (
-            <span key={c} className="inline-block bg-green-50 text-green-700 px-1.5 py-0.5 rounded mr-1">
+            <span
+              key={c}
+              className="inline-block bg-green-50 text-green-700 px-1.5 py-0.5 rounded mr-1"
+            >
               {c} ✅
             </span>
           ))}

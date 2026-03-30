@@ -24,7 +24,9 @@ export class ErrorBoundary extends Component<Props, State> {
             <h2 className="text-lg font-bold text-ocean mb-2">页面出错了</h2>
             <p className="text-sm text-gray-500 mb-4">{this.state.error.message}</p>
             <button
-              onClick={() => { this.setState({ error: null }); }}
+              onClick={() => {
+                this.setState({ error: null });
+              }}
               className="bg-cyan text-white px-4 py-2 rounded-xl text-sm hover:bg-cyan/90"
             >
               重试

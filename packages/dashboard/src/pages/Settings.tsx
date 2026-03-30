@@ -1,6 +1,6 @@
+import { useFamilyStore } from "../stores/family";
 import { useGatewayStore } from "../stores/gateway";
 import { useRealmsStore } from "../stores/realms";
-import { useFamilyStore } from "../stores/family";
 
 const STATUS_LABEL = {
   connected: "✅ 已连接",
@@ -35,13 +35,19 @@ export function Settings() {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-600">状态</span>
-            <span className={status === "connected" ? "text-green-600" : status === "error" ? "text-red-500" : "text-gray-400"}>
+            <span
+              className={
+                status === "connected"
+                  ? "text-green-600"
+                  : status === "error"
+                    ? "text-red-500"
+                    : "text-gray-400"
+              }
+            >
               {STATUS_LABEL[status]}
             </span>
           </div>
-          {error && (
-            <div className="text-xs text-red-500 bg-red-50 rounded p-2">{error}</div>
-          )}
+          {error && <div className="text-xs text-red-500 bg-red-50 rounded p-2">{error}</div>}
           <div className="flex justify-between items-center">
             <span className="text-gray-600">数据概览</span>
             <span className="text-gray-500 text-xs">

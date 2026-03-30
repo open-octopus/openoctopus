@@ -9,7 +9,16 @@ interface EntityCardProps {
   onEdit?: () => void;
 }
 
-export function EntityCard({ name, icon, type, realm, attributes, memoryCount, healthScore, onEdit }: EntityCardProps) {
+export function EntityCard({
+  name,
+  icon,
+  type,
+  realm,
+  attributes,
+  memoryCount,
+  healthScore,
+  onEdit,
+}: EntityCardProps) {
   return (
     <div className="bg-white rounded-card border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-2">
@@ -17,7 +26,9 @@ export function EntityCard({ name, icon, type, realm, attributes, memoryCount, h
           <span className="text-2xl">{icon}</span>
           <div>
             <p className="font-medium text-ocean">{name}</p>
-            <p className="text-xs text-gray-400">{type} · {realm}</p>
+            <p className="text-xs text-gray-400">
+              {type} · {realm}
+            </p>
           </div>
         </div>
         <div className="text-right text-xs">

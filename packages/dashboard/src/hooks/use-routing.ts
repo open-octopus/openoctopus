@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useFamilyStore } from "../stores/family";
-import { useGatewayStore } from "../stores/gateway";
 import type { GatewayClient } from "../gateway/client";
 import { RPC_EVENTS } from "../gateway/types";
+import { useFamilyStore } from "../stores/family";
+import { useGatewayStore } from "../stores/gateway";
 
 export function useRouting(clientRef: React.RefObject<GatewayClient | null>) {
   const status = useGatewayStore((s) => s.status);

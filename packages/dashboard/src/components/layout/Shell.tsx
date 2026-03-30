@@ -3,8 +3,8 @@ import { useGateway } from "../../hooks/use-gateway";
 import { useRealms } from "../../hooks/use-realms";
 import { useRouting } from "../../hooks/use-routing";
 import { useGatewayStore } from "../../stores/gateway";
-import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
+import { Sidebar } from "./Sidebar";
 
 export function Shell() {
   const clientRef = useGateway();

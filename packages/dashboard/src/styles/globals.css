@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ocean: #1E3A5F;
-  --color-cyan: #00D4AA;
-  --color-purple: #6C3FA0;
-  --color-abyss: #0D1117;
-  --color-surface: #F6F8FA;
+  --color-ocean: #1e3a5f;
+  --color-cyan: #00d4aa;
+  --color-purple: #6c3fa0;
+  --color-abyss: #0d1117;
+  --color-surface: #f6f8fa;
   --radius-card: 16px;
   --font-sans: "Noto Sans SC", "Inter", system-ui, sans-serif;
 }

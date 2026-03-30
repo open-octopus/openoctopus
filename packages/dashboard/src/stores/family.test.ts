@@ -13,9 +13,11 @@ describe("useFamilyStore", () => {
   });
 
   it("sets members", () => {
-    useFamilyStore.getState().setMembers([
-      { id: "m1", name: "爸爸", role: "adult", channels: ["微信"], watchedRealms: ["健康"] },
-    ]);
+    useFamilyStore
+      .getState()
+      .setMembers([
+        { id: "m1", name: "爸爸", role: "adult", channels: ["微信"], watchedRealms: ["健康"] },
+      ]);
     expect(useFamilyStore.getState().members).toHaveLength(1);
     expect(useFamilyStore.getState().members[0].name).toBe("爸爸");
   });

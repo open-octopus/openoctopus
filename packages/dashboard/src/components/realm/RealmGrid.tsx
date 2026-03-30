@@ -11,21 +11,28 @@ const PLACEHOLDER_REALMS = [
 ];
 
 const REALM_ICONS: Record<string, string> = {
-  health: "🏥", finance: "💰", pet: "🐱", education: "📚",
-  vehicle: "🚗", household: "🏠", legal: "⚖️", work: "💼",
+  health: "🏥",
+  finance: "💰",
+  pet: "🐱",
+  education: "📚",
+  vehicle: "🚗",
+  household: "🏠",
+  legal: "⚖️",
+  work: "💼",
 };
 
 export function RealmGrid() {
   const storeRealms = useRealmsStore((s) => s.realms);
 
-  const realms = storeRealms.length > 0
-    ? storeRealms.map((r) => ({
-        name: r.name,
-        icon: r.icon ?? REALM_ICONS[r.name.toLowerCase()] ?? "📦",
-        lines: [`${r.entityCount ?? 0} 个实体`, `健康分 ${r.healthScore ?? "--"}`],
-        alert: (r.healthScore ?? 100) < 70,
-      }))
-    : PLACEHOLDER_REALMS;
+  const realms =
+    storeRealms.length > 0
+      ? storeRealms.map((r) => ({
+          name: r.name,
+          icon: r.icon ?? REALM_ICONS[r.name.toLowerCase()] ?? "📦",
+          lines: [`${r.entityCount ?? 0} 个实体`, `健康分 ${r.healthScore ?? "--"}`],
+          alert: (r.healthScore ?? 100) < 70,
+        }))
+      : PLACEHOLDER_REALMS;
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

@@ -22,7 +22,10 @@ const PLACEHOLDER_EVENTS: Array<{ date: string; events: TimelineEvent[] }> = [
   },
 ];
 
-function formatRouteEvent(ev: { source: { message: string }; targets: Array<{ memberId: string; summary: string }> }): string {
+function formatRouteEvent(ev: {
+  source: { message: string };
+  targets: Array<{ memberId: string; summary: string }>;
+}): string {
   const targetTexts = ev.targets.map((t) => `${t.memberId}(${t.summary})`).join("、");
   return `${ev.source.message} → ${targetTexts}`;
 }
@@ -30,15 +33,21 @@ function formatRouteEvent(ev: { source: { message: string }; targets: Array<{ me
 export function Timeline() {
   const routeEvents = useFamilyStore((s) => s.routeEvents);
 
-  const liveGroups = routeEvents.length > 0
-    ? [{
-        date: "最近",
-        events: routeEvents.slice(0, 10).map((ev) => ({
-          time: new Date(ev.timestamp).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
-          text: formatRouteEvent(ev),
-        })),
-      }]
-    : null;
+  const liveGroups =
+    routeEvents.length > 0
+      ? [
+          {
+            date: "最近",
+            events: routeEvents.slice(0, 10).map((ev) => ({
+              time: new Date(ev.timestamp).toLocaleTimeString("zh-CN", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              text: formatRouteEvent(ev),
+            })),
+          },
+        ]
+      : null;
 
   const groups = liveGroups ?? PLACEHOLDER_EVENTS;
 

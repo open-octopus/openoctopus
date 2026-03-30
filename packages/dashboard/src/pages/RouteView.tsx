@@ -1,5 +1,5 @@
-import { useFamilyStore } from "../stores/family";
 import { TopologyGraph } from "../components/family/TopologyGraph";
+import { useFamilyStore } from "../stores/family";
 
 const PLACEHOLDER_MEMBERS = [
   { id: "grandpa", name: "爷爷", icon: "👴" },
@@ -20,20 +20,22 @@ export function RouteView() {
   const storeMembers = useFamilyStore((s) => s.members);
   const routeEvents = useFamilyStore((s) => s.routeEvents);
 
-  const members = storeMembers.length > 0
-    ? storeMembers.map((m) => ({ id: m.id, name: m.name, icon: m.avatar ?? "👤" }))
-    : PLACEHOLDER_MEMBERS;
+  const members =
+    storeMembers.length > 0
+      ? storeMembers.map((m) => ({ id: m.id, name: m.name, icon: m.avatar ?? "👤" }))
+      : PLACEHOLDER_MEMBERS;
 
-  const routes = routeEvents.length > 0
-    ? routeEvents.flatMap((ev) =>
-        ev.targets.map((t) => ({
-          from: ev.source.memberId,
-          to: t.memberId,
-          relevance: t.relevance,
-          pushed: t.pushed,
-        })),
-      )
-    : PLACEHOLDER_ROUTES;
+  const routes =
+    routeEvents.length > 0
+      ? routeEvents.flatMap((ev) =>
+          ev.targets.map((t) => ({
+            from: ev.source.memberId,
+            to: t.memberId,
+            relevance: t.relevance,
+            pushed: t.pushed,
+          })),
+        )
+      : PLACEHOLDER_ROUTES;
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-5xl">

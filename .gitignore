@@ -60,3 +60,7 @@ Thumbs.db
 # Misc
 .build/
 __pycache__/
+
+# Screenshots & temp docs
+dashboard-*.png
+PROMPT.md
