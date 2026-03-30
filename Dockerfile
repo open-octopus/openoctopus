@@ -24,9 +24,13 @@ FROM deps AS build
 COPY . .
 
 RUN NODE_OPTIONS="--max-old-space-size=2048" pnpm build
-RUN CI=true pnpm prune --prod && \
-    find packages -name '*.d.ts' -delete && \
-    find packages -name '*.map' -delete
+# Clean up source files and build artifacts (keep dist/ and node_modules)
+RUN find packages -name '*.d.ts' -delete && \
+    find packages -name '*.map' -delete && \
+    find packages -path '*/src/*.ts' -not -name '*.d.ts' -delete && \
+    find packages -path '*/src/*.tsx' -delete && \
+    find packages -name '*.test.ts' -delete && \
+    find packages -name '*.test.tsx' -delete
 
 # ── Stage 3: Runtime ──
 FROM node:22-bookworm-slim AS runtime
