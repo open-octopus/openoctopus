@@ -24,7 +24,7 @@ FROM deps AS build
 COPY . .
 
 RUN NODE_OPTIONS="--max-old-space-size=2048" pnpm build
-RUN pnpm prune --prod && \
+RUN CI=true pnpm prune --prod && \
     find packages -name '*.d.ts' -delete && \
     find packages -name '*.map' -delete
 
