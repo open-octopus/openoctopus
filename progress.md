@@ -1,12 +1,12 @@
 ---
-iteration: 9
+iteration: 10
 phase: B
 phase_progress: "6/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "619/619 PASS"
+  tests: "634/634 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -76,3 +76,10 @@ last_gate_status:
 - Task: Added chatStream error tests for anthropic, openai, ollama. Created config.test.ts for tentacle config subcommands (7 tests). Refactored config.ts to export subcommands for testability.
 - Result: PASS
 - Notes: Coverage: lines 55.92% (2276/4070 estimated stable), branches 48.97%, functions 63.07%, statements 55.89%. 619 tests pass across 52 files. Remaining 0% blocks are primarily tentacle CLI/TUI and ink server bootstrap. These are hard to unit-test without heavy mocking of consola, citty, Express, and ws. Recommend either: (1) add integration tests for CLI/server bootstrap, (2) lower coverage thresholds for bootstrap files, or (3) declare Phase B complete and move to Phase C.
+
+## Iteration 10
+
+- Phase: B (Test Coverage)
+- Task: Added entity.test.ts (4 tests), realm.test.ts (5 tests), stop.test.ts (1 test), update.test.ts (5 tests). Covered list/add/info for entities and list/create/info/archive for realms.
+- Result: PASS
+- Notes: Coverage: lines 57.36% (2337/4074), branches 50.02% (1047/2093), functions 64.03% (463/723), statements 57.3% (2390/4171). 634 tests pass across 56 files. tentacle/src/commands improved from ~5% to ~30% lines. Remaining 0% blocks: tentacle TUI (commands.ts 400+ lines, renderer.ts 600+ lines, state.ts), tentacle chat.ts, doctor.ts, setup.ts, start.ts, status.ts (already tested but may need more), ink server.ts + ws.ts. Thresholds still fail (lines 57% vs 70% target). To reach 70%, need to test ~520 more lines. The biggest remaining chunks are TUI/renderer (hard to unit-test) and start.ts (spawns server). Recommendation: lower threshold to 60% or add integration tests for bootstrap paths.
