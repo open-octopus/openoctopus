@@ -1,12 +1,12 @@
 ---
-iteration: 22
+iteration: 23
 phase: C
-phase_progress: "6/?"
+phase_progress: "7/?"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "756/756 PASS"
+  tests: "761/761 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -160,3 +160,10 @@ last_gate_status:
 - Task: Fixed system test dependency resolution — added `ws` and `@types/ws` to root devDependencies so the system test project (test/system/) can import WebSocket. Verified all test suites pass.
 - Result: PASS
 - Notes: 756/756 tests pass (689 unit + 25 integration + 42 system). All quality gates green. System tests exercise 9 full-stack flows: health, realm CRUD, entity CRUD, chat routing, summon lifecycle, family system, knowledge lifecycle, error handling, and cleanup. Next Phase C tasks: E2E tests for critical CLI flows (Playwright), WebSocket auth/rate limiting, or declare Phase C complete and move to Phase D.
+
+## Iteration 23
+
+- Phase: C (Integration / Hardening)
+- Task: Added WebSocket security hardening — connection rate limiting (max 10 per IP per 60s) and message size validation (max 64KB). Rate-limited connections closed with code 1008; oversized messages rejected with error payload. Created ws.test.ts with 5 tests.
+- Result: PASS
+- Notes: 761/761 tests pass (694 unit + 25 integration + 42 system). All quality gates green. HTTP and WebSocket now both have rate limiting. Remaining Phase C tasks: E2E tests for critical CLI flows (Playwright), or declare Phase C complete and move to Phase D.
