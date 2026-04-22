@@ -1,7 +1,7 @@
 ---
-iteration: 30
+iteration: 31
 phase: D
-phase_progress: "5/?"
+phase_progress: "6/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -217,3 +217,10 @@ last_gate_status:
 - Task: Security audit and remediation. Ran `pnpm audit` which found 8 vulnerabilities (smol-toml, picomatch, yaml, path-to-regexp, defu, vite). Updated knip 5.44.0 → 6.6.1 and applied pnpm overrides for all affected packages. Audit now reports zero vulnerabilities.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Security posture improved: zero known vulnerabilities. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
+
+## Iteration 31
+
+- Phase: D (Release Prep)
+- Task: Aligned dashboard build dependencies with Vite 8 ecosystem. Updated `@vitejs/plugin-react` 4.0.0 → 6.0.1 and `vite` 6.0.0 → 8.0.0 in dashboard package.json. Eliminated esbuild/babel deprecation warnings from dashboard production build.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Dashboard build now clean of Vite 8 deprecation warnings. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
