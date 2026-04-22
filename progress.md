@@ -1,12 +1,12 @@
 ---
-iteration: 23
+iteration: 24
 phase: C
-phase_progress: "7/?"
+phase_progress: "8/?"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "761/761 PASS"
+  tests: "771/771 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -167,3 +167,10 @@ last_gate_status:
 - Task: Added WebSocket security hardening — connection rate limiting (max 10 per IP per 60s) and message size validation (max 64KB). Rate-limited connections closed with code 1008; oversized messages rejected with error payload. Created ws.test.ts with 5 tests.
 - Result: PASS
 - Notes: 761/761 tests pass (694 unit + 25 integration + 42 system). All quality gates green. HTTP and WebSocket now both have rate limiting. Remaining Phase C tasks: E2E tests for critical CLI flows (Playwright), or declare Phase C complete and move to Phase D.
+
+## Iteration 24
+
+- Phase: C (Integration / Hardening)
+- Task: Fixed and verified Playwright E2E tests for dashboard. Switched port from 5173 to 5174 to avoid conflict with another local Vite dev server. All 10 E2E tests now pass: page rendering (home, route, members, entities, settings), navigation, interactions (entity filter, connection banner), and mobile layout.
+- Result: PASS
+- Notes: 771/771 tests pass (694 unit + 25 integration + 42 system + 10 E2E). All quality gates green. Phase C is now comprehensive: unit tests, integration tests, system tests, and E2E tests all passing. Security hardening covers HTTP rate limiting, Zod validation, error sanitization, and WebSocket rate limiting. Docker configuration verified. Ready to declare Phase C complete and move to Phase D.
