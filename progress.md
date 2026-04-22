@@ -1,7 +1,7 @@
 ---
-iteration: 34
+iteration: 35
 phase: D
-phase_progress: "9/?"
+phase_progress: "10/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -245,3 +245,10 @@ last_gate_status:
 - Task: Applied safe patch/minor dependency updates across workspace: ws 8.19.0 → 8.20.0, jsdom 29.0.1 → 29.0.2, @playwright/test 1.58.2 → 1.59.1, grammy 1.41.1 → 1.42.0.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Dependencies now at latest compatible patch/minor versions. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
+
+## Iteration 35
+
+- Phase: D (Release Prep)
+- Task: Scanned codebase for TODOs/FIXMEs — none found in source code. Updated CHANGELOG.md with dependency updates and deprecated types removal.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Codebase has zero TODO/FIXME markers. Release documentation fully up to date. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
