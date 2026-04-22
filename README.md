@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/project-spec.md">Spec</a> · <a href="docs/design-discussion.md">Design</a> · <a href="docs/branding.md">Brand</a> · <a href="docs/research/README.md">Research</a> · <a href="https://discord.gg/mwNTk8g5fV">Discord</a>
+  <a href="docs/architecture/system-overview.md">Spec</a> · <a href="docs/architecture/design-decisions.md">Design</a> · <a href="docs/product/branding.md">Brand</a> · <a href="docs/research/README.md">Research</a> · <a href="https://discord.gg/mwNTk8g5fV">Discord</a>
 </p>
 
 ---
@@ -171,13 +171,13 @@ Every agent action follows the trust chain:
 
 ## Docs
 
-| Doc                                               | What's inside                                                                  |
-| ------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **[Project Spec](docs/project-spec.md)**          | Naming, RealmHub, information architecture, milestones                         |
-| **[Design Deep Dive](docs/design-discussion.md)** | Realm naming, Summon mechanism, layered architecture, cross-realm coordination |
-| **[Brand Guide](docs/branding.md)**               | Taglines, colors, mascot Octo, logo prompts, ecosystem naming                  |
-| **[Social Profiles](docs/social-profiles.md)**    | GitHub / X / Discord / Product Hunt / 中文平台文案与配置                       |
-| **[Research Index](docs/research/README.md)**     | AI Native signals, scenario mapping, competitive landscape, agent frameworks   |
+| Doc                                                           | What's inside                                                                  |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **[Project Spec](docs/architecture/system-overview.md)**      | Naming, RealmHub, information architecture, milestones                         |
+| **[Design Deep Dive](docs/architecture/design-decisions.md)** | Realm naming, Summon mechanism, layered architecture, cross-realm coordination |
+| **[Brand Guide](docs/product/branding.md)**                   | Taglines, colors, mascot Octo, logo prompts, ecosystem naming                  |
+| **[Social Profiles](docs/product/social-profiles.md)**        | GitHub / X / Discord / Product Hunt / 中文平台文案与配置                       |
+| **[Research Index](docs/research/README.md)**                 | AI Native signals, scenario mapping, competitive landscape, agent frameworks   |
 
 ## Ecosystem
 
