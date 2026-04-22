@@ -1,12 +1,12 @@
 ---
-iteration: 3
+iteration: 4
 phase: B
-phase_progress: "0/6"
+phase_progress: "1/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "412/412 PASS"
+  tests: "435/435 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -31,6 +31,13 @@ last_gate_status:
 ## Iteration 3
 
 - Phase: B (Test Coverage)
-- Task: Run coverage report and identify uncovered lines/branches to target
+- Task: Added tests for agent-repo (7 tests), audit-repo (6 tests), prompt-compiler (12 tests)
+- Result: PASS
+- Notes: Coverage improved: lines 39.95% → 41.57%, branches 33.82% → 37.02%. Next: family-member-repo, summon-engine, core router.
+
+## Iteration 4
+
+- Phase: B (Test Coverage)
+- Task: Continue adding tests for uncovered modules
 - Result: IN_PROGRESS
-- Notes: Starting test coverage improvement phase. Target: 80%+ lines, 70%+ branches.
+- Notes: Targeting family-member-repo, summon-engine, and core router uncovered branches.
