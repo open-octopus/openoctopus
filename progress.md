@@ -315,3 +315,10 @@ last_gate_status:
 - Task: Modernized root tsdown.config.ts — replaced deprecated `external`/`noExternal` with `deps.neverBundle` to match package-level configs. Verified build:dist still produces correct artifacts.
 - Result: PASS
 - Notes: All quality gates green. Build deprecation cleanup complete across all tsdown configs.
+
+## Iteration 45
+
+- Phase: D (Release Prep)
+- Task: Added dashboard tests to CI pipeline. Created `test:dashboard` script and added it to ci.yml. Dashboard tests (38 tests across 9 files) were previously excluded from CI.
+- Result: PASS
+- Notes: All 732 tests now run in CI (694 unit + 38 dashboard). All gates green.
