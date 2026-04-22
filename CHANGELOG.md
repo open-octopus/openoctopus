@@ -21,6 +21,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.M.D
 - Added express-rate-limit to HTTP gateway (100 requests per 15 min per IP)
 - Added Zod input validation to REST routes (realms, entities, chat) with length limits and enum constraints
 - WebSocket rate limiting closes connections with code 1008 when exceeded
+- Resolved 8 security advisories via dependency updates and pnpm overrides (smol-toml, picomatch, yaml, path-to-regexp, defu, vite)
 
 ### Fixed
 
@@ -29,11 +30,14 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.M.D
 - System test dependency resolution by adding `ws` and `@types/ws` to root devDependencies
 - Playwright E2E port conflict by switching from 5173 to 5174
 - Replaced deprecated tsdown `external` option with `deps.neverBundle` in ink and storage configs
+- Eliminated dashboard Vite 8 deprecation warnings by upgrading `@vitejs/plugin-react` and `vite`
 
 ### Changed
 
 - Coverage thresholds lowered to 60% lines/functions/statements, 50% branches (Phase B completion)
-- All quality gates pass: build, typecheck, tests (771/771), lint, format, knip
+- All quality gates pass: build, typecheck, tests (771/771), lint, format, knip, audit
+- Knip configuration cleaned — 21 config hints resolved, 5 unused workspace deps removed
+- Dashboard dependencies aligned with Vite 8 ecosystem (`@vitejs/plugin-react` 6.0.1, `vite` 8.0.0)
 
 ## [2026.3.10]
 
