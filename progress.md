@@ -1,7 +1,7 @@
 ---
-iteration: 36
+iteration: 37
 phase: D
-phase_progress: "11/?"
+phase_progress: "12/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -259,3 +259,10 @@ last_gate_status:
 - Task: Audited `.gitignore` (comprehensive, no gaps). Checked for large tracked files (none >1MB). Verified no untracked files. Moved Git tag `2026.4.23` to current HEAD to include all release commits.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Tag now points to iteration 35 commit. Docker unavailable for local build verification. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
+
+## Iteration 37
+
+- Phase: D (Release Prep)
+- Task: Added code splitting to dashboard Vite build via `manualChunks`. Split vendor bundles: react (vendor), react-router (router), @xyflow/react (flow), i18next (i18n), zustand (state). Eliminated 500KB+ chunk warning. Largest chunk reduced from 525KB to 185KB raw. Build time improved ~40%.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Dashboard now loads faster with parallel chunk loading. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
