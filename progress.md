@@ -322,3 +322,10 @@ last_gate_status:
 - Task: Added dashboard tests to CI pipeline. Created `test:dashboard` script and added it to ci.yml. Dashboard tests (38 tests across 9 files) were previously excluded from CI.
 - Result: PASS
 - Notes: All 732 tests now run in CI (694 unit + 38 dashboard). All gates green.
+
+## Iteration 46
+
+- Phase: D (Release Prep)
+- Task: Fixed docker-compose.yml CLI entrypoint — changed `packages/tentacle/dist/cli.js` to `.mjs` (matching ESM build output). Gateway was fixed earlier; CLI service was missed.
+- Result: PASS
+- Notes: Docker CLI container would have failed to start with the old .js extension. All gates green.
