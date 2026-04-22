@@ -11,7 +11,7 @@ const config: KnipConfig = {
     "packages/tentacle": {},
     "packages/realmhub": {},
     "packages/dashboard": {
-      ignoreDependencies: ["@types/testing-library__jest-dom", "jsdom"],
+      ignoreDependencies: ["jsdom"],
     },
   },
   ignore: ["test/**"],
