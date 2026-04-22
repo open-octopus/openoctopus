@@ -1,6 +1,20 @@
 import type { RealmManager } from "@openoctopus/core";
-import { toErrorResponse } from "@openoctopus/shared";
+import { toErrorResponse, ValidationError } from "@openoctopus/shared";
 import { Router } from "express";
+import { z } from "zod";
+
+const CreateRealmSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  icon: z.string().max(50).optional(),
+});
+
+const UpdateRealmSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional(),
+  icon: z.string().max(50).optional(),
+  status: z.enum(["active", "archived"]).optional(),
+});
 
 export function createRealmRoutes(realmManager: RealmManager): Router {
   const router = Router();
@@ -30,12 +44,11 @@ export function createRealmRoutes(realmManager: RealmManager): Router {
   // Create realm
   router.post("/", (req, res) => {
     try {
-      const { name, description, icon } = req.body as {
-        name: string;
-        description?: string;
-        icon?: string;
-      };
-      const realm = realmManager.create({ name, description, icon });
+      const parsed = CreateRealmSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new ValidationError(parsed.error.errors.map((e) => e.message).join(", "));
+      }
+      const realm = realmManager.create(parsed.data);
       res.status(201).json({ data: realm });
     } catch (err) {
       const response = toErrorResponse(err);
@@ -46,7 +59,11 @@ export function createRealmRoutes(realmManager: RealmManager): Router {
   // Update realm
   router.patch("/:id", (req, res) => {
     try {
-      const realm = realmManager.update(req.params.id, req.body as Record<string, string>);
+      const parsed = UpdateRealmSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new ValidationError(parsed.error.errors.map((e) => e.message).join(", "));
+      }
+      const realm = realmManager.update(req.params.id, parsed.data);
       res.json({ data: realm });
     } catch (err) {
       const response = toErrorResponse(err);

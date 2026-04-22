@@ -1,7 +1,23 @@
 import type { EntityManager } from "@openoctopus/core";
-import { toErrorResponse } from "@openoctopus/shared";
-import type { Entity } from "@openoctopus/shared";
+import { toErrorResponse, ValidationError } from "@openoctopus/shared";
 import { Router } from "express";
+import { z } from "zod";
+
+const CreateEntitySchema = z.object({
+  realmId: z.string().min(1),
+  name: z.string().min(1).max(100),
+  type: z.enum(["living", "asset", "organization", "abstract"]),
+  avatar: z.string().max(500).optional(),
+  attributes: z.record(z.unknown()).optional(),
+  soulPath: z.string().max(500).optional(),
+});
+
+const UpdateEntitySchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  type: z.enum(["living", "asset", "organization", "abstract"]).optional(),
+  avatar: z.string().max(500).optional(),
+  attributes: z.record(z.unknown()).optional(),
+});
 
 export function createEntityRoutes(entityManager: EntityManager): Router {
   const router = Router();
@@ -40,15 +56,11 @@ export function createEntityRoutes(entityManager: EntityManager): Router {
   // Create entity
   router.post("/", (req, res) => {
     try {
-      const body = req.body as {
-        realmId: string;
-        name: string;
-        type: Entity["type"];
-        avatar?: string;
-        attributes?: Record<string, unknown>;
-        soulPath?: string;
-      };
-      const entity = entityManager.create(body);
+      const parsed = CreateEntitySchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new ValidationError(parsed.error.errors.map((e) => e.message).join(", "));
+      }
+      const entity = entityManager.create(parsed.data);
       res.status(201).json({ data: entity });
     } catch (err) {
       const response = toErrorResponse(err);
@@ -59,7 +71,11 @@ export function createEntityRoutes(entityManager: EntityManager): Router {
   // Update entity
   router.patch("/:id", (req, res) => {
     try {
-      const entity = entityManager.update(req.params.id, req.body as Record<string, unknown>);
+      const parsed = UpdateEntitySchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new ValidationError(parsed.error.errors.map((e) => e.message).join(", "));
+      }
+      const entity = entityManager.update(req.params.id, parsed.data);
       res.json({ data: entity });
     } catch (err) {
       const response = toErrorResponse(err);

@@ -37,6 +37,7 @@ import {
 import { SummonEngine } from "@openoctopus/summon";
 import type Database from "better-sqlite3";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { WebSocketServer } from "ws";
 import { processChatMessage } from "./chat-pipeline.js";
 import { createChatRoutes } from "./routes/chat.js";
@@ -179,6 +180,18 @@ export async function createServer(options: InkServerOptions = {}): Promise<InkS
   // ── HTTP Server (port 18790 — REST API bridge) ──
   const app = express();
   app.use(express.json());
+
+  // Rate limiting: 100 requests per 15 minutes per IP
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (_req, res) => {
+      res.status(429).json({ status: 429, code: "RATE_LIMITED", message: "Too many requests" });
+    },
+  });
+  app.use(limiter);
 
   app.use((req, _res, next) => {
     log.debug(`${req.method} ${req.path}`);

@@ -56,6 +56,6 @@ export function toErrorResponse(err: unknown): { status: number; code: string; m
   if (err instanceof OpenOctopusError) {
     return { status: err.status, code: err.code, message: err.message };
   }
-  const message = err instanceof Error ? err.message : "Unknown error";
-  return { status: 500, code: "INTERNAL_ERROR", message };
+  // Sanitize unexpected errors to avoid leaking internal details
+  return { status: 500, code: "INTERNAL_ERROR", message: "Internal server error" };
 }

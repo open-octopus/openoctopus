@@ -60,13 +60,13 @@ describe("toErrorResponse", () => {
     expect(res).toEqual({ status: 400, code: "VALIDATION_ERROR", message: "bad" });
   });
 
-  it("converts unknown error", () => {
+  it("sanitizes unknown error to generic message", () => {
     const res = toErrorResponse(new Error("oops"));
-    expect(res).toEqual({ status: 500, code: "INTERNAL_ERROR", message: "oops" });
+    expect(res).toEqual({ status: 500, code: "INTERNAL_ERROR", message: "Internal server error" });
   });
 
-  it("converts non-error", () => {
+  it("sanitizes non-error to generic message", () => {
     const res = toErrorResponse("string error");
-    expect(res).toEqual({ status: 500, code: "INTERNAL_ERROR", message: "Unknown error" });
+    expect(res).toEqual({ status: 500, code: "INTERNAL_ERROR", message: "Internal server error" });
   });
 });

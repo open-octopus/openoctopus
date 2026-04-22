@@ -24,7 +24,9 @@
     "@openoctopus/storage": "workspace:*",
     "@openoctopus/summon": "workspace:*",
     "express": "^5.1.0",
-    "ws": "^8.18.0"
+    "express-rate-limit": "^8.3.2",
+    "ws": "^8.18.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
