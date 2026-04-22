@@ -1,7 +1,7 @@
 ---
-iteration: 20
+iteration: 21
 phase: C
-phase_progress: "4/?"
+phase_progress: "5/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -146,3 +146,10 @@ last_gate_status:
 - Task: Security audit and hardening of API endpoints: (1) Sanitized toErrorResponse to return generic "Internal server error" for unknown errors instead of leaking raw messages; (2) Added express-rate-limit to ink gateway (100 req / 15 min per IP); (3) Added Zod input validation to REST routes (realms, entities, chat) with length limits and enum constraints.
 - Result: PASS
 - Notes: 714/714 tests pass. All quality gates green. Security improvements: error message sanitization prevents info leakage, rate limiting mitigates brute force/DoS, input validation rejects malformed payloads at the boundary. Dependencies added: express-rate-limit, zod (ink package). Next Phase C tasks: Docker compose verification, E2E tests for critical CLI flows, or WebSocket auth/rate limiting.
+
+## Iteration 21
+
+- Phase: C (Integration / Hardening)
+- Task: Docker compose verification — fixed docker-compose.yml command path from `index.js` to `index.mjs` (matching tsdown ESM output), added `EXPOSE 19789` to Dockerfile for WebSocket RPC port.
+- Result: PASS
+- Notes: 714/714 tests pass. All quality gates green. Docker configuration now correctly references ESM build artifacts. Both HTTP (19790) and WS (19789) ports are properly exposed. Next Phase C tasks: E2E tests for critical CLI flows, WebSocket auth/rate limiting, or declare Phase C complete and move to Phase D.
