@@ -1,12 +1,12 @@
 ---
-iteration: 5
+iteration: 6
 phase: B
-phase_progress: "2/6"
+phase_progress: "3/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "458/458 PASS"
+  tests: "465/465 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -45,6 +45,13 @@ last_gate_status:
 ## Iteration 5
 
 - Phase: B (Test Coverage)
-- Task: Continue adding tests for summon-engine, chat-pipeline, channel-manager
+- Task: Added chat-pipeline system action tests (7 tests): summon, unsummon, list_realms, list_entities, switch_realm
+- Result: PASS
+- Notes: Coverage: lines 44.34%, branches 40.46%. Next: summon-engine, family-role-router, remaining storage repos.
+
+## Iteration 6
+
+- Phase: B (Test Coverage)
+- Task: Continue adding tests for remaining uncovered modules
 - Result: IN_PROGRESS
-- Notes: Targeting remaining high-value uncovered modules.
+- Notes: Targeting summon-engine, family-role-router, and other high-value uncovered paths.
