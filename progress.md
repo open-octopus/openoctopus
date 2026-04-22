@@ -1,12 +1,12 @@
 ---
-iteration: 10
+iteration: 11
 phase: B
 phase_progress: "6/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "634/634 PASS"
+  tests: "640/640 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -83,3 +83,10 @@ last_gate_status:
 - Task: Added entity.test.ts (4 tests), realm.test.ts (5 tests), stop.test.ts (1 test), update.test.ts (5 tests). Covered list/add/info for entities and list/create/info/archive for realms.
 - Result: PASS
 - Notes: Coverage: lines 57.36% (2337/4074), branches 50.02% (1047/2093), functions 64.03% (463/723), statements 57.3% (2390/4171). 634 tests pass across 56 files. tentacle/src/commands improved from ~5% to ~30% lines. Remaining 0% blocks: tentacle TUI (commands.ts 400+ lines, renderer.ts 600+ lines, state.ts), tentacle chat.ts, doctor.ts, setup.ts, start.ts, status.ts (already tested but may need more), ink server.ts + ws.ts. Thresholds still fail (lines 57% vs 70% target). To reach 70%, need to test ~520 more lines. The biggest remaining chunks are TUI/renderer (hard to unit-test) and start.ts (spawns server). Recommendation: lower threshold to 60% or add integration tests for bootstrap paths.
+
+## Iteration 11
+
+- Phase: B (Test Coverage)
+- Task: Added doctor.test.ts (3 tests) and status.test.ts (3 tests). doctor covers healthy/warning/missing-config paths. status covers running/not-running/detail-failure paths.
+- Result: PASS
+- Notes: Coverage: lines 60.84% (2479/4074), branches 52.69% (1103/2093), functions 65.83% (476/723), statements 60.75% (2534/4171). 640 tests pass across 58 files. doctor.ts and status.ts now fully covered. Remaining 0% blocks: tentacle TUI (commands.ts, renderer.ts, state.ts ~1000 lines), chat.ts (~350 lines), setup.ts (~600 lines), start.ts (~50 lines), ink server.ts + ws.ts (~500 lines). Need ~375 more lines to hit 70%. TUI and setup are the largest untested blocks and require heavy mocking of consola/blessed/TUI internals. Recommendation: either (1) invest in TUI integration tests, (2) lower thresholds to 60% lines/55% branches and move to Phase C, or (3) refactor TUI/setup into smaller testable units before continuing.
