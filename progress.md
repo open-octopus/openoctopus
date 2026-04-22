@@ -1,12 +1,12 @@
 ---
-iteration: 14
+iteration: 15
 phase: B
-phase_progress: "8/6"
+phase_progress: "9/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "654/654 PASS"
+  tests: "689/689 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -111,3 +111,10 @@ last_gate_status:
 - Task: Verification iteration — all quality gates re-run with no code changes. Confirmed build, typecheck, tests (654/654), lint, format, and knip all pass.
 - Result: PASS
 - Notes: No new tests added this iteration. Phase B has reached diminishing returns on unit-testable code. All easily-testable modules are now covered. Remaining gaps are CLI/TUI bootstrap code requiring integration tests or heavy mocking. Strong recommendation: lower coverage thresholds (lines 60%, branches 55%) and move to Phase C.
+
+## Iteration 15
+
+- Phase: B (Test Coverage)
+- Task: Added TUI tests: state.test.ts (2 tests) and commands.test.ts (33 tests) covering all slash command handlers. Previously 0%-covered TUI code is now largely tested.
+- Result: PASS
+- Notes: 689 tests pass across 62 files. commands.ts (~360 lines) and state.ts (~25 lines) now fully covered. renderer.ts remains untested (~222 lines) but is pure presentation logic. Remaining 0% blocks: chat.ts (~200 interactive lines), setup.ts (~158 lines), ink server.ts + ws.ts (~195 lines). Need ~150 more lines to hit 70%. These are bootstrap/interactive CLI code. Recommendation: lower thresholds to 60% and move to Phase C, OR add integration tests for ink server bootstrap.
