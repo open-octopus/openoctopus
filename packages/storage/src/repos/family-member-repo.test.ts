@@ -26,13 +26,13 @@ describe("FamilyMemberRepo", () => {
     const member = repo.create({
       name: "Kevin",
       nickname: "Kev",
-      roles: ["admin", "parent"],
+      roles: ["coordinator", "caretaker"],
       realmIds: [realmId],
       notifyChannels: ["telegram"],
     });
     expect(member.name).toBe("Kevin");
     expect(member.nickname).toBe("Kev");
-    expect(member.roles).toEqual(["admin", "parent"]);
+    expect(member.roles).toEqual(["coordinator", "caretaker"]);
     expect(member.realmIds).toEqual([realmId]);
     expect(member.notifyChannels).toEqual(["telegram"]);
 
@@ -62,12 +62,12 @@ describe("FamilyMemberRepo", () => {
   });
 
   it("finds members by role", () => {
-    repo.create({ name: "A", roles: ["admin"] });
-    repo.create({ name: "B", roles: ["parent"] });
-    repo.create({ name: "C", roles: ["admin", "parent"] });
-    expect(repo.findByRole("admin")).toHaveLength(2);
-    expect(repo.findByRole("parent")).toHaveLength(2);
-    expect(repo.findByRole("child")).toHaveLength(0);
+    repo.create({ name: "A", roles: ["coordinator"] });
+    repo.create({ name: "B", roles: ["caretaker"] });
+    repo.create({ name: "C", roles: ["coordinator", "caretaker"] });
+    expect(repo.findByRole("coordinator")).toHaveLength(2);
+    expect(repo.findByRole("caretaker")).toHaveLength(2);
+    expect(repo.findByRole("observer")).toHaveLength(0);
   });
 
   it("finds members by realm", () => {
@@ -87,13 +87,13 @@ describe("FamilyMemberRepo", () => {
   });
 
   it("updates roles and realmIds", () => {
-    const member = repo.create({ name: "A", roles: ["admin"], realmIds: [realmId] });
+    const member = repo.create({ name: "A", roles: ["coordinator"], realmIds: [realmId] });
     const updated = repo.update(member.id, {
-      roles: ["parent"],
+      roles: ["caretaker"],
       realmIds: [],
       notifyChannels: ["email"],
     });
-    expect(updated?.roles).toEqual(["parent"]);
+    expect(updated?.roles).toEqual(["caretaker"]);
     expect(updated?.realmIds).toEqual([]);
     expect(updated?.notifyChannels).toEqual(["email"]);
   });
@@ -114,7 +114,7 @@ describe("FamilyMemberRepo", () => {
       const action = repo.createAction({
         memberId: member.id,
         memberName: member.name,
-        role: "parent",
+        role: "caretaker",
         action: "check homework",
         sourceRealmId: realmId,
       });
@@ -131,7 +131,7 @@ describe("FamilyMemberRepo", () => {
       const action = repo.createAction({
         memberId: member.id,
         memberName: member.name,
-        role: "admin",
+        role: "coordinator",
         action: "urgent task",
         priority: "urgent",
         sourceRealmId: realmId,
@@ -146,14 +146,14 @@ describe("FamilyMemberRepo", () => {
       repo.createAction({
         memberId: member.id,
         memberName: member.name,
-        role: "parent",
+        role: "caretaker",
         action: "a1",
         sourceRealmId: realmId,
       });
       repo.createAction({
         memberId: member.id,
         memberName: member.name,
-        role: "parent",
+        role: "caretaker",
         action: "a2",
         sourceRealmId: realmId,
       });
@@ -166,14 +166,14 @@ describe("FamilyMemberRepo", () => {
       repo.createAction({
         memberId: m1.id,
         memberName: m1.name,
-        role: "parent",
+        role: "caretaker",
         action: "a1",
         sourceRealmId: realmId,
       });
       repo.createAction({
         memberId: m2.id,
         memberName: m2.name,
-        role: "child",
+        role: "observer",
         action: "a2",
         sourceRealmId: realmId,
       });
@@ -185,7 +185,7 @@ describe("FamilyMemberRepo", () => {
       const action = repo.createAction({
         memberId: member.id,
         memberName: member.name,
-        role: "parent",
+        role: "caretaker",
         action: "task",
         sourceRealmId: realmId,
       });

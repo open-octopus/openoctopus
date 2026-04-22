@@ -166,4 +166,150 @@ describe("FamilyRoleRouter", () => {
     // Should match both scheduler (schedule) and caretaker (buy, medicine)
     expect(result.actions.length).toBe(2);
   });
+
+  describe("LLM-powered routing", () => {
+    beforeEach(() => {
+      mockLlmRegistry.hasRealProvider.mockReturnValue(true);
+    });
+
+    it("routes actions via LLM and creates action records", async () => {
+      mockFamilyMemberRepo.list.mockReturnValue([
+        { id: "fm_dad", name: "Dad", roles: ["scheduler"], realmIds: [] },
+        { id: "fm_mom", name: "Mom", roles: ["caretaker"], realmIds: [] },
+      ]);
+      mockFamilyMemberRepo.createAction.mockImplementation((data: Record<string, unknown>) => ({
+        id: "action_llm_1",
+        ...data,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      }));
+
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content:
+            '[{"memberName": "Dad", "role": "scheduler", "action": "Book doctor", "priority": "high"}]',
+        }),
+      });
+      mockLlmRegistry.resolveModel.mockReturnValue("claude-sonnet-4-6");
+
+      const result = await router.routeByRole({
+        sourceRealmId: "realm_parents",
+        message: "grandpa needs a doctor",
+        assistantResponse: "I will arrange that",
+      });
+
+      expect(result.actions).toHaveLength(1);
+      expect(result.actions[0].role).toBe("scheduler");
+      expect(result.actions[0].priority).toBe("high");
+      expect(result.reasoning).toContain("LLM-powered");
+    });
+
+    it("skips unknown members from LLM response", async () => {
+      mockFamilyMemberRepo.list.mockReturnValue([
+        { id: "fm_dad", name: "Dad", roles: ["scheduler"], realmIds: [] },
+      ]);
+      mockFamilyMemberRepo.createAction.mockImplementation((data: Record<string, unknown>) => ({
+        id: "action_llm_1",
+        ...data,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      }));
+
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: '[{"memberName": "Stranger", "role": "scheduler", "action": "Book doctor"}]',
+        }),
+      });
+      mockLlmRegistry.resolveModel.mockReturnValue("claude-sonnet-4-6");
+
+      const result = await router.routeByRole({
+        sourceRealmId: "realm_parents",
+        message: "grandpa needs a doctor",
+        assistantResponse: "I will arrange that",
+      });
+
+      expect(result.actions).toHaveLength(0);
+    });
+
+    it("falls back to keywords when LLM returns no JSON array", async () => {
+      mockFamilyMemberRepo.list.mockReturnValue([
+        { id: "fm_dad", name: "Dad", roles: ["scheduler"], realmIds: [] },
+      ]);
+      mockFamilyMemberRepo.createAction.mockImplementation((data: Record<string, unknown>) => ({
+        id: "action_fb_1",
+        ...data,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      }));
+
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: "No actions needed",
+        }),
+      });
+      mockLlmRegistry.resolveModel.mockReturnValue("claude-sonnet-4-6");
+
+      const result = await router.routeByRole({
+        sourceRealmId: "realm_parents",
+        message: "schedule an appointment",
+        assistantResponse: "Ok",
+      });
+
+      expect(result.actions).toHaveLength(0);
+      expect(result.reasoning).toContain("LLM returned no actionable tasks");
+    });
+
+    it("falls back to keywords when LLM provider throws", async () => {
+      mockFamilyMemberRepo.list.mockReturnValue([
+        { id: "fm_dad", name: "Dad", roles: ["scheduler"], realmIds: [] },
+      ]);
+      mockFamilyMemberRepo.createAction.mockImplementation((data: Record<string, unknown>) => ({
+        id: "action_fb_2",
+        ...data,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      }));
+
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockRejectedValue(new Error("LLM timeout")),
+      });
+      mockLlmRegistry.resolveModel.mockReturnValue("claude-sonnet-4-6");
+
+      const result = await router.routeByRole({
+        sourceRealmId: "realm_parents",
+        message: "schedule an appointment",
+        assistantResponse: "Ok",
+      });
+
+      expect(result.actions.length).toBeGreaterThan(0);
+      expect(result.reasoning).toContain("scheduler");
+    });
+
+    it("uses default priority when LLM omits it", async () => {
+      mockFamilyMemberRepo.list.mockReturnValue([
+        { id: "fm_dad", name: "Dad", roles: ["scheduler"], realmIds: [] },
+      ]);
+      mockFamilyMemberRepo.createAction.mockImplementation((data: Record<string, unknown>) => ({
+        id: "action_llm_2",
+        ...data,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      }));
+
+      mockLlmRegistry.getProvider.mockReturnValue({
+        chat: vi.fn().mockResolvedValue({
+          content: '[{"memberName": "Dad", "role": "scheduler", "action": "Book doctor"}]',
+        }),
+      });
+      mockLlmRegistry.resolveModel.mockReturnValue("claude-sonnet-4-6");
+
+      const result = await router.routeByRole({
+        sourceRealmId: "realm_parents",
+        message: "grandpa needs a doctor",
+        assistantResponse: "I will arrange that",
+      });
+
+      expect(result.actions[0].priority).toBe("normal");
+    });
+  });
 });

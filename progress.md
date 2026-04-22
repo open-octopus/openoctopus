@@ -6,7 +6,7 @@ blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "465/465 PASS"
+  tests: "546/546 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -52,6 +52,6 @@ last_gate_status:
 ## Iteration 6
 
 - Phase: B (Test Coverage)
-- Task: Continue adding tests for remaining uncovered modules
-- Result: IN_PROGRESS
-- Notes: Targeting summon-engine, family-role-router, and other high-value uncovered paths.
+- Task: Added 13 new test files + 3 modified test files covering summon-engine, family-role-router LLM routing, agent-runner, realm-manager, entity-manager, skill-registry, stub provider, ink routes, tentacle api-client. Fixed prompt-compiler and family-member-repo test schemas.
+- Result: PASS
+- Notes: Coverage: lines 52.18% (2124/4070), branches 44.09% (923/2093), functions 59.19% (428/723), statements 52.17% (2174/4167). 546 tests pass across 43 files. Major gains in summon/src (97.77%), core/src (84.7%), ink/src/routes (77.19%), tentacle/src (46.73%). Remaining 0% blocks: tentacle TUI (commands.ts, renderer.ts, state.ts), tentacle infra (update-check.ts, update-runner.ts), ink server.ts and ws.ts. Thresholds still fail (lines 52% vs 70% target).

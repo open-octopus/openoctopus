@@ -14,7 +14,7 @@ describe("compileSystemPrompt", () => {
     catchphrases: ["Purr", "Meow"],
     coreMemory: ["Loves tuna", "Afraid of vacuum"],
     relationships: [
-      { type: "owner", description: "Kevin" },
+      { type: "owner", entityId: "entity_kevin", description: "Kevin" },
       { type: "sibling", entityId: "entity_max" },
     ],
     proactiveRules: [
@@ -66,7 +66,15 @@ describe("compileSystemPrompt", () => {
       soul: baseSoul,
       agent: baseAgent,
       coreMemories: [
-        { id: "m1", content: "Remembers Kevin's birthday", tier: "core", createdAt: "2024-01-01" },
+        {
+          id: "m1",
+          realmId: "realm_pet",
+          content: "Remembers Kevin's birthday",
+          tier: "core",
+          metadata: {},
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
+        },
       ],
       workingMemories: [],
       retrievedMemories: [],
@@ -82,7 +90,15 @@ describe("compileSystemPrompt", () => {
       agent: baseAgent,
       coreMemories: [],
       workingMemories: [
-        { id: "m2", content: "Just ate breakfast", tier: "working", createdAt: "2024-01-02" },
+        {
+          id: "m2",
+          realmId: "realm_pet",
+          content: "Just ate breakfast",
+          tier: "working",
+          metadata: {},
+          createdAt: "2024-01-02T00:00:00Z",
+          updatedAt: "2024-01-02T00:00:00Z",
+        },
       ],
       retrievedMemories: [],
     });
@@ -97,7 +113,15 @@ describe("compileSystemPrompt", () => {
       coreMemories: [],
       workingMemories: [],
       retrievedMemories: [
-        { id: "m3", content: "Kevin likes jazz", tier: "retrieved", createdAt: "2024-01-03" },
+        {
+          id: "m3",
+          realmId: "realm_pet",
+          content: "Kevin likes jazz",
+          tier: "retrieved",
+          metadata: {},
+          createdAt: "2024-01-03T00:00:00Z",
+          updatedAt: "2024-01-03T00:00:00Z",
+        },
       ],
     });
     expect(prompt).toContain("## Retrieved Memory (Relevant)");
@@ -187,7 +211,7 @@ describe("compileSystemPrompt", () => {
   it("handles relationship with unknown target", () => {
     const soul = {
       ...baseSoul,
-      relationships: [{ type: "friend" }],
+      relationships: [{ type: "friend", entityId: "entity_unknown" }],
     };
     const prompt = compileSystemPrompt({
       soul,
@@ -196,6 +220,6 @@ describe("compileSystemPrompt", () => {
       workingMemories: [],
       retrievedMemories: [],
     });
-    expect(prompt).toContain("- friend: unknown");
+    expect(prompt).toContain("- friend: entity_unknown");
   });
 });
