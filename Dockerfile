@@ -63,5 +63,6 @@ ENV OPENOCTOPUS_WS_PORT=19789
 ENV OPENOCTOPUS_HOST=0.0.0.0
 
 EXPOSE 19790
+EXPOSE 19789
 
 CMD ["node", "packages/ink/dist/index.mjs", "serve"]

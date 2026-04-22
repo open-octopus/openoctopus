@@ -26,7 +26,7 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
-    command: ["node", "packages/ink/dist/index.js", "serve"]
+    command: ["node", "packages/ink/dist/index.mjs", "serve"]
 
   # ── CLI: Interactive shell connected to gateway ──
   cli:
