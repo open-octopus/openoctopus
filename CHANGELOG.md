@@ -42,6 +42,18 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.M.D
 - Removed deprecated `@types/testing-library__jest-dom` (types now included in `@testing-library/jest-dom` v6)
 - Dashboard bundle code splitting via `manualChunks` — largest chunk reduced from 525KB to 185KB raw
 
+### Fixed
+
+- Docker compose CLI entrypoint extension from `.js` to `.mjs` (matching ESM output)
+- README broken links updated to match actual docs directory structure
+
+### Changed
+
+- Root tsdown config modernized — replaced deprecated `external`/`noExternal` with `deps.neverBundle`
+- CI workflow aligned with full quality gates: `pnpm check`, `knip`, `audit` added
+- Publish workflow tag trigger updated from `v*` to `20*` for CalVer compatibility
+- Dashboard tests (38 tests) added to CI pipeline via new `test:dashboard` script
+
 ## [2026.3.10]
 
 ### Added
