@@ -46,6 +46,6 @@ services:
     cap_drop:
       - NET_RAW
       - NET_ADMIN
-    entrypoint: ["node", "packages/tentacle/dist/cli.js"]
+    entrypoint: ["node", "packages/tentacle/dist/cli.mjs"]
     profiles:
       - tools
