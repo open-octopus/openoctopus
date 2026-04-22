@@ -14,6 +14,28 @@ export default defineConfig({
   build: {
     outDir: "../ink/public/dashboard",
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("@xyflow/react")) {
+            return "flow";
+          }
+          if (id.includes("react-router")) {
+            return "router";
+          }
+          if (id.includes("i18next") || id.includes("react-i18next")) {
+            return "i18n";
+          }
+          if (id.includes("zustand")) {
+            return "state";
+          }
+          if (id.includes("react") || id.includes("react-dom")) {
+            return "vendor";
+          }
+          return undefined;
+        },
+      },
+    },
   },
   server: {
     port: 5173,
