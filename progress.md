@@ -329,3 +329,10 @@ last_gate_status:
 - Task: Fixed docker-compose.yml CLI entrypoint — changed `packages/tentacle/dist/cli.js` to `.mjs` (matching ESM build output). Gateway was fixed earlier; CLI service was missed.
 - Result: PASS
 - Notes: Docker CLI container would have failed to start with the old .js extension. All gates green.
+
+## Iteration 47
+
+- Phase: D (Release Prep)
+- Task: Fixed broken links in README.md — updated paths to match actual docs directory structure (architecture/ and product/ subdirectories).
+- Result: PASS
+- Notes: 4 broken links fixed. All gates green.
