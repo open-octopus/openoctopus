@@ -458,4 +458,245 @@ describe("processChatMessage", () => {
       expect(mockMemoryRepo.listByRealm).toHaveBeenCalled();
     });
   });
+
+  describe("system actions", () => {
+    it("handles summon action successfully", async () => {
+      const services = createMockServices({
+        router: {
+          route: vi.fn(() => ({
+            action: "summon",
+            actionArgs: { entityName: "Luna" },
+            confidence: 1,
+          })),
+        } as unknown as RpcServices["router"],
+        realmManager: {
+          list: vi.fn(() => [{ id: "realm_pet", name: "pet", description: "", status: "active" }]),
+          get: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        } as unknown as RpcServices["realmManager"],
+        entityManager: {
+          get: vi.fn(),
+          listByRealm: vi.fn(() => []),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          countByRealm: vi.fn(() => 0),
+          findByNameInRealm: vi
+            .fn()
+            .mockReturnValue({ id: "entity_luna", name: "Luna", realmId: "realm_pet" }),
+        } as unknown as RpcServices["entityManager"],
+        summonEngine: {
+          getSummoned: vi.fn(() => undefined),
+          summon: vi.fn().mockResolvedValue({
+            entity: { id: "entity_luna", name: "Luna" },
+            agent: { name: "Luna Agent" },
+            soul: { name: "Luna" },
+            systemPrompt: "",
+          }),
+          unsummon: vi.fn(),
+          listActive: vi.fn(() => []),
+        } as unknown as RpcServices["summonEngine"],
+      });
+
+      const result = await processChatMessage({ message: "summon Luna", services });
+      expect(result.response.content).toContain("has been summoned");
+    });
+
+    it("handles summon action with fuzzy match", async () => {
+      const services = createMockServices({
+        router: {
+          route: vi.fn(() => ({
+            action: "summon",
+            actionArgs: { entityName: "Lu" },
+            confidence: 1,
+          })),
+        } as unknown as RpcServices["router"],
+        realmManager: {
+          list: vi.fn(() => [{ id: "realm_pet", name: "pet", description: "", status: "active" }]),
+          get: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        } as unknown as RpcServices["realmManager"],
+        entityManager: {
+          get: vi.fn(),
+          listByRealm: vi.fn(() => [
+            {
+              id: "entity_luna",
+              name: "Luna",
+              realmId: "realm_pet",
+              type: "living",
+              attributes: {},
+              summonStatus: "dormant",
+              createdAt: "",
+              updatedAt: "",
+            },
+          ]),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          countByRealm: vi.fn(() => 0),
+          findByNameInRealm: vi.fn().mockReturnValue(null),
+        } as unknown as RpcServices["entityManager"],
+        summonEngine: {
+          getSummoned: vi.fn(() => undefined),
+          summon: vi.fn().mockResolvedValue({
+            entity: { id: "entity_luna", name: "Luna" },
+            agent: { name: "Luna Agent" },
+            soul: { name: "Luna" },
+            systemPrompt: "",
+          }),
+          unsummon: vi.fn(),
+          listActive: vi.fn(() => []),
+        } as unknown as RpcServices["summonEngine"],
+      });
+
+      const result = await processChatMessage({ message: "summon Lu", services });
+      expect(result.response.content).toContain("has been summoned");
+    });
+
+    it("handles summon action when entity not found", async () => {
+      const services = createMockServices({
+        router: {
+          route: vi.fn(() => ({
+            action: "summon",
+            actionArgs: { entityName: "Ghost" },
+            confidence: 1,
+          })),
+        } as unknown as RpcServices["router"],
+        entityManager: {
+          get: vi.fn(),
+          listByRealm: vi.fn(() => []),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          countByRealm: vi.fn(() => 0),
+          findByNameInRealm: vi.fn().mockReturnValue(null),
+        } as unknown as RpcServices["entityManager"],
+      });
+
+      const result = await processChatMessage({ message: "summon Ghost", services });
+      expect(result.response.content).toContain("not found");
+    });
+
+    it("handles unsummon action", async () => {
+      const services = createMockServices({
+        router: {
+          route: vi.fn(() => ({
+            action: "unsummon",
+            actionArgs: { entityName: "Luna" },
+            confidence: 1,
+          })),
+        } as unknown as RpcServices["router"],
+        summonEngine: {
+          getSummoned: vi.fn(() => undefined),
+          summon: vi.fn(),
+          unsummon: vi.fn(),
+          listActive: vi.fn(() => [
+            {
+              entity: { id: "entity_luna", name: "Luna" },
+              agent: { name: "Luna Agent" },
+              soul: { name: "Luna" },
+              systemPrompt: "",
+            },
+          ]),
+        } as unknown as RpcServices["summonEngine"],
+      });
+
+      const result = await processChatMessage({ message: "unsummon Luna", services });
+      expect(result.response.content).toContain("released");
+    });
+
+    it("handles list_realms action", async () => {
+      const services = createMockServices({
+        router: {
+          route: vi.fn(() => ({ action: "list_realms", confidence: 1 })),
+        } as unknown as RpcServices["router"],
+        realmManager: {
+          list: vi.fn(() => [
+            { id: "realm_pet", name: "pet", description: "Pet care", status: "active", icon: "🐱" },
+          ]),
+          get: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        } as unknown as RpcServices["realmManager"],
+        entityManager: {
+          get: vi.fn(),
+          listByRealm: vi.fn(() => []),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          countByRealm: vi.fn(() => 2),
+        } as unknown as RpcServices["entityManager"],
+      });
+
+      const result = await processChatMessage({ message: "list realms", services });
+      expect(result.response.content).toContain("Available Realms");
+    });
+
+    it("handles list_entities action", async () => {
+      const services = createMockServices({
+        router: {
+          route: vi.fn(() => ({ action: "list_entities", confidence: 1 })),
+        } as unknown as RpcServices["router"],
+        realmManager: {
+          list: vi.fn(() => [
+            { id: "realm_pet", name: "pet", description: "", status: "active", icon: "" },
+          ]),
+          get: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        } as unknown as RpcServices["realmManager"],
+        entityManager: {
+          get: vi.fn(),
+          listByRealm: vi.fn(() => [
+            {
+              id: "entity_luna",
+              name: "Luna",
+              type: "living",
+              realmId: "realm_pet",
+              attributes: {},
+              summonStatus: "active",
+              createdAt: "",
+              updatedAt: "",
+            },
+          ]),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          countByRealm: vi.fn(() => 1),
+        } as unknown as RpcServices["entityManager"],
+      });
+
+      const result = await processChatMessage({ message: "list entities", services });
+      expect(result.response.content).toContain("Luna");
+    });
+
+    it("handles switch_realm action", async () => {
+      const services = createMockServices({
+        router: {
+          route: vi.fn(() => ({
+            action: "switch_realm",
+            actionArgs: { realmName: "pet" },
+            confidence: 1,
+          })),
+        } as unknown as RpcServices["router"],
+        realmManager: {
+          list: vi.fn(() => []),
+          get: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          findByName: vi.fn().mockReturnValue({ id: "realm_pet", name: "pet" }),
+        } as unknown as RpcServices["realmManager"],
+      });
+
+      const result = await processChatMessage({ message: "switch to pet", services });
+      expect(result.response.content).toContain("Switched to realm");
+    });
+  });
 });
