@@ -350,3 +350,10 @@ last_gate_status:
 - Task: Updated CLAUDE.md commands section — corrected test counts (694 unit, 38 dashboard, 42 system, 10 E2E) and added missing scripts (test:dashboard, test:system, test:e2e, audit).
 - Result: PASS
 - Notes: Project guidance now matches current state. All gates green.
+
+## Iteration 50
+
+- Phase: D (Release Prep)
+- Task: Removed 7 duplicate logo PNG files from docs/images/ (identical copies of docs/assets/ files). Saved ~2.3MB from repo.
+- Result: PASS
+- Notes: docs/images/ retains 架构图 and 信息图 subdirectories which are referenced. All gates green.
