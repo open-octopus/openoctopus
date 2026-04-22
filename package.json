@@ -53,6 +53,7 @@
     "start": "tsx packages/tentacle/src/cli.ts start",
     "tentacle": "tsx packages/tentacle/src/cli.ts",
     "test": "vitest",
+    "test:dashboard": "vitest --project dashboard",
     "test:e2e": "playwright test",
     "test:integration": "vitest --project integration",
     "test:system": "vitest --project system",

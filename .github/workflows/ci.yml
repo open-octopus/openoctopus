@@ -20,6 +20,7 @@ jobs:
       - run: pnpm knip
       - run: pnpm audit --audit-level moderate
       - run: pnpm test:unit -- --coverage
+      - run: pnpm test:dashboard -- --run
       - run: pnpm test:integration
       - run: pnpm test:system
       - run: pnpm build
