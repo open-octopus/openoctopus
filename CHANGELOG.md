@@ -38,6 +38,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.M.D
 - All quality gates pass: build, typecheck, tests (771/771), lint, format, knip, audit
 - Knip configuration cleaned — 21 config hints resolved, 5 unused workspace deps removed
 - Dashboard dependencies aligned with Vite 8 ecosystem (`@vitejs/plugin-react` 6.0.1, `vite` 8.0.0)
+- Updated patch/minor dependencies: `ws` 8.20.0, `jsdom` 29.0.2, `@playwright/test` 1.59.1, `grammy` 1.42.0
+- Removed deprecated `@types/testing-library__jest-dom` (types now included in `@testing-library/jest-dom` v6)
 
 ## [2026.3.10]
 
