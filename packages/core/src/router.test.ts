@@ -158,6 +158,52 @@ describe("Router", () => {
     });
   });
 
+  it("returns zero confidence when no realms exist", async () => {
+    const intent = await router.route("hello", []);
+    expect(intent.confidence).toBe(0);
+    expect(intent.targetRealmId).toBeUndefined();
+  });
+
+  describe("parseRouterResponse edge cases", () => {
+    // @ts-expect-error accessing private method for testing
+    const parse = (content: string) => router.parseRouterResponse(content, realms);
+
+    it("parses valid JSON response", () => {
+      const result = parse('{"realm": "pet", "confidence": 0.8, "reasoning": "cat mention"}');
+      expect(result).not.toBeNull();
+      expect(result!.realmName).toBe("pet");
+      expect(result!.confidence).toBe(0.8);
+    });
+
+    it("returns null when no JSON found", () => {
+      expect(parse("just some text")).toBeNull();
+    });
+
+    it("returns null for invalid JSON", () => {
+      expect(parse("{broken json")).toBeNull();
+    });
+
+    it("handles missing confidence with default", () => {
+      const result = parse('{"realm": "pet"}');
+      expect(result!.confidence).toBe(0.5);
+    });
+
+    it("clamps confidence to [0, 1]", () => {
+      expect(parse('{"realm": "pet", "confidence": 2}')!.confidence).toBe(1);
+      expect(parse('{"realm": "pet", "confidence": -1}')!.confidence).toBe(0);
+    });
+
+    it("handles null realm", () => {
+      const result = parse('{"realm": null, "confidence": 0}');
+      expect(result!.realmName).toBeNull();
+    });
+
+    it("handles missing realm field", () => {
+      const result = parse('{"confidence": 0.5}');
+      expect(result!.realmName).toBeNull();
+    });
+  });
+
   describe("system action takes priority over routing", () => {
     it("召唤 is detected as action, not routed as keyword", async () => {
       const intent = await router.route("召唤旺财", realms);
