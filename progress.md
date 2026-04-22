@@ -1,7 +1,7 @@
 ---
-iteration: 26
+iteration: 27
 phase: D
-phase_progress: "1/?"
+phase_progress: "2/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -188,3 +188,10 @@ last_gate_status:
 - Task: CalVer version bump from 2026.3.10 to 2026.4.23 across all 10 workspace packages (root + 9 packages). Verified all quality gates pass after bump.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Phase D started with release preparation. Version now reflects current date per CalVer scheme (YYYY.M.D). Next Phase D tasks: changelog, release notes, or feature development.
+
+## Iteration 27
+
+- Phase: D (Release Prep)
+- Task: Created CHANGELOG.md documenting all changes across Phases A through D. Includes security hardening, testing pyramid metrics, build/Docker fixes, and deprecation cleanups.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Release artifacts now include version bump and changelog. Next Phase D tasks: Git tag, GitHub release draft, or feature development.
