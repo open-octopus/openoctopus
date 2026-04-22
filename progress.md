@@ -308,3 +308,10 @@ last_gate_status:
 - Task: Fixed CI/CD workflows — aligned with CalVer tagging and full quality gates. ci.yml now runs `pnpm check`, `knip`, and `audit`. publish.yml trigger changed from `v*` to `20*` to match CalVer format.
 - Result: PASS
 - Notes: All quality gates green. 2 workflow files updated, 0 functional code changes.
+
+## Iteration 44
+
+- Phase: D (Release Prep)
+- Task: Modernized root tsdown.config.ts — replaced deprecated `external`/`noExternal` with `deps.neverBundle` to match package-level configs. Verified build:dist still produces correct artifacts.
+- Result: PASS
+- Notes: All quality gates green. Build deprecation cleanup complete across all tsdown configs.
