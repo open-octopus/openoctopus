@@ -4,7 +4,7 @@ const config: KnipConfig = {
   workspaces: {
     ".": {
       entry: ["packages/*/src/index.ts"],
-      ignoreDependencies: ["tsx", "@types/better-sqlite3", "@types/express", "@types/ws"],
+      ignoreDependencies: ["tsx", "@types/better-sqlite3"],
     },
     "packages/shared": {
       entry: ["src/index.ts"],

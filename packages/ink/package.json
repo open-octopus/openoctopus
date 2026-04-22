@@ -25,5 +25,9 @@
     "@openoctopus/summon": "workspace:*",
     "express": "^5.1.0",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/ws": "^8.18.1"
   }
 }
