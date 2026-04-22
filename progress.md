@@ -1,7 +1,7 @@
 ---
-iteration: 19
+iteration: 20
 phase: C
-phase_progress: "3/?"
+phase_progress: "4/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -139,3 +139,10 @@ last_gate_status:
 - Task: Added ink server bootstrap integration tests (server.integration.test.ts, 9 tests) covering server creation, health endpoints, REST API realms/entities/chat, WebSocket connection welcome, and WebSocket RPC request/response.
 - Result: PASS
 - Notes: 714/714 tests pass (689 unit + 25 integration across 3 integration files). Build, typecheck, lint, format, knip all green. Server integration test uses in-memory SQLite, random OS-assigned ports, and minimal stub config for fast deterministic runs. WebSocket race condition (welcome message arriving before listener attach) handled by pre-attaching message listener. Next Phase C tasks: Docker compose verification, security audit of API endpoints, or E2E tests for critical CLI flows.
+
+## Iteration 20
+
+- Phase: C (Integration / Hardening)
+- Task: Security audit and hardening of API endpoints: (1) Sanitized toErrorResponse to return generic "Internal server error" for unknown errors instead of leaking raw messages; (2) Added express-rate-limit to ink gateway (100 req / 15 min per IP); (3) Added Zod input validation to REST routes (realms, entities, chat) with length limits and enum constraints.
+- Result: PASS
+- Notes: 714/714 tests pass. All quality gates green. Security improvements: error message sanitization prevents info leakage, rate limiting mitigates brute force/DoS, input validation rejects malformed payloads at the boundary. Dependencies added: express-rate-limit, zod (ink package). Next Phase C tasks: Docker compose verification, E2E tests for critical CLI flows, or WebSocket auth/rate limiting.
