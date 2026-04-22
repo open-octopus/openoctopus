@@ -1,7 +1,7 @@
 ---
-iteration: 29
+iteration: 30
 phase: D
-phase_progress: "4/?"
+phase_progress: "5/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -10,6 +10,7 @@ last_gate_status:
   lint: PASS
   format: PASS
   knip: PASS
+  audit: PASS
 ---
 
 # Iteration Log
@@ -209,3 +210,10 @@ last_gate_status:
 - Task: Cleaned knip configuration — removed unnecessary ignoreDependencies (workspace packages that knip resolves correctly) and unnecessary test file ignore patterns. Removed 5 unused workspace dependencies from package.json files: @openoctopus/core (summon, realmhub), @openoctopus/core/@openoctopus/storage (tentacle), @openoctopus/shared (dashboard devDeps). Verified all quality gates still pass.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Knip now reports zero hints and zero issues. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
+
+## Iteration 30
+
+- Phase: D (Release Prep)
+- Task: Security audit and remediation. Ran `pnpm audit` which found 8 vulnerabilities (smol-toml, picomatch, yaml, path-to-regexp, defu, vite). Updated knip 5.44.0 → 6.6.1 and applied pnpm overrides for all affected packages. Audit now reports zero vulnerabilities.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Security posture improved: zero known vulnerabilities. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
