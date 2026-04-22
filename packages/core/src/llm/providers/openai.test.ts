@@ -76,4 +76,45 @@ describe("OpenAIProvider", () => {
     const callArgs = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(callArgs[0]).toBe("https://custom.com/v1/chat/completions");
   });
+
+  describe("chatStream", () => {
+    it("yields error on API failure", async () => {
+      const provider = new OpenAIProvider("test-key");
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: false,
+        status: 429,
+        text: async () => "Rate limited",
+      } as unknown as Response);
+
+      const chunks = [];
+      for await (const chunk of provider.chatStream({
+        model: "gpt-4",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks[0]).toEqual({ type: "error", error: "OpenAI API error: 429 Rate limited" });
+    });
+
+    it("yields error when no response body", async () => {
+      const provider = new OpenAIProvider("test-key");
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: true,
+        body: undefined,
+      } as unknown as Response);
+
+      const chunks = [];
+      for await (const chunk of provider.chatStream({
+        model: "gpt-4",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks[0]).toEqual({ type: "error", error: "No response body" });
+    });
+  });
 });

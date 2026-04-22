@@ -106,4 +106,45 @@ describe("AnthropicProvider", () => {
     expect(body.messages).toEqual([{ role: "user", content: "hi" }]);
     expect(body.system).toBe("You are helpful");
   });
+
+  describe("chatStream", () => {
+    it("yields error on API failure", async () => {
+      const provider = new AnthropicProvider("test-key");
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: false,
+        status: 503,
+        text: async () => "Unavailable",
+      } as unknown as Response);
+
+      const chunks = [];
+      for await (const chunk of provider.chatStream({
+        model: "claude-3",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks[0]).toEqual({ type: "error", error: "Anthropic API error: 503 Unavailable" });
+    });
+
+    it("yields error when no response body", async () => {
+      const provider = new AnthropicProvider("test-key");
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: true,
+        body: undefined,
+      } as unknown as Response);
+
+      const chunks = [];
+      for await (const chunk of provider.chatStream({
+        model: "claude-3",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks[0]).toEqual({ type: "error", error: "No response body" });
+    });
+  });
 });

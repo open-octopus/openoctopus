@@ -77,4 +77,45 @@ describe("OllamaProvider", () => {
     const callArgs = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(callArgs[0]).toBe("http://ollama.local/api/chat");
   });
+
+  describe("chatStream", () => {
+    it("yields error on API failure", async () => {
+      const provider = new OllamaProvider();
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: async () => "Server error",
+      } as unknown as Response);
+
+      const chunks = [];
+      for await (const chunk of provider.chatStream({
+        model: "llama2",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks[0]).toEqual({ type: "error", error: "Ollama API error: 500 Server error" });
+    });
+
+    it("yields error when no response body", async () => {
+      const provider = new OllamaProvider();
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: true,
+        body: undefined,
+      } as unknown as Response);
+
+      const chunks = [];
+      for await (const chunk of provider.chatStream({
+        model: "llama2",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks[0]).toEqual({ type: "error", error: "No response body" });
+    });
+  });
 });
