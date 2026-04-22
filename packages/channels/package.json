@@ -19,6 +19,6 @@
   },
   "dependencies": {
     "@openoctopus/shared": "workspace:*",
-    "grammy": "^1.35.0"
+    "grammy": "^1.42.0"
   }
 }
