@@ -50,14 +50,18 @@ packages/
 ## Commands
 
 ```bash
-pnpm build           # Build all packages (8 packages)
+pnpm build           # Build all packages (9 packages)
 pnpm dev             # Dev mode (ink gateway with hot-reload)
-pnpm test:unit       # Run unit tests (51 tests)
-pnpm test:integration # Run integration tests
+pnpm test:unit       # Run unit tests (694 tests)
+pnpm test:dashboard  # Run dashboard tests (38 tests)
+pnpm test:integration # Run integration tests (25 tests)
+pnpm test:system     # Run system tests (42 tests)
+pnpm test:e2e        # Run Playwright E2E tests (10 tests)
 pnpm typecheck       # TypeScript project-reference build
 pnpm lint            # oxlint
 pnpm format          # oxfmt
 pnpm knip            # Dead code detection
+pnpm audit           # Security audit
 pnpm check           # typecheck + lint + format check
 ```
 
