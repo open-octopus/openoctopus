@@ -1,6 +1,6 @@
 {
   "name": "@openoctopus/core",
-  "version": "2026.3.10",
+  "version": "2026.4.23",
   "private": true,
   "type": "module",
   "main": "src/index.ts",

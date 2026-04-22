@@ -1,6 +1,6 @@
 {
   "name": "@openoctopus/tentacle",
-  "version": "2026.3.10",
+  "version": "2026.4.23",
   "private": true,
   "bin": {
     "tentacle": "dist/cli.mjs"
