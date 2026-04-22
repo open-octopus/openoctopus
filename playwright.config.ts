@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: "http://localhost:5174",
     trace: "on-first-retry",
   },
   projects: [
@@ -18,8 +18,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npx vite --config packages/dashboard/vite.config.ts packages/dashboard",
-    url: "http://localhost:5173/dashboard/",
+    command: "npx vite --config packages/dashboard/vite.config.ts packages/dashboard --port 5174",
+    url: "http://localhost:5174/dashboard/",
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },
