@@ -1,5 +1,5 @@
 ---
-iteration: 41
+iteration: 42
 phase: D
 phase_progress: "16/?"
 blockers: []
@@ -294,3 +294,17 @@ last_gate_status:
 - Task: Verification iteration — full quality gate suite re-run. All 771 tests pass. No code changes required.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Phase D remains complete with zero remaining tasks. The Ralph Loop has no further release-prep work to perform. Recommend stopping the loop or providing new feature direction.
+
+## Iteration 42
+
+- Phase: D (Release Prep)
+- Task: Lightweight verification — check + knip + audit. No code changes. Release 2026.4.23 already shipped to origin.
+- Result: PASS
+- Notes: All quality gates green. Project unchanged since iteration 41. Loop continues to trigger but has zero productive work remaining.
+
+## Iteration 43
+
+- Phase: D (Release Prep)
+- Task: Fixed CI/CD workflows — aligned with CalVer tagging and full quality gates. ci.yml now runs `pnpm check`, `knip`, and `audit`. publish.yml trigger changed from `v*` to `20*` to match CalVer format.
+- Result: PASS
+- Notes: All quality gates green. 2 workflow files updated, 0 functional code changes.
