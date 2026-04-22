@@ -108,6 +108,46 @@ describe("AnthropicProvider", () => {
   });
 
   describe("chatStream", () => {
+    it("yields tokens and usage on success", async () => {
+      const provider = new AnthropicProvider("test-key");
+
+      const chunks = [
+        `data: {"type":"message_start","message":{"usage":{"input_tokens":10}}}\n\n`,
+        `data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}}\n\n`,
+        `data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" world"}}\n\n`,
+        `data: {"type":"message_delta","usage":{"output_tokens":5}}\n\n`,
+      ];
+      let idx = 0;
+      const stream = new ReadableStream({
+        pull(controller) {
+          if (idx < chunks.length) {
+            controller.enqueue(new TextEncoder().encode(chunks[idx++]));
+          } else {
+            controller.close();
+          }
+        },
+      });
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: true,
+        body: stream,
+      } as unknown as Response);
+
+      const result = [];
+      for await (const chunk of provider.chatStream({
+        model: "claude-3",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        result.push(chunk);
+      }
+
+      expect(result).toEqual([
+        { type: "token", content: "Hello" },
+        { type: "token", content: " world" },
+        { type: "done", usage: { inputTokens: 10, outputTokens: 5 } },
+      ]);
+    });
+
     it("yields error on API failure", async () => {
       const provider = new AnthropicProvider("test-key");
 

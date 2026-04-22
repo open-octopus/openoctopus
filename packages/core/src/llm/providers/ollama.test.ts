@@ -79,6 +79,44 @@ describe("OllamaProvider", () => {
   });
 
   describe("chatStream", () => {
+    it("yields tokens and usage on success", async () => {
+      const provider = new OllamaProvider();
+
+      const chunks = [
+        `{"message":{"content":"Hello"},"done":false}\n`,
+        `{"message":{"content":" world"},"done":true,"prompt_eval_count":10,"eval_count":5}\n`,
+      ];
+      let idx = 0;
+      const stream = new ReadableStream({
+        pull(controller) {
+          if (idx < chunks.length) {
+            controller.enqueue(new TextEncoder().encode(chunks[idx++]));
+          } else {
+            controller.close();
+          }
+        },
+      });
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: true,
+        body: stream,
+      } as unknown as Response);
+
+      const result = [];
+      for await (const chunk of provider.chatStream({
+        model: "llama2",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        result.push(chunk);
+      }
+
+      expect(result).toEqual([
+        { type: "token", content: "Hello" },
+        { type: "token", content: " world" },
+        { type: "done", usage: { inputTokens: 10, outputTokens: 5 } },
+      ]);
+    });
+
     it("yields error on API failure", async () => {
       const provider = new OllamaProvider();
 

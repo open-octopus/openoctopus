@@ -1,12 +1,12 @@
 ---
-iteration: 11
+iteration: 13
 phase: B
-phase_progress: "6/6"
+phase_progress: "7/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "640/640 PASS"
+  tests: "654/654 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -90,3 +90,17 @@ last_gate_status:
 - Task: Added doctor.test.ts (3 tests) and status.test.ts (3 tests). doctor covers healthy/warning/missing-config paths. status covers running/not-running/detail-failure paths.
 - Result: PASS
 - Notes: Coverage: lines 60.84% (2479/4074), branches 52.69% (1103/2093), functions 65.83% (476/723), statements 60.75% (2534/4171). 640 tests pass across 58 files. doctor.ts and status.ts now fully covered. Remaining 0% blocks: tentacle TUI (commands.ts, renderer.ts, state.ts ~1000 lines), chat.ts (~350 lines), setup.ts (~600 lines), start.ts (~50 lines), ink server.ts + ws.ts (~500 lines). Need ~375 more lines to hit 70%. TUI and setup are the largest untested blocks and require heavy mocking of consola/blessed/TUI internals. Recommendation: either (1) invest in TUI integration tests, (2) lower thresholds to 60% lines/55% branches and move to Phase C, or (3) refactor TUI/setup into smaller testable units before continuing.
+
+## Iteration 12
+
+- Phase: B (Test Coverage)
+- Task: Added start.test.ts (3 tests) covering start-server, skip-when-running, and failure paths.
+- Result: PASS
+- Notes: Coverage: lines 61.34% (2499/4074), branches 52.84% (1106/2093), functions 65.97% (477/723), statements 61.23% (2554/4171). 643 tests pass across 59 files. start.ts now fully covered. Remaining 0% blocks: tentacle TUI (commands.ts ~400 lines, renderer.ts ~600 lines, state.ts ~20 lines), chat.ts (~350 lines), setup.ts (~600 lines), ink server.ts + ws.ts (~500 lines). Need ~350 more lines to hit 70%. The TUI/renderer and setup blocks are the largest remaining untested code and are difficult to unit-test without heavy mocking of blessed, readline, and process.stdout. Recommendation: lower thresholds to 60% lines / 55% branches, exclude bootstrap/TUI files from coverage, and move to Phase C.
+
+## Iteration 13
+
+- Phase: B (Test Coverage)
+- Task: Added happy-path chatStream tests for anthropic, openai, ollama providers (3 tests). Created realm-loader.test.ts (7 tests) covering loadFromDirectory, realm sync, entity seeding, parse error handling, and getRealmAgent.
+- Result: PASS
+- Notes: Coverage: lines ~63.5% (estimated ~2590/4074), branches ~54%, functions ~67%, statements ~63%. 654 tests pass across 60 files. core/src/realm-loader now fully covered. LLM provider chatStream happy paths covered. Remaining 0% blocks: tentacle TUI (~1000 lines), chat.ts (~350 lines), setup.ts (~600 lines), ink server.ts + ws.ts (~500 lines). Need ~250 more lines to hit 70%. Recommendation remains: lower thresholds or move to Phase C.

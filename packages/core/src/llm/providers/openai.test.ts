@@ -78,6 +78,45 @@ describe("OpenAIProvider", () => {
   });
 
   describe("chatStream", () => {
+    it("yields tokens and usage on success", async () => {
+      const provider = new OpenAIProvider("test-key");
+
+      const chunks = [
+        `data: {"choices":[{"delta":{"content":"Hello"}}],"usage":null}\n\n`,
+        `data: {"choices":[{"delta":{"content":" world"}}],"usage":{"prompt_tokens":10,"completion_tokens":5}}\n\n`,
+        `data: [DONE]\n\n`,
+      ];
+      let idx = 0;
+      const stream = new ReadableStream({
+        pull(controller) {
+          if (idx < chunks.length) {
+            controller.enqueue(new TextEncoder().encode(chunks[idx++]));
+          } else {
+            controller.close();
+          }
+        },
+      });
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue({
+        ok: true,
+        body: stream,
+      } as unknown as Response);
+
+      const result = [];
+      for await (const chunk of provider.chatStream({
+        model: "gpt-4",
+        messages: [{ role: "user", content: "hi" }],
+      })) {
+        result.push(chunk);
+      }
+
+      expect(result).toEqual([
+        { type: "token", content: "Hello" },
+        { type: "token", content: " world" },
+        { type: "done", usage: { inputTokens: 10, outputTokens: 5 } },
+      ]);
+    });
+
     it("yields error on API failure", async () => {
       const provider = new OpenAIProvider("test-key");
 
