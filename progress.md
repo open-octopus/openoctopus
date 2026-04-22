@@ -1,7 +1,7 @@
 ---
-iteration: 28
+iteration: 29
 phase: D
-phase_progress: "3/?"
+phase_progress: "4/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -202,3 +202,10 @@ last_gate_status:
 - Task: Ran full quality gate suite (typecheck, build, test:unit, integration, system, e2e, lint, format, knip). Created Git annotated tag `2026.4.23`.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Tag `2026.4.23` created locally. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
+
+## Iteration 29
+
+- Phase: D (Release Prep)
+- Task: Cleaned knip configuration — removed unnecessary ignoreDependencies (workspace packages that knip resolves correctly) and unnecessary test file ignore patterns. Removed 5 unused workspace dependencies from package.json files: @openoctopus/core (summon, realmhub), @openoctopus/core/@openoctopus/storage (tentacle), @openoctopus/shared (dashboard devDeps). Verified all quality gates still pass.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Knip now reports zero hints and zero issues. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
