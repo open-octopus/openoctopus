@@ -29,6 +29,7 @@ describe("Scheduler", () => {
       expect(Scheduler.parseTrigger("every day 8am")).toBe("0 8 * * *");
       expect(Scheduler.parseTrigger("every day 3pm")).toBe("0 15 * * *");
       expect(Scheduler.parseTrigger("every day 12pm")).toBe("0 12 * * *");
+      expect(Scheduler.parseTrigger("every day 12am")).toBe("0 0 * * *");
     });
 
     it("returns null for unrecognized triggers", () => {
@@ -104,6 +105,18 @@ describe("Scheduler", () => {
       scheduler.stop();
       expect(scheduler.isRunning()).toBe(false);
     });
+
+    it("double start is no-op", () => {
+      scheduler.addRule({
+        realmId: "realm_pet",
+        trigger: "every day 9am",
+        action: "test",
+      });
+      scheduler.start();
+      expect(scheduler.isRunning()).toBe(true);
+      scheduler.start();
+      expect(scheduler.isRunning()).toBe(true);
+    });
   });
 
   describe("setActionHandler", () => {
@@ -112,6 +125,22 @@ describe("Scheduler", () => {
       scheduler.setActionHandler(handler);
       // Handler is stored — will be called when rules fire
       expect(scheduler.listRules()).toHaveLength(0); // just verify no crash
+    });
+
+    it("catches handler errors without crashing", () => {
+      vi.useFakeTimers();
+      const handler = vi.fn().mockRejectedValue(new Error("handler fail"));
+      scheduler.setActionHandler(handler);
+      scheduler.addRule({
+        realmId: "realm_pet",
+        trigger: "every hour",
+        action: "test",
+      });
+      scheduler.start();
+      vi.advanceTimersByTime(60 * 60 * 1000 + 1);
+      expect(handler).toHaveBeenCalled();
+      scheduler.stop();
+      vi.useRealTimers();
     });
   });
 

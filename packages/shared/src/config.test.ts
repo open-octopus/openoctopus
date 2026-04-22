@@ -57,6 +57,13 @@ describe("config", () => {
       const config = loadConfig(configPath);
       expect(config.gateway.wsPort).toBe(19789);
     });
+
+    it("handles escaped quotes inside strings with comments", () => {
+      const configPath = path.join(tmpDir, "escape.json5");
+      fs.writeFileSync(configPath, `{"llm": {"defaultModel": "claude-\\"sonnet\\""}}`);
+      const config = loadConfig(configPath);
+      expect(config.llm.defaultModel).toBe('claude-"sonnet"');
+    });
   });
 
   describe("loadConfig (env interpolation)", () => {
@@ -123,6 +130,71 @@ describe("config", () => {
       const config = loadConfig(path.join(tmpDir, "no.json5"));
       expect(config.llm.providers.anthropic).toBeDefined();
       expect(config.llm.providers.anthropic?.apiKey).toBe("sk-ant-test");
+    });
+
+    it("PORT overrides httpPort", () => {
+      vi.stubEnv("PORT", "8080");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.gateway.httpPort).toBe(8080);
+    });
+
+    it("OPENOCTOPUS_WS_PORT overrides wsPort", () => {
+      vi.stubEnv("OPENOCTOPUS_WS_PORT", "9999");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.gateway.wsPort).toBe(9999);
+    });
+
+    it("OPENOCTOPUS_DATA_DIR overrides storage", () => {
+      vi.stubEnv("OPENOCTOPUS_DATA_DIR", "/tmp/data");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.storage.dataDir).toBe("/tmp/data");
+    });
+
+    it("OPENOCTOPUS_HOST overrides host", () => {
+      vi.stubEnv("OPENOCTOPUS_HOST", "0.0.0.0");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.gateway.host).toBe("0.0.0.0");
+    });
+
+    it("OPENOCTOPUS_LOG_LEVEL overrides logging", () => {
+      vi.stubEnv("OPENOCTOPUS_LOG_LEVEL", "debug");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.logging.level).toBe("debug");
+    });
+
+    it("OPENAI_API_KEY auto-configures openai provider", () => {
+      vi.stubEnv("OPENAI_API_KEY", "sk-openai-test");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.llm.providers.openai).toBeDefined();
+      expect(config.llm.providers.openai?.apiKey).toBe("sk-openai-test");
+    });
+
+    it("OPENAI_API_KEY auto-configures embedding provider", () => {
+      vi.stubEnv("OPENAI_API_KEY", "sk-openai-test");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.embeddings.providers.openai).toBeDefined();
+      expect(config.embeddings.providers.openai?.apiKey).toBe("sk-openai-test");
+    });
+
+    it("GOOGLE_API_KEY auto-configures google provider", () => {
+      vi.stubEnv("GOOGLE_API_KEY", "google-key");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.llm.providers.google).toBeDefined();
+      expect(config.llm.providers.google?.apiKey).toBe("google-key");
+    });
+
+    it("CN provider env keys auto-configure providers", () => {
+      vi.stubEnv("DEEPSEEK_API_KEY", "ds-key");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.llm.providers.deepseek).toBeDefined();
+      expect(config.llm.providers.deepseek?.apiKey).toBe("ds-key");
+    });
+
+    it("returns defaults on validation failure", () => {
+      const configPath = path.join(tmpDir, "bad-type.json5");
+      fs.writeFileSync(configPath, JSON.stringify({ gateway: { wsPort: "not-a-number" } }));
+      const config = loadConfig(configPath);
+      expect(config.gateway.wsPort).toBe(19789);
     });
   });
 
