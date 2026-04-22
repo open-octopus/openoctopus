@@ -19,7 +19,6 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
-    "@openoctopus/shared": "workspace:*",
     "@tailwindcss/vite": "^4.2.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

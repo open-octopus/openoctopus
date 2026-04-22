@@ -104,9 +104,6 @@ importers:
         specifier: ^5.0.0
         version: 5.0.12(@types/react@19.2.14)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
-      '@openoctopus/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@tailwindcss/vite':
         specifier: ^4.2.1
         version: 4.2.1(vite@6.4.1(@types/node@22.19.15)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -183,9 +180,6 @@ importers:
 
   packages/realmhub:
     dependencies:
-      '@openoctopus/core':
-        specifier: workspace:*
-        version: link:../core
       '@openoctopus/shared':
         specifier: workspace:*
         version: link:../shared
@@ -210,9 +204,6 @@ importers:
 
   packages/summon:
     dependencies:
-      '@openoctopus/core':
-        specifier: workspace:*
-        version: link:../core
       '@openoctopus/shared':
         specifier: workspace:*
         version: link:../shared
@@ -228,18 +219,12 @@ importers:
       '@clack/prompts':
         specifier: ^0.11.0
         version: 0.11.0
-      '@openoctopus/core':
-        specifier: workspace:*
-        version: link:../core
       '@openoctopus/ink':
         specifier: workspace:*
         version: link:../ink
       '@openoctopus/shared':
         specifier: workspace:*
         version: link:../shared
-      '@openoctopus/storage':
-        specifier: workspace:*
-        version: link:../storage
       citty:
         specifier: ^0.1.6
         version: 0.1.6
