@@ -1,7 +1,7 @@
 ---
-iteration: 31
+iteration: 32
 phase: D
-phase_progress: "6/?"
+phase_progress: "7/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -224,3 +224,10 @@ last_gate_status:
 - Task: Aligned dashboard build dependencies with Vite 8 ecosystem. Updated `@vitejs/plugin-react` 4.0.0 → 6.0.1 and `vite` 6.0.0 → 8.0.0 in dashboard package.json. Eliminated esbuild/babel deprecation warnings from dashboard production build.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Dashboard build now clean of Vite 8 deprecation warnings. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
+
+## Iteration 32
+
+- Phase: D (Release Prep)
+- Task: Updated CHANGELOG.md with security remediation details (8 advisories resolved via knip update and pnpm overrides), dashboard Vite 8 alignment, and knip cleanup summary.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Release documentation now complete. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
