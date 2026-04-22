@@ -1,12 +1,12 @@
 ---
-iteration: 7
+iteration: 8
 phase: B
-phase_progress: "4/6"
+phase_progress: "5/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "589/589 PASS"
+  tests: "606/606 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -62,3 +62,10 @@ last_gate_status:
 - Task: Added 7 new test files: anthropic/openai/ollama LLM providers, database, rpc-protocol, update-check, update-runner. Removed accidentally-committed cov-summary.json.
 - Result: PASS
 - Notes: Coverage: lines 55.20% (2247/4070), branches 47.63% (997/2093), functions 62.65% (453/723), statements 55.19% (2300/4167). 589 tests pass across 50 files. tentacle/src/infra now at 94.33% lines. core/src/llm/providers improved significantly. Remaining 0% blocks: tentacle TUI (commands.ts, renderer.ts, state.ts), tentacle CLI commands (chat.ts, config.ts, doctor.ts, entity.ts, realm.ts, setup.ts, start.ts, status.ts, stop.ts, update.ts), ink server.ts and ws.ts. Thresholds still fail (lines 55% vs 70% target). Next: channels (telegram 64%), ink server bootstrap, storage migrations edge cases.
+
+## Iteration 8
+
+- Phase: B (Test Coverage)
+- Task: Expanded config.test.ts (12 new env override + validation tests), scheduler.test.ts (3 new edge-case tests), created migrations.test.ts (4 tests).
+- Result: PASS
+- Notes: Coverage: lines 55.92% (2276/4070), branches 48.97% (1025/2093), functions 63.07% (456/723), statements 55.89% (2329/4167). 606 tests pass across 51 files. shared/src/config improved to ~90%, core/src/scheduler to ~95%, storage/src/migrations to ~95%. Remaining 0% blocks: tentacle TUI + commands (~1500 lines), ink server.ts + ws.ts (~500 lines), channels telegram.ts some error paths. Thresholds still fail (lines 56% vs 70% target). Next: difficult-to-test CLI/TUI blocks may require integration tests or mocking libraries; consider lowering thresholds or shifting to Phase C.
