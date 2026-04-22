@@ -3,30 +3,21 @@ import type { KnipConfig } from "knip";
 const config: KnipConfig = {
   workspaces: {
     ".": {
-      entry: ["packages/*/src/index.ts"],
       ignoreDependencies: ["tsx", "@types/better-sqlite3"],
     },
-    "packages/shared": {
-      entry: ["src/index.ts"],
-    },
     "packages/storage": {
-      entry: ["src/index.ts"],
       ignoreDependencies: ["@openoctopus/shared"],
     },
     "packages/core": {
-      entry: ["src/index.ts"],
       ignoreDependencies: ["@openoctopus/shared", "@openoctopus/storage"],
     },
     "packages/summon": {
-      entry: ["src/index.ts"],
       ignoreDependencies: ["@openoctopus/shared", "@openoctopus/core", "@openoctopus/storage"],
     },
     "packages/channels": {
-      entry: ["src/index.ts"],
       ignoreDependencies: ["@openoctopus/shared"],
     },
     "packages/ink": {
-      entry: ["src/index.ts"],
       ignoreDependencies: [
         "@openoctopus/shared",
         "@openoctopus/core",
@@ -36,7 +27,6 @@ const config: KnipConfig = {
       ],
     },
     "packages/tentacle": {
-      entry: ["src/index.ts", "src/cli.ts"],
       ignoreDependencies: [
         "@openoctopus/shared",
         "@openoctopus/core",
@@ -45,11 +35,9 @@ const config: KnipConfig = {
       ],
     },
     "packages/realmhub": {
-      entry: ["src/index.ts"],
       ignoreDependencies: ["@openoctopus/shared", "@openoctopus/core"],
     },
     "packages/dashboard": {
-      entry: ["src/main.tsx"],
       ignoreDependencies: [
         "@openoctopus/shared",
         "autoprefixer",
