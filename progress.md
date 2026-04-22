@@ -1,7 +1,7 @@
 ---
-iteration: 24
+iteration: 25
 phase: C
-phase_progress: "8/?"
+phase_progress: "9/9"
 blockers: []
 last_gate_status:
   build: PASS
@@ -174,3 +174,10 @@ last_gate_status:
 - Task: Fixed and verified Playwright E2E tests for dashboard. Switched port from 5173 to 5174 to avoid conflict with another local Vite dev server. All 10 E2E tests now pass: page rendering (home, route, members, entities, settings), navigation, interactions (entity filter, connection banner), and mobile layout.
 - Result: PASS
 - Notes: 771/771 tests pass (694 unit + 25 integration + 42 system + 10 E2E). All quality gates green. Phase C is now comprehensive: unit tests, integration tests, system tests, and E2E tests all passing. Security hardening covers HTTP rate limiting, Zod validation, error sanitization, and WebSocket rate limiting. Docker configuration verified. Ready to declare Phase C complete and move to Phase D.
+
+## Iteration 25
+
+- Phase: C (Integration / Hardening) → D
+- Task: Fixed tsdown deprecation warnings by replacing deprecated `external` option with `deps.neverBundle` in packages/ink and packages/storage configs. Verified all quality gates still pass with zero warnings.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. Phase C complete after 9 iterations. Build output now clean of tsdown deprecation warnings. Ready to move to Phase D (Feature Development / Release Prep).
