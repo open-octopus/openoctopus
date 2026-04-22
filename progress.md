@@ -1,7 +1,7 @@
 ---
-iteration: 32
+iteration: 33
 phase: D
-phase_progress: "7/?"
+phase_progress: "8/?"
 blockers: []
 last_gate_status:
   build: PASS
@@ -231,3 +231,10 @@ last_gate_status:
 - Task: Updated CHANGELOG.md with security remediation details (8 advisories resolved via knip update and pnpm overrides), dashboard Vite 8 alignment, and knip cleanup summary.
 - Result: PASS
 - Notes: 771/771 tests pass. All quality gates green. Release documentation now complete. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
+
+## Iteration 33
+
+- Phase: D (Release Prep)
+- Task: Removed deprecated `@types/testing-library__jest-dom` from dashboard devDependencies. `@testing-library/jest-dom` v6 includes its own types, making the separate types package redundant.
+- Result: PASS
+- Notes: 771/771 tests pass. All quality gates green. `pnpm install` no longer shows the `@types/testing-library__jest-dom` deprecation warning. Next Phase D tasks: Push tag to remote, create GitHub release draft, or feature development.
