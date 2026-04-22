@@ -8,5 +8,7 @@ export default defineConfig({
   clean: true,
   fixedExtension: true,
   dts: true,
-  external: ["express", "ws", "better-sqlite3"],
+  deps: {
+    neverBundle: ["express", "ws", "better-sqlite3"],
+  },
 });
