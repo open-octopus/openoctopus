@@ -254,7 +254,7 @@ export function renderRealmCards(realms: RealmSummary[]): string {
 
 // ── Realm Detail (for /realm <name>) ──
 
-export interface RealmDetail {
+interface RealmDetail {
   name: string;
   icon?: string;
   description?: string;

@@ -50,7 +50,13 @@ const config: KnipConfig = {
     },
     "packages/dashboard": {
       entry: ["src/main.tsx"],
-      ignoreDependencies: ["@openoctopus/shared", "autoprefixer", "postcss"],
+      ignoreDependencies: [
+        "@openoctopus/shared",
+        "autoprefixer",
+        "postcss",
+        "@types/testing-library__jest-dom",
+        "jsdom",
+      ],
     },
   },
   ignore: ["**/*.test.ts", "**/*.integration.test.ts", "**/*.e2e.test.ts", "test/**"],

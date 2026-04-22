@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export type InstallKind = "git" | "npm";
+type InstallKind = "git" | "npm";
 export type PackageManager = "npm" | "pnpm" | "bun";
 
 /**

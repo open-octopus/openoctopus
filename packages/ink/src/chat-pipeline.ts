@@ -33,7 +33,7 @@ function resolveRealmAgent(
   };
 }
 
-export interface ChatPipelineParams {
+interface ChatPipelineParams {
   message: string;
   sessionId?: string;
   realmId?: string;
@@ -42,7 +42,7 @@ export interface ChatPipelineParams {
   onToken?: (token: string) => void;
 }
 
-export interface ChatPipelineResult {
+interface ChatPipelineResult {
   sessionId: string;
   response: ChatMessage;
   tokensUsed?: { input: number; output: number };

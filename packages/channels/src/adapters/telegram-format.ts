@@ -6,7 +6,7 @@
  */
 
 /** Telegram message length limit */
-export const TELEGRAM_MAX_LENGTH = 4096;
+const TELEGRAM_MAX_LENGTH = 4096;
 
 /** Escape HTML special characters */
 export function escapeHtml(text: string): string {

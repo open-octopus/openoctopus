@@ -10,4 +10,4 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-export default i18n;
+// i18n instance initialized as side-effect; no need to export

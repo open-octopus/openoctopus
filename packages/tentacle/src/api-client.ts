@@ -75,7 +75,7 @@ export class ApiClient {
 // ── WebSocket RPC Client (gateway on port 18789) ──
 // Aligned with OpenClaw's WS RPC protocol for CLI-to-gateway communication
 
-export type WsEventHandler = (event: string, data: unknown) => void;
+type WsEventHandler = (event: string, data: unknown) => void;
 
 export class WsRpcClient {
   private ws: WebSocket | undefined;

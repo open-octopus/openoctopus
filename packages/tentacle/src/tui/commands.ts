@@ -15,7 +15,7 @@ import {
 } from "./renderer.js";
 import type { TuiState } from "./state.js";
 
-export interface SlashCommandResult {
+interface SlashCommandResult {
   output?: string;
   stateUpdate?: Partial<TuiState>;
 }

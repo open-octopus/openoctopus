@@ -2,7 +2,7 @@ import type { ChannelManager } from "@openoctopus/channels";
 import type { LlmProviderRegistry } from "@openoctopus/core";
 import { Router } from "express";
 
-export interface HealthDeps {
+interface HealthDeps {
   llmRegistry?: LlmProviderRegistry;
   channelManager?: ChannelManager;
 }

@@ -4,10 +4,7 @@ import type { PackageManager } from "./update-check.js";
 /**
  * Build the CLI arguments for a global install of the given package spec.
  */
-export function globalInstallArgs(
-  manager: PackageManager,
-  spec: string,
-): { cmd: string; args: string[] } {
+function globalInstallArgs(manager: PackageManager, spec: string): { cmd: string; args: string[] } {
   switch (manager) {
     case "pnpm":
       return { cmd: "pnpm", args: ["add", "-g", spec] };
