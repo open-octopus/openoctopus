@@ -1,12 +1,12 @@
 ---
-iteration: 4
+iteration: 5
 phase: B
-phase_progress: "1/6"
+phase_progress: "2/6"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "435/435 PASS"
+  tests: "458/458 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -38,6 +38,13 @@ last_gate_status:
 ## Iteration 4
 
 - Phase: B (Test Coverage)
-- Task: Continue adding tests for uncovered modules
+- Task: Added family-member-repo tests (15 tests) and router edge-case tests (8 tests)
+- Result: PASS
+- Notes: Coverage: lines 42.85%, branches 39.13%. Next: summon-engine, ink chat-pipeline, channels channel-manager.
+
+## Iteration 5
+
+- Phase: B (Test Coverage)
+- Task: Continue adding tests for summon-engine, chat-pipeline, channel-manager
 - Result: IN_PROGRESS
-- Notes: Targeting family-member-repo, summon-engine, and core router uncovered branches.
+- Notes: Targeting remaining high-value uncovered modules.
