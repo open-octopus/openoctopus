@@ -343,3 +343,10 @@ last_gate_status:
 - Task: Updated CHANGELOG.md with fixes from iterations 43-47: CI alignment, tsdown modernization, dashboard CI tests, docker-compose fix, README link fixes.
 - Result: PASS
 - Notes: Release documentation now complete through iteration 48. All gates green.
+
+## Iteration 49
+
+- Phase: D (Release Prep)
+- Task: Updated CLAUDE.md commands section — corrected test counts (694 unit, 38 dashboard, 42 system, 10 E2E) and added missing scripts (test:dashboard, test:system, test:e2e, audit).
+- Result: PASS
+- Notes: Project guidance now matches current state. All gates green.
