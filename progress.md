@@ -1,12 +1,12 @@
 ---
-iteration: 21
+iteration: 22
 phase: C
-phase_progress: "5/?"
+phase_progress: "6/?"
 blockers: []
 last_gate_status:
   build: PASS
   typecheck: PASS
-  tests: "714/714 PASS"
+  tests: "756/756 PASS"
   lint: PASS
   format: PASS
   knip: PASS
@@ -153,3 +153,10 @@ last_gate_status:
 - Task: Docker compose verification — fixed docker-compose.yml command path from `index.js` to `index.mjs` (matching tsdown ESM output), added `EXPOSE 19789` to Dockerfile for WebSocket RPC port.
 - Result: PASS
 - Notes: 714/714 tests pass. All quality gates green. Docker configuration now correctly references ESM build artifacts. Both HTTP (19790) and WS (19789) ports are properly exposed. Next Phase C tasks: E2E tests for critical CLI flows, WebSocket auth/rate limiting, or declare Phase C complete and move to Phase D.
+
+## Iteration 22
+
+- Phase: C (Integration / Hardening)
+- Task: Fixed system test dependency resolution — added `ws` and `@types/ws` to root devDependencies so the system test project (test/system/) can import WebSocket. Verified all test suites pass.
+- Result: PASS
+- Notes: 756/756 tests pass (689 unit + 25 integration + 42 system). All quality gates green. System tests exercise 9 full-stack flows: health, realm CRUD, entity CRUD, chat routing, summon lifecycle, family system, knowledge lifecycle, error handling, and cleanup. Next Phase C tasks: E2E tests for critical CLI flows (Playwright), WebSocket auth/rate limiting, or declare Phase C complete and move to Phase D.
