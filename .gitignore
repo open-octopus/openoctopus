@@ -51,6 +51,9 @@ package-lock.json
 docker-compose.override.yml
 docker-compose.extra.yml
 
+# CloudBase local deployment binding
+cloudbaserc.json
+
 # OS
 Thumbs.db
 

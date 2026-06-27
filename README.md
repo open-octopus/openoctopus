@@ -175,7 +175,7 @@ OpenOctopus supports multiple LLM providers. For Volcengine Ark CodingPlan, set
 the Ark environment variables before running `tentacle setup` or the gateway:
 
 ```bash
-export ARK_API_KEY=ark-your-key
+export ARK_API_KEY=your_ark_api_key_here
 export ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/coding/v3
 export ARK_CHAT_MODEL=doubao-seed-2-0-code-preview-260215
 ```
