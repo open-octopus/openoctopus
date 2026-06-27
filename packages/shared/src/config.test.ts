@@ -196,6 +196,20 @@ describe("config", () => {
       const config = loadConfig(configPath);
       expect(config.gateway.wsPort).toBe(19789);
     });
+
+    it("ARK_API_KEY auto-configures Ark CodingPlan provider", () => {
+      vi.stubEnv("ARK_API_KEY", "ark-test");
+      vi.stubEnv("ARK_BASE_URL", "https://ark.example.test/api/coding/v3");
+      vi.stubEnv("ARK_CHAT_MODEL", "doubao-test");
+      const config = loadConfig(path.join(tmpDir, "no.json5"));
+      expect(config.llm.defaultProvider).toBe("ark");
+      expect(config.llm.defaultModel).toBe("doubao-test");
+      expect(config.llm.providers.ark).toMatchObject({
+        api: "ark",
+        apiKey: "ark-test",
+        baseUrl: "https://ark.example.test/api/coding/v3",
+      });
+    });
   });
 
   describe("writeDefaultConfig", () => {

@@ -14,7 +14,7 @@ export const ModelApi = z.enum([
   "openai-responses",
   "google-genai",
   "ollama",
-  "glm",
+  "ark",
   "minimax",
   "kimi",
   "deepseek",
@@ -255,10 +255,23 @@ function applyEnvOverrides(config: Record<string, unknown>): void {
     };
   }
 
+  if (process.env.ARK_API_KEY && !providers.ark) {
+    providers.ark = {
+      api: "ark",
+      apiKey: process.env.ARK_API_KEY,
+      ...(process.env.ARK_BASE_URL ? { baseUrl: process.env.ARK_BASE_URL } : {}),
+    };
+    if (!llm.defaultProvider) {
+      llm.defaultProvider = "ark";
+    }
+    if (!llm.defaultModel) {
+      llm.defaultModel = process.env.ARK_CHAT_MODEL ?? "doubao-seed-2-0-code-preview-260215";
+    }
+  }
+
   // CN providers auto-configure from env
   const cnProviders: Array<{ env: string; name: string; api: string }> = [
     { env: "DEEPSEEK_API_KEY", name: "deepseek", api: "deepseek" },
-    { env: "GLM_API_KEY", name: "glm", api: "glm" },
     { env: "MOONSHOT_API_KEY", name: "kimi", api: "kimi" },
     { env: "DASHSCOPE_API_KEY", name: "qwen", api: "qwen" },
     { env: "MINIMAX_API_KEY", name: "minimax", api: "minimax" },
@@ -351,6 +364,10 @@ export function writeDefaultConfig(configPath?: string): string {
       // "openai": {
       //   "api": "openai-completions",
       //   "apiKey": "$env:OPENAI_API_KEY"
+      // },
+      // "ark": {
+      //   "api": "ark",
+      //   "apiKey": "$env:ARK_API_KEY"
       // },
       // "ollama": {
       //   "api": "ollama",

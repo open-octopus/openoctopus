@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { LlmProviderRegistry } from "./provider-registry.js";
 import type { LlmProvider, LlmChatRequest, LlmChatResponse, LlmStreamChunk } from "./provider.js";
 import { StubProvider } from "./providers/stub.js";
@@ -24,6 +24,11 @@ class FakeProvider implements LlmProvider {
 }
 
 describe("LlmProviderRegistry", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   describe("constructor", () => {
     it("has stub fallback with no config", () => {
       const reg = new LlmProviderRegistry();
@@ -117,6 +122,7 @@ describe("LlmProviderRegistry", () => {
       const reg = new LlmProviderRegistry();
       expect(reg.resolveModel("anthropic")).toBe("claude-sonnet-4-6");
       expect(reg.resolveModel("openai")).toBe("gpt-4.1");
+      expect(reg.resolveModel("ark")).toBe("doubao-seed-2-0-code-preview-260215");
     });
 
     it("returns configured default for unknown provider", () => {
@@ -164,6 +170,53 @@ describe("LlmProviderRegistry", () => {
       const list = reg.listProviders();
       expect(list).toContain("stub");
       expect(list).toContain("a");
+    });
+  });
+
+  describe("Ark provider", () => {
+    it("uses the Ark CodingPlan OpenAI-compatible endpoint", async () => {
+      const fetchMock = vi.fn(async () => {
+        return new Response(
+          JSON.stringify({
+            choices: [{ message: { content: "ok" }, finish_reason: "stop" }],
+            usage: { prompt_tokens: 1, completion_tokens: 1 },
+            model: "doubao-seed-2-0-code-preview-260215",
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      const reg = new LlmProviderRegistry({
+        defaultProvider: "ark",
+        defaultModel: "doubao-seed-2-0-code-preview-260215",
+        providers: {
+          ark: {
+            api: "ark",
+            enabled: true,
+            priority: 1,
+            models: [],
+            apiKey: "ark-test",
+          },
+        },
+      });
+
+      const provider = reg.getProvider("ark");
+      const response = await provider.chat({
+        model: reg.resolveModel("ark"),
+        messages: [{ role: "user", content: "ping" }],
+      });
+
+      expect(response.content).toBe("ok");
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://ark.cn-beijing.volces.com/api/coding/v3/chat/completions",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            Authorization: "Bearer ark-test",
+          }),
+        }),
+      );
     });
   });
 });

@@ -64,8 +64,8 @@ async function setupLlm(existing: OpenOctopusConfig["llm"]): Promise<LlmSetupRes
         { value: "openai", label: "OpenAI (GPT)" },
         { value: "google", label: "Google (Gemini)" },
         // CN providers
+        { value: "ark", label: "Volcengine Ark (火山方舟)", hint: "CodingPlan" },
         { value: "deepseek", label: "DeepSeek (深度求索)", hint: "OpenAI-compatible" },
-        { value: "glm", label: "GLM (智谱清言)" },
         { value: "kimi", label: "Kimi (月之暗面)" },
         { value: "qwen", label: "Qwen (通义千问)" },
         { value: "minimax", label: "MiniMax (稀宇)" },
@@ -115,20 +115,20 @@ async function setupLlm(existing: OpenOctopusConfig["llm"]): Promise<LlmSetupRes
         { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro (most capable)" },
       ],
     },
+    ark: {
+      api: "ark",
+      models: [
+        {
+          value: "doubao-seed-2-0-code-preview-260215",
+          label: "Doubao Seed 2.0 Code Preview (CodingPlan)",
+        },
+      ],
+    },
     deepseek: {
       api: "deepseek",
       models: [
         { value: "deepseek-chat", label: "DeepSeek V3.2 (balanced)" },
         { value: "deepseek-reasoner", label: "DeepSeek R1 (reasoning)" },
-      ],
-    },
-    glm: {
-      api: "glm",
-      models: [
-        { value: "glm-5", label: "GLM-5 (most capable, 744B)" },
-        { value: "glm-4.7-flash", label: "GLM-4.7-Flash (fast, free)" },
-        { value: "glm-4-plus", label: "GLM-4-Plus (balanced)" },
-        { value: "glm-z1-flash", label: "GLM-Z1-Flash (reasoning, fast)" },
       ],
     },
     kimi: {
@@ -190,8 +190,8 @@ async function setupLlm(existing: OpenOctopusConfig["llm"]): Promise<LlmSetupRes
       anthropic: "ANTHROPIC_API_KEY",
       openai: "OPENAI_API_KEY",
       google: "GOOGLE_API_KEY",
+      ark: "ARK_API_KEY",
       deepseek: "DEEPSEEK_API_KEY",
-      glm: "GLM_API_KEY",
       kimi: "MOONSHOT_API_KEY",
       qwen: "DASHSCOPE_API_KEY",
       minimax: "MINIMAX_API_KEY",

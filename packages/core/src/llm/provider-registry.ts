@@ -14,7 +14,7 @@ const DEFAULT_MODELS: Record<string, string> = {
   openai: "gpt-4.1",
   google: "gemini-2.5-flash",
   ollama: "llama3.2",
-  glm: "glm-5",
+  ark: "doubao-seed-2-0-code-preview-260215",
   minimax: "MiniMax-M2.5",
   kimi: "kimi-k2.5",
   deepseek: "deepseek-chat",
@@ -25,7 +25,7 @@ const DEFAULT_MODELS: Record<string, string> = {
 // ── Default base URLs for OpenAI-compatible CN providers ──
 
 const OPENAI_COMPAT_BASE_URLS: Record<string, string> = {
-  glm: "https://open.bigmodel.cn/api/paas/v4",
+  ark: "https://ark.cn-beijing.volces.com/api/coding/v3",
   minimax: "https://api.minimax.chat/v1",
   kimi: "https://api.moonshot.cn/v1",
   deepseek: "https://api.deepseek.com",
@@ -86,11 +86,11 @@ export class LlmProviderRegistry {
       case "ollama":
         return new OllamaProvider(config.baseUrl);
 
-      // All OpenAI-compatible providers (OpenAI, Google, GLM, MiniMax, Kimi, DeepSeek, Qwen, StepFun)
+      // All OpenAI-compatible providers (OpenAI, Google, Ark, MiniMax, Kimi, DeepSeek, Qwen, StepFun)
       case "openai-completions":
       case "openai-responses":
       case "google-genai":
-      case "glm":
+      case "ark":
       case "minimax":
       case "kimi":
       case "deepseek":

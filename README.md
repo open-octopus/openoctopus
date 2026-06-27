@@ -169,6 +169,21 @@ Every agent action follows the trust chain:
 | Vector  | pgvector / local vector store (per-realm sharding)           |
 | Plugin  | Global Skill + Realm Skill + Realm Package spec              |
 
+## LLM Configuration
+
+OpenOctopus supports multiple LLM providers. For Volcengine Ark CodingPlan, set
+the Ark environment variables before running `tentacle setup` or the gateway:
+
+```bash
+export ARK_API_KEY=ark-your-key
+export ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/coding/v3
+export ARK_CHAT_MODEL=doubao-seed-2-0-code-preview-260215
+```
+
+The setup wizard can write an `ark` provider into
+`~/.openoctopus/config.json5`, and runtime env auto-config also detects
+`ARK_API_KEY` when no provider is configured.
+
 ## Docs
 
 | Doc                                                           | What's inside                                                                  |
